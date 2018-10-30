@@ -5,10 +5,11 @@ from scipy.misc import imread, imresize
 import numpy as np
 from tqdm import tqdm
 import h5py
+import cv2
 
 datasets = ['ae_photos', 'apple2orange', 'summer2winter_yosemite', 'horse2zebra',
             'monet2photo', 'cezanne2photo', 'ukiyoe2photo', 'vangogh2photo',
-            'maps', 'cityscapes', 'facades', 'iphone2dslr_flower']
+            'maps', 'cityscapes', 'facades', 'iphone2dslr_flower', 'videos']
 
 def read_image(path):
     image = imread(path)
@@ -36,6 +37,52 @@ def read_images(base_dir):
         ret.append((dir_name, images))
     return ret
 
+def read_frames(path):
+    def process_frame(frame):
+
+        frame = frame.astype(np.float32) / 255.0
+        frame = frame * 2.0 - 1.0
+        processed = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        cv2.waitKey(1)
+        return processed
+
+    videoCapture = cv2.VideoCapture(path)
+    if not videoCapture.isOpened():
+        print('Error opening video {}'.format(path))
+        return []
+
+    ret, frame = videoCapture.read()
+    if len(frame.shape) != 3 or frame.shape[2] != 3:
+        print('Wrong image {} with shape {}'.format(path, frame.shape))
+        return []
+    frames = []
+
+    while ret:
+        frames.append(process_frame(frame))
+        ret, frame = videoCapture.read()
+
+    videoCapture.release()
+    return frames
+
+def read_video(path):
+    frames = read_frames(path)
+    return [frames[i:i+3] for i in range(len(frames) - 2)]
+
+def read_videos(base_dir):
+    ret = []
+    for dir_name in ['trainA', 'trainB', 'testA', 'testB']:
+        data_dir = os.path.join(base_dir, dir_name)
+        paths = glob(os.path.join(data_dir, '*.mp4'))
+        print('# videos in {}: {}'.format(data_dir, len(paths)))
+
+        videos = []
+        for path in tqdm(paths):
+            image = read_video(path)
+            if image is not None:
+                videos.append(image)
+        ret.append((dir_name, videos))
+    return ret
+
 def store_h5py(base_dir, dir_name, images, image_size):
     f = h5py.File(os.path.join(base_dir, '{}_{}.hy'.format(dir_name, image_size)), 'w')
     for i in range(len(images)):
@@ -53,7 +100,8 @@ def store_h5py(base_dir, dir_name, images, image_size):
 def convert_h5py(task_name):
     print('Generating h5py file')
     base_dir = os.path.join('datasets', task_name)
-    data = read_images(base_dir)
+    print(base_dir)
+    data = read_videos(base_dir)
     for dir_name, images in data:
         if images[0].shape[0] == 256:
             store_h5py(base_dir, dir_name, images, 256)
@@ -79,8 +127,9 @@ def read_h5py(task_name, image_size):
 
 def download_dataset(task_name):
     print('Download data %s' % task_name)
-    cmd = './download_cyclegan_dataset.sh ' +  task_name
-    os.system(cmd)
+    #cmd = './download_cyclegan_dataset.sh ' +  task_name
+    print("Skipping Download because of windows")
+    #os.system(cmd)
 
 def get_data(task_name, image_size):
     assert task_name in datasets, 'Dataset {}_{} is not available'.format(

@@ -50,11 +50,11 @@ class CycleGAN(object):
 
         self.is_train = tf.placeholder(tf.bool, name='is_train')
         self.lr = tf.placeholder(tf.float32, name='lr')
-        self.global_step = tf.contrib.framework.get_or_create_global_step(graph=None)
+        self.global_step = tf.contrib.framework.get_or_create_global_step(graph=None)   #Tensorflow magic global training step index
 
-        image_a = self.image_a = \
+        image_a = self.ground_truth_domain_a = \
             tf.placeholder(tf.float32, [self._batch_size] + self._image_shape, name='image_a')
-        image_b = self.image_b = \
+        image_b = self.ground_truth_domain_b = \
             tf.placeholder(tf.float32, [self._batch_size] + self._image_shape, name='image_b')
         history_fake_a = self.history_fake_a = \
             tf.placeholder(tf.float32, [None] + self._image_shape, name='history_fake_a')
@@ -76,30 +76,30 @@ class CycleGAN(object):
                           lambda: image_b)
 
         # Generator
-        G_ab = Generator('G_ab', is_train=self.is_train,
+        generator_ab = Generator('generator_ab', is_train=self.is_train,
                          norm='instance', activation='relu', image_size=self._image_size)
-        G_ba = Generator('G_ba', is_train=self.is_train,
+        generator_ba = Generator('generator_ba', is_train=self.is_train,
                          norm='instance', activation='relu', image_size=self._image_size)
 
         # Discriminator
-        D_a = Discriminator('D_a', is_train=self.is_train,
+        discriminator_a = Discriminator('discriminator_a', is_train=self.is_train,
                             norm='instance', activation='leaky')
-        D_b = Discriminator('D_b', is_train=self.is_train,
+        discriminator_b = Discriminator('discriminator_b', is_train=self.is_train,
                             norm='instance', activation='leaky')
 
         # Generate images (a->b->a and b->a->b)
-        image_ab = self.image_ab = G_ab(image_a)
-        image_aba = self.image_aba = G_ba(image_ab)
-        image_ba = self.image_ba = G_ba(image_b)
-        image_bab = self.image_bab = G_ab(image_ba)
+        image_ab = self.image_ab = generator_ab(image_a)
+        image_aba = self.image_aba = generator_ba(image_ab)
+        image_ba = self.image_ba = generator_ba(image_b)
+        image_bab = self.image_bab = generator_ab(image_ba)
 
         # Discriminate real/fake images
-        D_real_a = D_a(image_a)
-        D_fake_a = D_a(image_ba)
-        D_real_b = D_b(image_b)
-        D_fake_b = D_b(image_ab)
-        D_history_fake_a = D_a(history_fake_a)
-        D_history_fake_b = D_b(history_fake_b)
+        D_real_a = discriminator_a(image_a)
+        D_fake_a = discriminator_a(image_ba)
+        D_real_b = discriminator_b(image_b)
+        D_fake_b = discriminator_b(image_ab)
+        D_history_fake_a = discriminator_a(history_fake_a)
+        D_history_fake_b = discriminator_b(history_fake_b)
 
         # Least squre loss for GAN discriminator
         loss_D_a = (tf.reduce_mean(tf.squared_difference(D_real_a, 0.9)) +
@@ -121,13 +121,13 @@ class CycleGAN(object):
 
         # Optimizer
         self.optimizer_D_a = tf.train.AdamOptimizer(learning_rate=self.lr, beta1=0.5) \
-                            .minimize(loss_D_a, var_list=D_a.var_list, global_step=self.global_step)
+                            .minimize(loss_D_a, var_list=discriminator_a.var_list, global_step=self.global_step)
         self.optimizer_D_b = tf.train.AdamOptimizer(learning_rate=self.lr, beta1=0.5) \
-                            .minimize(loss_D_b, var_list=D_b.var_list)
+                            .minimize(loss_D_b, var_list=discriminator_b.var_list)
         self.optimizer_G_ab = tf.train.AdamOptimizer(learning_rate=self.lr, beta1=0.5) \
-                            .minimize(loss_G_ab_final, var_list=G_ab.var_list)
+                            .minimize(loss_G_ab_final, var_list=generator_ab.var_list)
         self.optimizer_G_ba = tf.train.AdamOptimizer(learning_rate=self.lr, beta1=0.5) \
-                            .minimize(loss_G_ba_final, var_list=G_ba.var_list)
+                            .minimize(loss_G_ba_final, var_list=generator_ba.var_list)
 
         # Summaries
         self.loss_D_a = loss_D_a
@@ -188,11 +188,12 @@ class CycleGAN(object):
                 random.shuffle(data_A)
                 random.shuffle(data_B)
 
+            # get batches
             image_a = np.stack(data_A[iter*self._batch_size:(iter+1)*self._batch_size])
             image_b = np.stack(data_B[iter*self._batch_size:(iter+1)*self._batch_size])
             fake_a, fake_b = sess.run([self.image_ba, self.image_ab],
-                                      feed_dict={self.image_a: image_a,
-                                                 self.image_b: image_b,
+                                      feed_dict={self.ground_truth_domain_a: image_a,
+                                                 self.ground_truth_domain_b: image_b,
                                                  self.is_train: True})
             fake_a = history_a.query(fake_a)
             fake_b = history_b.query(fake_b)
@@ -204,8 +205,8 @@ class CycleGAN(object):
             if step % self._log_step == 0:
                 fetches += [self.summary_op]
 
-            fetched = sess.run(fetches, feed_dict={self.image_a: image_a,
-                                                   self.image_b: image_b,
+            fetched = sess.run(fetches, feed_dict={self.ground_truth_domain_a: image_a,
+                                                   self.ground_truth_domain_b: image_b,
                                                    self.is_train: True,
                                                    self.lr: lr,
                                                    self.history_fake_a: fake_a,
@@ -225,7 +226,7 @@ class CycleGAN(object):
             step += 1
             fetches = [self.image_ab, self.image_aba]
             image_a = np.expand_dims(data, axis=0)
-            image_ab, image_aba = sess.run(fetches, feed_dict={self.image_a: image_a,
+            image_ab, image_aba = sess.run(fetches, feed_dict={self.ground_truth_domain_a: image_a,
                                                     self.is_train: False})
             images = np.concatenate((image_a, image_ab, image_aba), axis=2)
             images = np.squeeze(images, axis=0)
@@ -236,7 +237,7 @@ class CycleGAN(object):
             step += 1
             fetches = [self.image_ba, self.image_bab]
             image_b = np.expand_dims(data, axis=0)
-            image_ba, image_bab = sess.run(fetches, feed_dict={self.image_b: image_b,
+            image_ba, image_bab = sess.run(fetches, feed_dict={self.ground_truth_domain_b: image_b,
                                                     self.is_train: False})
             images = np.concatenate((image_b, image_ba, image_bab), axis=2)
             images = np.squeeze(images, axis=0)

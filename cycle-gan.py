@@ -99,7 +99,7 @@ def main():
     def shutdown(signal, frame):
         tf.logging.warn('Received signal %s: exiting', signal)
         sys.exit(128+signal)
-    signal.signal(signal.SIGHUP, shutdown)
+    #signal.signal(signal.SIGHUP, shutdown)
     signal.signal(signal.SIGINT, shutdown)
     signal.signal(signal.SIGTERM, shutdown)
 
