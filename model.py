@@ -173,10 +173,10 @@ class CycleGAN(object):
 
         initial_step = sess.run(self.global_step)
         num_global_step = (num_initial_iter + num_decay_iter) * epoch_length
-        t = trange(initial_step, num_global_step,
+        steps = trange(initial_step, num_global_step,
                    total=num_global_step, initial=initial_step)
 
-        for step in t:
+        for step in steps:
             #TODO: resume training with global_step
             epoch = step // epoch_length
             iter = step % epoch_length
@@ -215,7 +215,7 @@ class CycleGAN(object):
             if step % self._log_step == 0:
                 summary_writer.add_summary(fetched[-1], step)
                 summary_writer.flush()
-                t.set_description(
+                steps.set_description(
                     'Loss: D_a({:.3f}) D_b({:.3f}) G_ab({:.3f}) G_ba({:.3f}) cycle({:.3f})'.format(
                         fetched[0], fetched[1], fetched[2], fetched[3], fetched[4]))
 
