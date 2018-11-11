@@ -7,42 +7,54 @@ import cv2
 dataset_names = ['trainA', 'trainB', 'testA', 'testB']
 image_format_file_ending = 'jpg'
 
-def get_datasets(task_name, image_size):
-    with tf.Session() as sess:
+# Use like dis
+# a = efficient_data_loader.get_datasets('monet2photo',234)
+# iterator = a[0].make_one_shot_iterator()
+# next_element = iterator.get_next()
+# with tf.Session() as sess:
+# cv2.imshow("piff",sess.run(next_element))
+# cv2.waitKey(1)
 
-        verify_directory_structure(task_name)
-        image_path_tensors = get_image_paths(task_name)
+def get_datasets(task_name, image_size) -> [tf.data.Dataset]:
+    verify_directory_structure(task_name)
+    image_path_tensors = get_image_paths(task_name)
+    datasets = build_datasets(image_path_tensors)
+    return datasets
 
-        dataset = tf.data.Dataset.from_tensor_slices((image_path_tensors[0]));
-        dataset = dataset.shuffle(buffer_size=10000)
-        #dataset = dataset.batch(32)
 
-        def load_image(filename):
-            image_string = tf.read_file(filename)
-            image_decoded = tf.image.decode_jpeg(image_string)
-            image_normalized = tf.image.convert_image_dtype(image_decoded, tf.float32)
-            image_normalized = (image_normalized*2)-1
-            image_resized = tf.image.resize_images(image_normalized, [128, 128])
-            return image_resized
-        dataset = dataset.map(load_image)
+def build_datasets(image_path_tensors):
+    datasets = []
+    for image_path in image_path_tensors:
+        dataset = build_dataset(image_path)
+        datasets.append(dataset)
+    return datasets
 
-        iterator = dataset.make_one_shot_iterator()
-        next_element = iterator.get_next()
 
-        print(sess.run(next_element))
-        cv2.imshow("1",sess.run(next_element))
-        cv2.waitKey(1)
+def build_dataset(image_path):
+    dataset = tf.data.Dataset.from_tensor_slices((image_path))
+    dataset = dataset.shuffle(buffer_size=10000)
+    dataset = dataset.prefetch(64)
 
-    return image_path_tensors
+    # dataset = dataset.batch(32)
+    def load_image(filename):
+        image_string = tf.read_file(filename)
+        image_decoded = tf.image.decode_jpeg(image_string)
+        image_normalized = tf.image.convert_image_dtype(image_decoded, tf.float32)
+        image_normalized = (image_normalized * 2) - 1
+        image_resized = tf.image.resize_images(image_normalized, [128, 128])
+        return image_resized
+
+    dataset = dataset.map(load_image)
+    return dataset
 
 
 def get_image_paths(task_name):
-
-    #TODO: Replace with multiframe paths
+    # TODO: Replace with multiframe paths
     image_path_lists = get_path_lists(task_name)
     image_path_tensors = get_path_tensors(image_path_lists)
 
     return image_path_tensors
+
 
 def get_path_tensors(image_path_lists):
     image_path_tensors = []
