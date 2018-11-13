@@ -173,6 +173,8 @@ class CycleGAN(object):
 
         initial_step = sess.run(self.global_step)
         num_global_step = (num_initial_iter + num_decay_iter) * epoch_length
+
+        #TODO: infinite loop
         steps = trange(initial_step, num_global_step,
                    total=num_global_step, initial=initial_step)
 
@@ -197,6 +199,8 @@ class CycleGAN(object):
 
            # image_a = np.stack(data_A[iter*self._batch_size:(iter+1)*self._batch_size])
           #  image_b = np.stack(data_B[iter*self._batch_size:(iter+1)*self._batch_size])
+
+            #TODO: replace by feedable iterator
 
             image_a = sess.run(data_A)
             image_b = sess.run(data_B)
@@ -232,6 +236,7 @@ class CycleGAN(object):
 
 
     def test(self, sess, data_A, data_B, base_dir):
+        #TODO: Implement Iterator/Dataset based solution
         step = 0
         for data in data_A:
             step += 1

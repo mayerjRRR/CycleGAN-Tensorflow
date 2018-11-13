@@ -42,10 +42,17 @@ def run(args):
     logger.info('Read data:')
     train_A, train_B, test_A, test_B = get_datasets(args.task, args.image_size, args.batch_size)
 
+
+    #TODO: extract into class or method
     iterator_a = train_A.make_one_shot_iterator()
     iterator_b = train_B.make_one_shot_iterator()
+
     next_a = iterator_a.get_next()
     next_b = iterator_b.get_next()
+
+# TODO: Replace Placeholders with feedable iterators
+    #iterator = tf.data.Iterator.from_string_handle(
+    #   handle, training_dataset.output_types, training_dataset.output_shapes)
 
     logger.info('Build graph:')
     model = CycleGAN(args)
