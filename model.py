@@ -156,10 +156,10 @@ class CycleGAN(object):
 
     def train(self, sess, summary_writer, data_A, data_B):
         logger.info('Start training.')
-        logger.info('  {} images from A'.format(len(data_A)))
-        logger.info('  {} images from B'.format(len(data_B)))
+#        logger.info('  {} images from A'.format(len(data_A)))
+ #       logger.info('  {} images from B'.format(len(data_B)))
 
-        data_size = min(len(data_A), len(data_B))
+        data_size = 100000 #min(len(data_A), len(data_B))
         num_batch = data_size // self._batch_size
         epoch_length = num_batch * self._batch_size
 
@@ -184,17 +184,28 @@ class CycleGAN(object):
             if epoch > num_initial_iter:
                 lr = max(0.0, lr_initial - (epoch - num_initial_iter) * lr_decay)
 
-            if iter == 0:
-                random.shuffle(data_A)
-                random.shuffle(data_B)
+          #  if iter == 0:
+           #     random.shuffle(data_A)
+            #    random.shuffle(data_B)
 
             # get batches
-            image_a = np.stack(data_A[iter*self._batch_size:(iter+1)*self._batch_size])
-            image_b = np.stack(data_B[iter*self._batch_size:(iter+1)*self._batch_size])
+
+            # next_element = iterator.get_next()
+            # with tf.Session() as sess:
+            # cv2.imshow("piff",sess.run(next_element))
+
+
+           # image_a = np.stack(data_A[iter*self._batch_size:(iter+1)*self._batch_size])
+          #  image_b = np.stack(data_B[iter*self._batch_size:(iter+1)*self._batch_size])
+
+            image_a = sess.run(data_A)
+            image_b = sess.run(data_B)
+
             fake_a, fake_b = sess.run([self.image_ba, self.image_ab],
                                       feed_dict={self.ground_truth_domain_a: image_a,
-                                                 self.ground_truth_domain_b: image_b,
+                                                self.ground_truth_domain_b: image_b,
                                                  self.is_train: True})
+
             fake_a = history_a.query(fake_a)
             fake_b = history_b.query(fake_b)
 

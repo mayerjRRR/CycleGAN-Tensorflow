@@ -15,36 +15,37 @@ image_format_file_ending = 'jpg'
 # cv2.imshow("piff",sess.run(next_element))
 # cv2.waitKey(1)
 
-def get_datasets(task_name, image_size) -> [tf.data.Dataset]:
-    verify_directory_structure(task_name)
-    image_path_tensors = get_image_paths(task_name)
-    datasets = build_datasets(image_path_tensors)
-    return datasets
+def get_datasets(task_name, image_size, batch_size) -> [tf.data.Dataset]:
+    with tf.device('/cpu:0'):
+        verify_directory_structure(task_name)
+        image_path_tensors = get_image_paths(task_name)
+        datasets = build_datasets(image_path_tensors, image_size, batch_size)
+        return datasets
 
 
-def build_datasets(image_path_tensors):
+def build_datasets(image_path_tensors, image_size, batch_size):
     datasets = []
     for image_path in image_path_tensors:
-        dataset = build_dataset(image_path)
+        dataset = build_dataset(image_path, image_size, batch_size)
         datasets.append(dataset)
     return datasets
 
 
-def build_dataset(image_path):
+def build_dataset(image_path,image_size, batch_size):
     dataset = tf.data.Dataset.from_tensor_slices((image_path))
     dataset = dataset.shuffle(buffer_size=10000)
     dataset = dataset.prefetch(64)
 
-    # dataset = dataset.batch(32)
     def load_image(filename):
         image_string = tf.read_file(filename)
         image_decoded = tf.image.decode_jpeg(image_string)
         image_normalized = tf.image.convert_image_dtype(image_decoded, tf.float32)
         image_normalized = (image_normalized * 2) - 1
-        image_resized = tf.image.resize_images(image_normalized, [128, 128])
+        image_resized = tf.image.resize_images(image_normalized, [image_size, image_size])
         return image_resized
 
     dataset = dataset.map(load_image)
+    dataset = dataset.batch(batch_size)
     return dataset
 
 

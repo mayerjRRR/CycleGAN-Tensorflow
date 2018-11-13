@@ -6,7 +6,7 @@ from datetime import datetime
 
 import tensorflow as tf
 
-from data_loader import get_data
+from efficient_data_loader import get_datasets
 from model import CycleGAN
 from utils import logger, makedirs
 
@@ -40,7 +40,12 @@ class FastSaver(tf.train.Saver):
 
 def run(args):
     logger.info('Read data:')
-    train_A, train_B, test_A, test_B = get_data(args.task, args.image_size)
+    train_A, train_B, test_A, test_B = get_datasets(args.task, args.image_size, args.batch_size)
+
+    iterator_a = train_A.make_one_shot_iterator()
+    iterator_b = train_B.make_one_shot_iterator()
+    next_a = iterator_a.get_next()
+    next_b = iterator_b.get_next()
 
     logger.info('Build graph:')
     model = CycleGAN(args)
@@ -85,7 +90,7 @@ def run(args):
     if args.train:
         logger.info("Starting training session.")
         with sv.managed_session() as sess:
-            model.train(sess, summary_writer, train_A, train_B)
+            model.train(sess, summary_writer, next_a, next_b)
 
     logger.info("Starting testing session.")
     with sv.managed_session() as sess:
