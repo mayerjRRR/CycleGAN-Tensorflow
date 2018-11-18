@@ -7,8 +7,8 @@ from datetime import datetime
 import tensorflow as tf
 
 from efficient_data_loader import get_datasets
-from model import CycleGAN
-from utils import logger, makedirs
+from components import CycleGan
+from utils.utils import logger, makedirs
 
 
 # parsing cmd arguments
@@ -55,7 +55,7 @@ def run(args):
     #   handle, training_dataset.output_types, training_dataset.output_shapes)
 
     logger.info('Build graph:')
-    model = CycleGAN(args)
+    model = CycleGan(args)
 
     variables_to_save = tf.global_variables()
     init_op = tf.variables_initializer(variables_to_save)

@@ -1,6 +1,6 @@
 import tensorflow as tf
-from utils import logger
-import ops
+from utils.utils import logger
+from nets import ops
 
 
 class Discriminator(object):
