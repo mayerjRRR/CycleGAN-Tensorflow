@@ -150,29 +150,4 @@ def get_data(task_name, image_size):
         read_h5py(task_name, image_size)
     return train_A, train_B, test_A, test_B
 
-def extractVideoFrames(path):
-    videoCapture = cv2.VideoCapture(path)
-    if not videoCapture.isOpened():
-        print('Error opening video {}'.format(path))
-        return
 
-    ret, frame = videoCapture.read()
-    if len(frame.shape) != 3 or frame.shape[2] != 3:
-        print('Wrong image {} with shape {}'.format(path, frame.shape))
-        return
-
-    image_format = ".jpeg"
-    directory_name, file_name = os.path.split(path)
-    video_name = os.path.splitext(file_name)[0]
-    frame_directory = os.path.join(directory_name, 'frames')
-
-    if not os.path.exists(frame_directory):
-        os.makedirs(frame_directory)
-    frame_index = 0
-    while ret:
-        frame_file_name = os.path.join(frame_directory, video_name + "_" + str(frame_index).zfill(6) + image_format)
-        cv2.imwrite(frame_file_name, frame)
-        ret, frame = videoCapture.read()
-        frame_index += 1
-
-    videoCapture.release()

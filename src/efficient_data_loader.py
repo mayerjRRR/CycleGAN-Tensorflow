@@ -5,6 +5,7 @@ from glob import glob as get_all_paths
 
 dataset_names = ['trainA', 'trainB', 'testA', 'testB']
 image_format_file_ending = 'jpg'
+video_format_file_ending = 'mp4'
 
 
 def get_datasets(task_name, image_size, batch_size) -> [tf.data.Dataset]:
@@ -18,6 +19,7 @@ def get_datasets(task_name, image_size, batch_size) -> [tf.data.Dataset]:
 def build_datasets(image_path_tensors, image_size, batch_size):
     datasets = []
     for image_path in image_path_tensors:
+        print(f"Shape of Tensor: {tf.shape(image_path)}")
         dataset = build_dataset(image_path, image_size, batch_size)
         datasets.append(dataset)
     return datasets
