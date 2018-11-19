@@ -1,8 +1,8 @@
 import tensorflow as tf
 
-from components.images import Images
-from components.losses import Losses
-from components.placeholders import Placeholders
+from src.components.images import Images
+from src.components.losses import Losses
+from src.components.placeholders import Placeholders
 
 
 class TensorBoardSummary:

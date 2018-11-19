@@ -1,8 +1,8 @@
 import tensorflow as tf
 
-from components.losses import Losses
-from components.networks import Networks
-from components.placeholders import Placeholders
+from src.components.losses import Losses
+from src.components.networks import Networks
+from src.components.placeholders import Placeholders
 
 
 class Optimizers:

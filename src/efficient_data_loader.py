@@ -2,18 +2,10 @@ import os
 import os.path
 import tensorflow as tf
 from glob import glob as get_all_paths
-import cv2
 
 dataset_names = ['trainA', 'trainB', 'testA', 'testB']
 image_format_file_ending = 'jpg'
 
-# Use like dis
-# a = efficient_data_loader.get_datasets('monet2photo',234)
-# iterator = a[0].make_one_shot_iterator()
-# next_element = iterator.get_next()
-# with tf.Session() as sess:
-# cv2.imshow("piff",sess.run(next_element))
-# cv2.waitKey(1)
 
 def get_datasets(task_name, image_size, batch_size) -> [tf.data.Dataset]:
     with tf.device('/cpu:0'):
@@ -31,8 +23,9 @@ def build_datasets(image_path_tensors, image_size, batch_size):
     return datasets
 
 
-def build_dataset(image_path,image_size, batch_size):
-    dataset = tf.data.Dataset.from_tensor_slices((image_path))
+def build_dataset(image_path, image_size, batch_size):
+    dataset = tf.data.Dataset.from_tensor_slices(image_path)
+    dataset = dataset.repeat()
     dataset = dataset.shuffle(buffer_size=10000)
     dataset = dataset.prefetch(64)
 

@@ -1,6 +1,6 @@
-from components.placeholders import Placeholders
-from nets.discriminator import Discriminator
-from nets.generator import Generator
+from src.components.placeholders import Placeholders
+from src.nets.discriminator import Discriminator
+from src.nets.generator import Generator
 
 
 class Networks:

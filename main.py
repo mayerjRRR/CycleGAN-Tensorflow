@@ -6,9 +6,9 @@ from datetime import datetime
 
 import tensorflow as tf
 
-from efficient_data_loader import get_datasets
-from components import CycleGan
-from utils.utils import logger, makedirs
+from src.efficient_data_loader import get_datasets
+from src.cycle_gan import CycleGan
+from src.utils.utils import logger, makedirs
 
 
 # parsing cmd arguments
@@ -23,7 +23,7 @@ parser.add_argument('--instance_normalization', default=True, type=bool,
                     help="Use instance norm instead of batch norm")
 parser.add_argument('--log_step', default=100, type=int,
                     help="Tensorboard log frequency")
-parser.add_argument('--batch_size', default=1, type=int,
+parser.add_argument('--batch_size', default=4, type=int,
                     help="Batch size")
 parser.add_argument('--image_size', default=128, type=int,
                     help="Image size")
@@ -40,34 +40,34 @@ class FastSaver(tf.train.Saver):
 
 def run(args):
     logger.info('Read data:')
+
     train_A, train_B, test_A, test_B = get_datasets(args.task, args.image_size, args.batch_size)
-
-
-    #TODO: extract into class or method
-    iterator_a = train_A.make_one_shot_iterator()
-    iterator_b = train_B.make_one_shot_iterator()
-
-    next_a = iterator_a.get_next()
-    next_b = iterator_b.get_next()
-
-# TODO: Replace Placeholders with feedable iterators
-    #iterator = tf.data.Iterator.from_string_handle(
-    #   handle, training_dataset.output_types, training_dataset.output_shapes)
 
     logger.info('Build graph:')
     model = CycleGan(args)
 
+    train(args, model, train_A, train_B)
+
+    #logger.info("Starting testing session.")
+    # with sv.managed_session() as sess:
+    #    base_dir = os.path.join('results', model_name)
+    #     makedirs(base_dir)
+    #    model.test(sess, test_A, test_B, base_dir)
+
+
+def train(args, model, train_A, train_B):
+    # TODO: extract into class or method
+    next_a = train_A.make_one_shot_iterator().get_next()
+    next_b = train_B.make_one_shot_iterator().get_next()
     variables_to_save = tf.global_variables()
     init_op = tf.variables_initializer(variables_to_save)
     init_all_op = tf.global_variables_initializer()
     saver = FastSaver(variables_to_save)
-
     logger.info('Trainable vars:')
     var_list = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES,
                                  tf.get_variable_scope().name)
     for v in var_list:
         logger.info('  %s %s', v.name, v.get_shape())
-
     if args.load_model != '':
         model_name = args.load_model
     else:
@@ -90,20 +90,16 @@ def run(args):
                              init_fn=init_fn,
                              summary_writer=summary_writer,
                              ready_op=tf.report_uninitialized_variables(variables_to_save),
-                             global_step=model.global_step,
+                             global_step=model.placeholders.global_step,
                              save_model_secs=300,
                              save_summaries_secs=30)
-
     if args.train:
         logger.info("Starting training session.")
         with sv.managed_session() as sess:
             model.train(sess, summary_writer, next_a, next_b)
 
-    logger.info("Starting testing session.")
-    with sv.managed_session() as sess:
-        base_dir = os.path.join('results', model_name)
-        makedirs(base_dir)
-        model.test(sess, test_A, test_B, base_dir)
+
+
 
 def main():
     args, unparsed = parser.parse_known_args()

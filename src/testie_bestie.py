@@ -1,4 +1,4 @@
-import cycle_gan
+from src import cycle_gan
 import argparse
 
 parser = argparse.ArgumentParser(description="Run commands")

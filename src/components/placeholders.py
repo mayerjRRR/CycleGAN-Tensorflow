@@ -6,13 +6,12 @@ class Placeholders:
         self.init_training_placeholders()
         self.init_real_placeholders(batch_size, image_shape)
         self.init_fake_placeholders(image_shape)
-        # image_a, image_b = self.augment_data_for_training(image_a, image_b)
 
     def init_training_placeholders(self):
         self.is_train = tf.placeholder(tf.bool, name='is_train')
         self.lr = tf.placeholder(tf.float32, name='lr')
         self.global_step = tf.contrib.framework.get_or_create_global_step(
-            graph=None)  # Tensorflow magic global training step index
+            graph=None)
 
     def init_real_placeholders(self, batch_size, image_shape):
         self.image_a = tf.placeholder(tf.float32, [batch_size] + image_shape, name='image_a')
