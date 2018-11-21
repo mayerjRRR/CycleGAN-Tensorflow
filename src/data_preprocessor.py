@@ -27,7 +27,7 @@ def extract_video_frames(video_path, frame_directory):
         print('Wrong image {} with shape {}'.format(video_path, frame.shape))
         return
 
-    image_format = ".jpeg"
+    image_format = ".jpg"
     directory_name, file_name = os.path.split(video_path)
     video_name = os.path.splitext(file_name)[0]
     if frame_directory is None:
