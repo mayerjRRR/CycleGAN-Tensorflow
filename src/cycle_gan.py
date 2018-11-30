@@ -100,8 +100,8 @@ class CycleGan(object):
         return fake_a, fake_b
 
     def get_real_images(self, data_A, data_B, sess):
-        image_a = sess.run(data_A)
-        image_b = sess.run(data_B)
+        image_a = sess.run(data_A)[0]
+        image_b = sess.run(data_B)[0]
         return image_a, image_b
 
     def write_summary(self, fetched, step, steps, summary_writer):

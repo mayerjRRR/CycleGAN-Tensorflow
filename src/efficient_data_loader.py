@@ -33,15 +33,18 @@ def build_dataset(image_path, image_size, batch_size):
     dataset = dataset.shuffle(buffer_size=10000)
     dataset = dataset.prefetch(64)
 
+    def load_images(filenames):
+        return tf.map_fn(load_image, filenames, dtype=tf.float32)
+
     def load_image(filename):
         image_string = tf.read_file(filename)
-        image_decoded = tf.image.decode_jpeg(image_string)
-        image_normalized = tf.image.convert_image_dtype(image_decoded, tf.float32)
+        image_decoded = tf.image.decode_jpeg(image_string, channels=3)
+        image_normalized = tf.image.convert_image_dtype(image_decoded, dtype=tf.float32)
         image_normalized = (image_normalized * 2) - 1
         image_resized = tf.image.resize_images(image_normalized, [image_size, image_size])
         return image_resized
 
-    dataset = dataset.map(load_image)
+    dataset = dataset.map(load_images)
     dataset = dataset.batch(batch_size)
     return dataset
 
@@ -67,8 +70,8 @@ def get_path_lists(task_name):
     for dir_name in dataset_names:
         base_dir = os.path.join('datasets', task_name)
         data_dir = os.path.join(base_dir, dir_name)
-        #task_image_paths = get_frame_sequences(data_dir,3)
-        task_image_paths = get_path_list(data_dir)
+        task_image_paths = get_frame_sequences(data_dir,3)
+        #task_image_paths = get_path_list(data_dir)
         image_path_lists.append(task_image_paths)
     return image_path_lists
 
