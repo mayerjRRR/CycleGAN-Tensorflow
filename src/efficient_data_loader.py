@@ -3,11 +3,13 @@ import os.path
 import tensorflow as tf
 import numpy as np
 from glob import glob as get_all_paths
+from src.data_preprocessor import preprocess_videos
 
 dataset_names = ['trainA', 'trainB', 'testA', 'testB']
 image_format_file_ending = 'jpg'
 video_format_file_ending = 'mp4'
-video_index_padding = 1+6+1
+video_index_padding = 1 + 6 + 1
+frame_sequence_length = 3
 
 
 def get_datasets(task_name, image_size, batch_size) -> [tf.data.Dataset]:
@@ -70,8 +72,8 @@ def get_path_lists(task_name):
     for dir_name in dataset_names:
         base_dir = os.path.join('datasets', task_name)
         data_dir = os.path.join(base_dir, dir_name)
-        task_image_paths = get_frame_sequences(data_dir,3)
-        #task_image_paths = get_path_list(data_dir)
+        task_image_paths = get_frame_sequences(data_dir, frame_sequence_length)
+        # task_image_paths = get_path_list(data_dir)
         image_path_lists.append(task_image_paths)
     return image_path_lists
 
@@ -82,7 +84,7 @@ def get_path_list(data_dir):
     return task_image_paths
 
 
-def verify_directory_structure(task_name):
+def verify_directory_structure(task_name, video_data=True):
     if not os.path.exists('datasets'):
         raise Exception("Dataset Directory does not exist!")
 
@@ -93,18 +95,21 @@ def verify_directory_structure(task_name):
         dataset_directory = os.path.join(base_dir, dataset_name)
         if not os.path.exists(dataset_directory):
             raise Exception(f"{dataset_directory} does not exist!")
+        if video_data:
+            preprocess_videos(dataset_directory)
 
 
 def get_video_names(task_name):
     image_paths = get_path_list(os.path.join(task_name, 'frames'))
     videos = set([])
     for path in image_paths:
-        videos.add(path[:-(video_index_padding+len(image_format_file_ending))])
+        videos.add(path[:-(video_index_padding + len(image_format_file_ending))])
     return list(videos)
 
 
 def get_video_frames(video_name):
     return get_all_paths(video_name + "_*." + image_format_file_ending)
+
 
 def get_frame_sequences(task_name, sequencial_frames):
     video_names = get_video_names(task_name)
@@ -113,11 +118,11 @@ def get_frame_sequences(task_name, sequencial_frames):
         frames = get_video_frames(video_name)
         consecutive_frames = get_consecutive_frames(frames, sequencial_frames)
         frame_sequences = np.concatenate((frame_sequences, consecutive_frames), axis=1)
-    return frame_sequences
+    return frame_sequences.transpose()
 
 
 def get_consecutive_frames(frames, num_frames):
     result = []
     for frame_id in range(num_frames):
-        result.append(frames[frame_id:len(frames)-num_frames+frame_id+1])
+        result.append(frames[frame_id:len(frames) - num_frames + frame_id + 1])
     return result

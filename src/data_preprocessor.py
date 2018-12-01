@@ -13,7 +13,9 @@ def preprocess_videos(path):
         os.makedirs(frame_dir)
 
     video_paths = glob(os.path.join(path, '*.mp4'))
+    print(f"Preprocessing {len(video_paths)} videos.")
     for path in video_paths:
+        print(f"Preprocessing {path}...")
         extract_video_frames(path, frame_dir)
 
 def extract_video_frames(video_path, frame_directory):
@@ -42,4 +44,5 @@ def extract_video_frames(video_path, frame_directory):
         ret, frame = videoCapture.read()
         frame_index += 1
 
+    print(f"Extracted {frame_index} frames.")
     videoCapture.release()

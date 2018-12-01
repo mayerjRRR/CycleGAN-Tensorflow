@@ -15,7 +15,7 @@ from src.utils.utils import logger, makedirs
 parser = argparse.ArgumentParser(description="Run commands")
 parser.add_argument('-t', '--train', default=True, type=bool,
                     help="Training mode")
-parser.add_argument('--task', type=str, default='apple2orange',
+parser.add_argument('--task', type=str, default='videos',
                     help='Task name')
 parser.add_argument('--cycle_loss_coeff', type=float, default=10,
                     help='Cycle Consistency Loss coefficient')
@@ -25,7 +25,7 @@ parser.add_argument('--log_step', default=100, type=int,
                     help="Tensorboard log frequency")
 parser.add_argument('--batch_size', default=4, type=int,
                     help="Batch size")
-parser.add_argument('--image_size', default=128, type=int,
+parser.add_argument('--image_size', default=256, type=int,
                     help="Image size")
 parser.add_argument('--load_model', default='',
                     help='Model path to load (e.g., train_2017-07-07_01-23-45)')
