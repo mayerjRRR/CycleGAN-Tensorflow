@@ -5,17 +5,17 @@ import numpy as np
 from glob import glob as get_all_paths
 from src.data_preprocessor import preprocess_videos
 
-dataset_names = ['trainA', 'trainB', 'testA', 'testB']
+dataset_names = ['trainA', 'trainB']
 image_format_file_ending = 'jpg'
 video_format_file_ending = 'mp4'
 video_index_padding = 1 + 6 + 1
 frame_sequence_length = 3
 
 
-def get_datasets(task_name, image_size, batch_size) -> [tf.data.Dataset]:
+def get_training_datasets(task_name, image_size, batch_size, dataset_dir="datasets") -> [tf.data.Dataset]:
     with tf.device('/cpu:0'):
-        verify_directory_structure(task_name)
-        image_path_tensors = get_image_paths(task_name)
+        verify_directory_structure(task_name, dataset_dir)
+        image_path_tensors = get_image_paths(task_name, dataset_dir)
         datasets = build_datasets(image_path_tensors, image_size, batch_size)
         return datasets
 
@@ -51,9 +51,8 @@ def build_dataset(image_path, image_size, batch_size):
     return dataset
 
 
-def get_image_paths(task_name):
-    # TODO: Replace with multiframe paths
-    image_path_lists = get_path_lists(task_name)
+def get_image_paths(task_name, dataset_dir="datasets"):
+    image_path_lists = get_path_lists(task_name, dataset_dir)
     image_path_tensors = get_path_tensors(image_path_lists)
 
     return image_path_tensors
@@ -67,10 +66,10 @@ def get_path_tensors(image_path_lists):
     return image_path_tensors
 
 
-def get_path_lists(task_name):
+def get_path_lists(task_name, dataset_dir="datasets"):
     image_path_lists = []
     for dir_name in dataset_names:
-        base_dir = os.path.join('datasets', task_name)
+        base_dir = os.path.join(dataset_dir, task_name)
         data_dir = os.path.join(base_dir, dir_name)
         task_image_paths = get_frame_sequences(data_dir, frame_sequence_length)
         # task_image_paths = get_path_list(data_dir)
@@ -84,11 +83,11 @@ def get_path_list(data_dir):
     return task_image_paths
 
 
-def verify_directory_structure(task_name, video_data=True):
-    if not os.path.exists('datasets'):
+def verify_directory_structure(task_name, video_data=True, dataset_dir="datasets"):
+    if not os.path.exists(dataset_dir):
         raise Exception("Dataset Directory does not exist!")
 
-    base_dir = os.path.join('datasets', task_name)
+    base_dir = os.path.join(dataset_dir, task_name)
     if not os.path.exists(base_dir):
         raise Exception("Task Dataset Directory does not exist!")
     for dataset_name in dataset_names:
