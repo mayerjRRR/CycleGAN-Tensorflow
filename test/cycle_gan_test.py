@@ -20,4 +20,4 @@ parser.add_argument('--load_model', default='',
                     help='Model path to load (e.g., train_2017-07-07_01-23-45)')
 
 args, _ = parser.parse_known_args()
-cg = cycle_gan.CycleGan(args)
+cg = cycle_gan.CycleGan()

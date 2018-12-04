@@ -1,4 +1,4 @@
-from src.efficient_data_loader import get_training_datasets
+from src.data_loader import get_training_datasets
 import tensorflow as tf
 import cv2
 

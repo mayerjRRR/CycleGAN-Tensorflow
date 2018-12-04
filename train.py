@@ -3,17 +3,11 @@ from datetime import datetime
 
 import tensorflow as tf
 
-from src.efficient_data_loader import get_training_datasets
+from src.data_loader import get_training_datasets
 from src.cycle_gan import CycleGan
 import src.utils.argument_parser as argument_parser
+from src.utils.fast_saver import FastSaver
 from src.utils.utils import logger, makedirs
-
-
-class FastSaver(tf.train.Saver):
-    def save(self, sess, save_path, global_step=None, latest_filename=None,
-             meta_graph_suffix="meta", write_meta_graph=True):
-        super(FastSaver, self).save(sess, save_path, global_step, latest_filename,
-                                    meta_graph_suffix, False)
 
 
 def run(args):
@@ -22,7 +16,7 @@ def run(args):
                                              dataset_dir=args.dataset_directory)
 
     logger.info('Build graph:')
-    model = CycleGan(args)
+    model = CycleGan(args.image_size, args.batch_size, args.cycle_loss_coeff, args.log_step)
 
     train(args, model, train_A, train_B)
 

@@ -3,7 +3,7 @@ import os.path
 import tensorflow as tf
 import numpy as np
 from glob import glob as get_all_paths
-from src.data_preprocessor import preprocess_videos
+from src.video_preprocessor import preprocess_videos
 
 dataset_names = ['trainA', 'trainB']
 image_format_file_ending = 'jpg'
@@ -14,7 +14,7 @@ frame_sequence_length = 3
 
 def get_training_datasets(task_name, image_size, batch_size, dataset_dir="datasets") -> [tf.data.Dataset]:
     with tf.device('/cpu:0'):
-        verify_directory_structure(task_name, dataset_dir)
+        verify_directory_structure(task_name, dataset_dir, dataset_dir)
         image_path_tensors = get_image_paths(task_name, dataset_dir)
         datasets = build_datasets(image_path_tensors, image_size, batch_size)
         return datasets
@@ -51,7 +51,7 @@ def build_dataset(image_path, image_size, batch_size):
     return dataset
 
 
-def get_image_paths(task_name, dataset_dir="datasets"):
+def get_image_paths(task_name, dataset_dir):
     image_path_lists = get_path_lists(task_name, dataset_dir)
     image_path_tensors = get_path_tensors(image_path_lists)
 
@@ -66,7 +66,7 @@ def get_path_tensors(image_path_lists):
     return image_path_tensors
 
 
-def get_path_lists(task_name, dataset_dir="datasets"):
+def get_path_lists(task_name, dataset_dir):
     image_path_lists = []
     for dir_name in dataset_names:
         base_dir = os.path.join(dataset_dir, task_name)
@@ -83,7 +83,7 @@ def get_path_list(data_dir):
     return task_image_paths
 
 
-def verify_directory_structure(task_name, video_data=True, dataset_dir="datasets"):
+def verify_directory_structure(task_name, dataset_dir, video_data=True):
     if not os.path.exists(dataset_dir):
         raise Exception("Dataset Directory does not exist!")
 
