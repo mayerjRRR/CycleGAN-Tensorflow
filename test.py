@@ -1,83 +1,101 @@
-# logger.info("Starting testing session.")
-# with sv.managed_session() as sess:
-#    base_dir = os.path.join('results', model_name)
-#     makedirs(base_dir)
-#    model.test(sess, test_A, test_B, base_dir)
 from src.utils import argument_parser
-import numpy as np
 import os
 import cv2
 from src.cycle_gan import CycleGan
 import tensorflow as tf
 from src.utils.fast_saver import FastSaver
+from src.utils.image_utils import load_float_image, save_float_image
 
+#TODO: Support Video Inference
+#TODO; Support Image Directory Inference
+#TODO: Support Backwards Inference
+#TODO: Support inference on lastest model directory
 
 def run(args):
     #parseArgs
-    input = args.input
-    output = args.output
-    forwards = args.forwards
-    model_dir = args.model_dir
+    forwards, input, model_dir, output = parse_arguments(args)
 
     #load input file
-    #support jpeg and mp4
 
     directory_name, file_name = os.path.split(input)
     input_name, file_ending = os.path.splitext(file_name)
 
-    print(file_ending)
-
     if file_ending == ".mp4":
         processVideo()
-    elif file_ending == ".jpg" or file_ending == ".png":
-        processImage(input, output, forwards, model_dir)
+    elif file_ending == ".jpg" or file_ending == ".png" or file_ending == ".jpeg":
+        processSingleImage(input, output, forwards, model_dir)
 
-    print("done")
-    #determine resolution
-    #build cyclegan with correct resolution
-    #do inferenece
+    print("Done!")
     #cleanup
+
+
+def parse_arguments(args):
+    input = args.input
+    output = args.output
+    forwards = args.forwards
+    model_dir = args.model_dir
+    return forwards, input, model_dir, output
+
 
 def processVideo():
         pass
 
-def processImage(input, output, forwards, model_dir):
-    print("sdgsgsd")
-    image = cv2.imread(input, 0)
-    print(image.shape)
-    height, width = image.shape
-    image = cv2.resize(image, (height, height))
-    cycleGan = CycleGan(image_size=height, batch_size=1)
+def processSingleImage(input, output, forwards, model_dir):
 
-    variables_to_save = tf.global_variables()
-    init_op = tf.variables_initializer(variables_to_save)
-    init_all_op = tf.global_variables_initializer()
-    saver = FastSaver(variables_to_save)
-    var_list = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES,
-                                 tf.get_variable_scope().name)
+    input_image = load_float_image(input)
 
-    logdir = model_dir
-    summary_writer = tf.summary.FileWriter(logdir)
+    #determine resolution
+    height, width, _ = input_image.shape
+    #TODO: Support Non-Square Inference
+    input_image = cv2.resize(input_image, (height, height))
 
-    def init_fn(sess):
-        sess.run(init_all_op)
+    inference_machine = InferenceMachine(height, width, model_dir)
 
-    sv = tf.train.Supervisor(is_chief=True,
-                             logdir=logdir,
-                             saver=saver,
-                             summary_op=None,
-                             init_op=init_op,
-                             init_fn=init_fn,
-                             summary_writer=summary_writer,
-                             ready_op=tf.report_uninitialized_variables(variables_to_save),
-                             global_step=cycleGan.placeholders.global_step,
-                             save_model_secs=300,
-                             save_summaries_secs=30)
-    with sv.managed_session() as sess:
-        img = sess.run(cycleGan.images.image_ab, feed_dict={cycleGan.placeholders.image_a: image,
-                                                      cycleGan.placeholders.is_train: False})
-        cv2.imshow("ll", img)
-        cv2.waitKey(0)
+    ab_image = inference_machine.forward_inference(input_image)
+
+    save_float_image(ab_image, output)
+
+class InferenceMachine():
+    def __init__(self, height, width, model_dir):
+        self.model = CycleGan(image_size=height, batch_size=1)
+        variables_to_save = tf.global_variables()
+        init_op = tf.variables_initializer(variables_to_save)
+        init_all_op = tf.global_variables_initializer()
+        saver = FastSaver(variables_to_save)
+        var_list = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES,
+                                     tf.get_variable_scope().name)
+
+        logdir = model_dir
+        summary_writer = tf.summary.FileWriter(logdir)
+
+        def init_fn(sess):
+            sess.run(init_all_op)
+
+        self.sv = tf.train.Supervisor(is_chief=True,
+                                 logdir=logdir,
+                                 saver=saver,
+                                 summary_op=None,
+                                 init_op=init_op,
+                                 init_fn=init_fn,
+                                 summary_writer=summary_writer,
+                                 ready_op=tf.report_uninitialized_variables(variables_to_save),
+                                 global_step=self.model.placeholders.global_step,
+                                 save_model_secs=300,
+                                 save_summaries_secs=30)
+
+
+    def forward_inference(self, input_image):
+        with self.sv.managed_session() as sess:
+            result = sess.run(self.model.images.image_ab, feed_dict={self.model.placeholders.image_a: [input_image],
+                                                                   self.model.placeholders.is_train: False})[0]
+        return result
+
+    def backward_inference(self, input_image):
+        with self.sv.managed_session() as sess:
+            result = sess.run(self.model.images.image_ba, feed_dict={self.model.placeholders.image_b: [input_image],
+                                                                   self.model.placeholders.is_train: False})[0]
+        return result
+
 
 
 def main():

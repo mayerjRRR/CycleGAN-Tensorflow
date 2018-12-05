@@ -16,6 +16,7 @@ The goal is to create a temporally consistent CylceGAN, based on [Youngwoon Lee'
 - [SciPy](https://pypi.python.org/pypi/scipy)
 - [Pillow](https://pillow.readthedocs.io/en/4.0.x/)
 - [tqdm](https://github.com/tqdm/tqdm)
+- OpenCV
 
 ## Usage
 
@@ -36,9 +37,21 @@ $ python cycle-gan.py --task apple2orange --image_size 256
 $ tensorboard --logdir=./logs
 ```
 
+
+
 > **Carefully check Tensorboard for the first 1000 iterations. You need to run the experiment again if dark and bright regions are reversed like the exmaple below. This GAN implementation is sensitive to the initialization.**
 
 ![wrong-example](assets/wrong-initialization.png)
+
+### Inference
+
+Very much WIP, only single image A->B inference for now.
+
+Example:
+
+``
+python test.py --input "test_image.jpeg" --output "test_output.jpg" --model_dir "logs/videos_2018-12-01_16-45-08"
+``
 
 ## Results
 

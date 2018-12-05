@@ -3,6 +3,8 @@ import os.path
 import tensorflow as tf
 import numpy as np
 from glob import glob as get_all_paths
+
+from src.utils.utils import load_image
 from src.video_preprocessor import preprocess_videos
 
 dataset_names = ['trainA', 'trainB']
@@ -37,14 +39,6 @@ def build_dataset(image_path, image_size, batch_size):
 
     def load_images(filenames):
         return tf.map_fn(load_image, filenames, dtype=tf.float32)
-
-    def load_image(filename):
-        image_string = tf.read_file(filename)
-        image_decoded = tf.image.decode_jpeg(image_string, channels=3)
-        image_normalized = tf.image.convert_image_dtype(image_decoded, dtype=tf.float32)
-        image_normalized = (image_normalized * 2) - 1
-        image_resized = tf.image.resize_images(image_normalized, [image_size, image_size])
-        return image_resized
 
     dataset = dataset.map(load_images)
     dataset = dataset.batch(batch_size)
