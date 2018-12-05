@@ -10,7 +10,7 @@ class Placeholders:
     def init_training_placeholders(self):
         self.is_train = tf.placeholder(tf.bool, name='is_train')
         self.lr = tf.placeholder(tf.float32, name='lr')
-        self.global_step = tf.contrib.framework.get_or_create_global_step(
+        self.global_step = tf.train.get_or_create_global_step(
             graph=None)
 
     def init_real_placeholders(self, batch_size, image_shape):
