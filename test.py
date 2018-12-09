@@ -47,8 +47,8 @@ def process_single_image(input, output, forwards, model_dir):
 
     #determine resolution
     height, width, _ = input_image.shape
-    #TODO: Support Non-Square Inference
-    input_image = cv2.resize(input_image, (height, height))
+    #TODO: Support Make work for non power of two resolutions
+    #input_image = cv2.resize(input_image, (height, height))
 
     inference_machine = InferenceMachine(height, width, model_dir)
 

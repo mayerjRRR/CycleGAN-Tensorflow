@@ -16,7 +16,8 @@ def run(args):
                                              dataset_dir=args.dataset_directory)
 
     logger.info('Build graph:')
-    model = CycleGan(args.image_size, args.batch_size, args.cycle_loss_coeff, args.log_step)
+    model = CycleGan(args.image_size, batch_size=args.batch_size, cycle_loss_coeff=args.cycle_loss_coeff,
+                     log_step=args.log_step)
 
     train(args, model, train_A, train_B)
 

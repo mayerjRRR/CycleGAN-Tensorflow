@@ -6,14 +6,16 @@ from src.components.placeholders import Placeholders
 
 class Images:
 
-    def __init__(self, placeholders: Placeholders, networks: Networks, image_shape, batch_size, augment_size):
-        self.augment_data_for_training(placeholders, image_shape, batch_size, augment_size)
+    def __init__(self, placeholders: Placeholders, networks: Networks, image_shape, batch_size, augment_shape):
+        self.augment_data_for_training(placeholders, image_shape, batch_size, augment_shape)
         self.generate_fake_images(networks)
 
-    def augment_data_for_training(self, placeholders: Placeholders, image_shape, batch_size, augment_size):
+    #TODO: Move to Dataset maybe
+    def augment_data_for_training(self, placeholders: Placeholders, image_shape, batch_size, augment_shape):
         def augment_image(image):
-            image = tf.image.resize_images(image, [augment_size, augment_size])
+            image = tf.image.resize_images(image, augment_shape)
             image = tf.random_crop(image, [batch_size] + image_shape)
+            #TODO: Turn off for sequence
             image = tf.map_fn(tf.image.random_flip_left_right, image)
             return image
 

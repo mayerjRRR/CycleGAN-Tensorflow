@@ -16,29 +16,32 @@ from src.utils.utils import logger
 
 class CycleGan(object):
 
-    def __init__(self, image_size=256, batch_size=4, cycle_loss_coeff=1, log_step=10):
-        self.init_parameters(image_size, batch_size, cycle_loss_coeff,log_step)
+    def __init__(self, image_height=256, image_width=None, batch_size=4, cycle_loss_coeff=1, log_step=10):
+        self.init_parameters(image_height,image_width, batch_size, cycle_loss_coeff, log_step)
 
         self.placeholders = Placeholders(self._batch_size, self._image_shape)
-        self.networks = Networks(self.placeholders, self._image_size)
-        self.images = Images(self.placeholders, self.networks, self._image_shape, self._batch_size, self._augment_size)
+        self.networks = Networks(self.placeholders)
+        self.images = Images(self.placeholders, self.networks, self._image_shape, self._batch_size, self._augment_shape)
         self.losses = Losses(self.networks, self.placeholders, self.images, self._cycle_loss_coeff)
         self.optimizers = Optimizers(self.networks, self.losses, self.placeholders)
         self.tb_summary = TensorBoardSummary(self.images, self.losses, self.placeholders)
 
-    def init_parameters(self, image_size, batch_size, cycle_loss_coeff, log_step):
-        self.init_args(image_size, batch_size, cycle_loss_coeff, log_step)
+    def init_parameters(self, image_height, image_width, batch_size, cycle_loss_coeff, log_step):
+        self.init_args(image_height, image_width, batch_size, cycle_loss_coeff, log_step)
         self.init_image_dimensions()
 
-    def init_args(self, image_size, batch_size, cycle_loss_coeff, log_step):
+    def init_args(self, image_height, image_width, batch_size, cycle_loss_coeff, log_step):
         self._log_step = log_step
         self._batch_size = batch_size
-        self._image_size = image_size
+        self._image_height = image_height
         self._cycle_loss_coeff = cycle_loss_coeff
+        if image_width is None:
+            image_width = image_height
+        self._image_width = image_width
 
     def init_image_dimensions(self):
-        self._augment_size = self._image_size + (30 if self._image_size == 256 else 15)
-        self._image_shape = [self._image_size, self._image_size, 3]
+        self._augment_shape = [self._image_height + int(self._image_height/8), self._image_width+ int(self._image_width/8)]
+        self._image_shape = [self._image_height, self._image_width, 3]
 
 
 

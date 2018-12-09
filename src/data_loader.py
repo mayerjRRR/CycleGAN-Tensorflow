@@ -4,7 +4,6 @@ import tensorflow as tf
 import numpy as np
 from glob import glob as get_all_paths
 
-from src.utils.utils import load_image
 from src.video_preprocessor import preprocess_videos
 
 dataset_names = ['trainA', 'trainB']
@@ -36,6 +35,14 @@ def build_dataset(image_path, image_size, batch_size):
     dataset = dataset.repeat()
     dataset = dataset.shuffle(buffer_size=10000)
     dataset = dataset.prefetch(64)
+
+    def load_image(filename):
+        image_string = tf.read_file(filename)
+        image_decoded = tf.image.decode_jpeg(image_string, channels=3)
+        image_normalized = tf.image.convert_image_dtype(image_decoded, dtype=tf.float32)
+        image_normalized = (image_normalized * 2) - 1
+        image_resized = tf.image.resize_images(image_normalized, [image_size, image_size])
+        return image_resized
 
     def load_images(filenames):
         return tf.map_fn(load_image, filenames, dtype=tf.float32)
@@ -119,3 +126,5 @@ def get_consecutive_frames(frames, num_frames):
     for frame_id in range(num_frames):
         result.append(frames[frame_id:len(frames) - num_frames + frame_id + 1])
     return result
+
+

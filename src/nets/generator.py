@@ -4,14 +4,13 @@ from src.nets import ops
 
 
 class Generator(object):
-    def __init__(self, name, is_train, norm='instance', activation='relu',
-                 image_size=128):
+    def __init__(self, name, is_train, norm='instance', activation='relu'):
         logger.info('Init Generator %s', name)
         self.name = name
         self._is_train = is_train
         self._norm = norm
         self._activation = activation
-        self._num_res_block = 6 if image_size == 128 else 9
+        self._num_res_block = 9
         self._reuse = False
 
     def __call__(self, input):

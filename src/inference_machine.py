@@ -6,7 +6,7 @@ from src.utils.fast_saver import FastSaver
 
 class InferenceMachine():
     def __init__(self, height, width, model_dir):
-        self.model = CycleGan(image_size=height, batch_size=1)
+        self.model = CycleGan(image_height=height, image_width=width, batch_size=1)
         variables_to_save = tf.global_variables()
         init_op = tf.variables_initializer(variables_to_save)
         init_all_op = tf.global_variables_initializer()

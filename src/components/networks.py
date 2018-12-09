@@ -4,15 +4,15 @@ from src.nets.generator import Generator
 
 
 class Networks:
-    def __init__(self, placeholders: Placeholders, image_size):
-        self.init_generators(placeholders, image_size)
+    def __init__(self, placeholders: Placeholders):
+        self.init_generators(placeholders)
         self.init_discriminators(placeholders)
 
-    def init_generators(self, placeholders: Placeholders, image_size):
-        self.generator_ab = Generator('generator_ab', is_train=placeholders.is_train,
-                                      norm='instance', activation='relu', image_size=image_size)
-        self.generator_ba = Generator('generator_ba', is_train=placeholders.is_train,
-                                      norm='instance', activation='relu', image_size=image_size)
+    def init_generators(self, placeholders: Placeholders):
+        self.generator_ab = Generator('generator_ab', is_train=placeholders.is_train, norm='instance',
+                                      activation='relu')
+        self.generator_ba = Generator('generator_ba', is_train=placeholders.is_train, norm='instance',
+                                      activation='relu')
 
     def init_discriminators(self, placeholders: Placeholders):
         self.discriminator_a = Discriminator('discriminator_a', is_train=placeholders.is_train,
