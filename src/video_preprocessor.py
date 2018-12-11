@@ -1,22 +1,25 @@
 import cv2
 import os
-from glob import glob
+
+from src.utils.utils import get_all_video_paths
 
 frame_directory_name = 'frames'
 
 def preprocess_videos(path):
     frame_dir = os.path.join(path, frame_directory_name)
+    video_paths = get_all_video_paths(path)
+
     if os.path.exists(frame_dir):
         print("Frame directory already exists, no preprocessing needed!")
         return
     else:
         os.makedirs(frame_dir)
 
-    video_paths = glob(os.path.join(path, '*.mp4'))
     print(f"Preprocessing {len(video_paths)} videos.")
     for path in video_paths:
         print(f"Preprocessing {path}...")
         extract_video_frames(path, frame_dir)
+
 
 def extract_video_frames(video_path, frame_directory):
     videoCapture = cv2.VideoCapture(video_path)

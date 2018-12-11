@@ -26,11 +26,11 @@ def get_train_parser():
 def get_inference_parser():
     parser = argparse.ArgumentParser(description="Run commands")
 
-    parser.add_argument('--input', type=str, help='Location of the input')
-    parser.add_argument('--output', type=str, help='Location of the desired output')
+    parser.add_argument('--input', type=str, help='Location of the input',default='test_image.jpeg')
+    parser.add_argument('--output', type=str, help='Location of the desired output',default='test_output.jpeg')
     parser.add_argument('--forwards', dest='forwards', action='store_true')
     parser.add_argument('--backwards', dest='forwards', action='store_false')
     parser.set_defaults(forwards=True)
-    parser.add_argument('--model_dir', default='',
+    parser.add_argument('--model_dir', type=str,
                         help='Model path to load (e.g., train_2017-07-07_01-23-45)')
     return parser

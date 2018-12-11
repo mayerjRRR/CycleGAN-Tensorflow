@@ -20,10 +20,10 @@ The goal is to create a temporally consistent CylceGAN, based on [Youngwoon Lee'
 
 ## Usage
 
-- Execute the following command to download the specified dataset as well as train a model:
+- Execute the following command to train a model:
 
 ```
-$ python cycle-gan.py --task apple2orange --image_size 256
+$ python train.py --task videos
 ```
 
 - To reconstruct 256x256 images, set `--image_size` to 256; otherwise it will resize to and generate images in 128x128.

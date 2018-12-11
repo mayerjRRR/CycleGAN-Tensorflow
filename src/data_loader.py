@@ -5,6 +5,7 @@ import numpy as np
 from glob import glob as get_all_paths
 
 from src.video_preprocessor import preprocess_videos
+from src.utils.utils import contains_videos
 
 dataset_names = ['trainA', 'trainB']
 image_format_file_ending = 'jpg'
@@ -15,7 +16,7 @@ frame_sequence_length = 3
 
 def get_training_datasets(task_name, image_size, batch_size, dataset_dir="datasets") -> [tf.data.Dataset]:
     with tf.device('/cpu:0'):
-        verify_directory_structure(task_name, dataset_dir, dataset_dir)
+        verify_directory_structure(task_name, dataset_dir)
         image_path_tensors = get_image_paths(task_name, dataset_dir)
         datasets = build_datasets(image_path_tensors, image_size, batch_size)
         return datasets
@@ -72,10 +73,18 @@ def get_path_lists(task_name, dataset_dir):
     for dir_name in dataset_names:
         base_dir = os.path.join(dataset_dir, task_name)
         data_dir = os.path.join(base_dir, dir_name)
-        task_image_paths = get_frame_sequences(data_dir, frame_sequence_length)
-        # task_image_paths = get_path_list(data_dir)
+        is_video_data = contains_videos(data_dir)
+        print(f"Training with {is_video_data} vidoes from {data_dir}")
+        if is_video_data:
+            task_image_paths = get_video_frame_sequences(data_dir, frame_sequence_length)
+        else:
+            task_image_paths = get_image_frame_sequences(data_dir)
         image_path_lists.append(task_image_paths)
     return image_path_lists
+
+def get_image_frame_sequences(data_dir):
+    task_image_paths = np.array([get_path_list(data_dir)]).transpose()
+    return task_image_paths
 
 
 def get_path_list(data_dir):
@@ -84,7 +93,7 @@ def get_path_list(data_dir):
     return task_image_paths
 
 
-def verify_directory_structure(task_name, dataset_dir, video_data=True):
+def verify_directory_structure(task_name, dataset_dir):
     if not os.path.exists(dataset_dir):
         raise Exception("Dataset Directory does not exist!")
 
@@ -95,7 +104,7 @@ def verify_directory_structure(task_name, dataset_dir, video_data=True):
         dataset_directory = os.path.join(base_dir, dataset_name)
         if not os.path.exists(dataset_directory):
             raise Exception(f"{dataset_directory} does not exist!")
-        if video_data:
+        if contains_videos(dataset_directory):
             preprocess_videos(dataset_directory)
 
 
@@ -111,8 +120,9 @@ def get_video_frames(video_name):
     return get_all_paths(video_name + "_*." + image_format_file_ending)
 
 
-def get_frame_sequences(task_name, sequencial_frames):
+def get_video_frame_sequences(task_name, sequencial_frames):
     video_names = get_video_names(task_name)
+    #TODO: make free of transpose
     frame_sequences = [[] for _ in range(sequencial_frames)]
     for video_name in video_names:
         frames = get_video_frames(video_name)

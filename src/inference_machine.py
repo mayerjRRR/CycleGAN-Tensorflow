@@ -33,9 +33,12 @@ class InferenceMachine():
                                  save_summaries_secs=30)
 
 
-    def forward_inference(self, input_image):
+    def single_image_inference(self, input_image, forwards):
+
+        graph = self._get_inference_graph(forwards)
+
         with self.sv.managed_session() as sess:
-            result = sess.run(self.model.images.image_ab, feed_dict={self.model.placeholders.image_a: [input_image],
+            result = sess.run(graph, feed_dict={self.model.placeholders.image_a: [input_image],
                                                                    self.model.placeholders.is_train: False})[0]
         return result
 
@@ -45,10 +48,20 @@ class InferenceMachine():
                                                                    self.model.placeholders.is_train: False})[0]
         return result
 
-    def multi_frame_inference(self, input_frames):
+    def multi_frame_inference(self, input_frames, forwards):
         result = []
+
+        graph = self._get_inference_graph(forwards)
+
         with self.sv.managed_session() as sess:
             for frame in input_frames:
-                result.append(sess.run(self.model.images.image_ab, feed_dict={self.model.placeholders.image_a: [frame],
+                result.append(sess.run(graph, feed_dict={self.model.placeholders.image_a: [frame],
                                                                          self.model.placeholders.is_train: False})[0])
         return result
+
+    def _get_inference_graph(self, forwards):
+        if forwards:
+            graph = self.model.images.image_ab
+        else:
+            graph = self.model.images.image_ba
+        return graph
