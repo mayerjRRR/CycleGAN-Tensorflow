@@ -51,7 +51,10 @@ def process_single_image(input, output, forwards, model_dir):
     #determine resolution
     height, width, _ = input_image.shape
     #TODO: Support Make work for non power of two resolutions
-    good_height, good_width = ((height//8)+1)*8, ((width//8)+1)*8
+    if height % 8 == 0 and width % 8 == 0:
+        good_height, good_width = ((height//8)+1)*8, ((width//8)+1)*8
+    else:
+        good_height, good_width = height, width
     input_image = cv2.resize(input_image, (good_width, good_height))
 
     inference_machine = InferenceMachine(good_height, good_width, model_dir)

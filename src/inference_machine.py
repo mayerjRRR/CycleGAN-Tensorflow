@@ -39,12 +39,7 @@ class InferenceMachine():
 
         with self.sv.managed_session() as sess:
             result = sess.run(graph, feed_dict={self.model.placeholders.image_a: [input_image],
-                                                                   self.model.placeholders.is_train: False})[0]
-        return result
-
-    def backward_inference(self, input_image):
-        with self.sv.managed_session() as sess:
-            result = sess.run(self.model.images.image_ba, feed_dict={self.model.placeholders.image_b: [input_image],
+                                                self.model.placeholders.image_b: [input_image],
                                                                    self.model.placeholders.is_train: False})[0]
         return result
 
@@ -56,6 +51,7 @@ class InferenceMachine():
         with self.sv.managed_session() as sess:
             for frame in input_frames:
                 result.append(sess.run(graph, feed_dict={self.model.placeholders.image_a: [frame],
+                                                         self.model.placeholders.image_b: [frame],
                                                                          self.model.placeholders.is_train: False})[0])
         return result
 
