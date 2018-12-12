@@ -1,12 +1,6 @@
 # Temporal CycleGAN
 
-The goal is to create a temporally consistent CylceGAN, based on [Youngwoon Lee's](https://github.com/youngwoon) implementation of a CycleGAN in Tensorflow.
-
-## Description
-
-```
-![paper-figure](assets/paper-figure.png)
-```
+The goal is to create a temporally consistent CylceGAN, based on [Youngwoon Lee's implementation](https://github.com/gitlimlab/CycleGAN-Tensorflow) of a CycleGAN in Tensorflow.
 
 ## Dependencies
 
@@ -20,24 +14,33 @@ The goal is to create a temporally consistent CylceGAN, based on [Youngwoon Lee'
 
 ## Usage
 
+### Training
+
 - Execute the following command to train a model:
 
 ```
-$ python train.py --task videos
+$ python train.py --task <taskname>
 ```
 
-- To reconstruct 256x256 images, set `--image_size` to 256; otherwise it will resize to and generate images in 128x128.
-  Once training is ended, testing images will be converted to the target domain and the results will be saved to `./results/apple2orange_2017-07-07_07-07-07/`.
-- Available datasets: apple2orange, summer2winter_yosemite, horse2zebra, monet2photo, cezanne2photo, ukiyoe2photo, vangogh2photo, maps, cityscapes, facades, iphone2dslr_flower, ae_photos
+The corresponding `./dataset/<taskname>` directory should contain `trainA` and `trainB` directories containg training
+data for domain A and domain B respectively. 
 
+The training data can be either images or videos for each domain. Handling of different data types is done automatically.
 
-- Check the training status on Tensorboard:
+Command line options:
+
+- `--task` : Name of the task, specifies the training data directory
+- `--batch_size`: Batch size, default is 4 (Empirical sweet spot for GTX 1080ti)
+- `--image_size`: Resolution of the training data, default is 256
+- `--load_model`: Optional log/checkpoint directory of an existing model, use to continue training
+
+More command line options can be found with `--help`.
+
+Once training, check the status on Tensorboard:
 
 ```
 $ tensorboard --logdir=./logs
 ```
-
-
 
 > **Carefully check Tensorboard for the first 1000 iterations. You need to run the experiment again if dark and bright regions are reversed like the exmaple below. This GAN implementation is sensitive to the initialization.**
 
@@ -45,22 +48,30 @@ $ tensorboard --logdir=./logs
 
 ### Inference
 
-Very much WIP, only single image A->B inference for now.
+Applies a domain transfer using a trained model to an input. Works for images and videos in both A->A an B->A directions. 
 
 Example:
 
 ``
-python test.py --input "test_image.jpeg" --output "test_output.jpg" --model_dir "logs/videos_2018-12-01_16-45-08"
+python test.py --input "test_image.jpeg" --output "test_output.jpeg" --model_dir "logs/videos_2018-12-01_16-45-08"
 ``
+
+Command line options:
+
+- `--input` : Name of the input file, defaults to test_image.jpeg`.
+- `--output`: Name of the output file, media type should match input type. Note that sound is lost for video transfer. 
+Defaults to `test_output.jpeg`
+- `--model_dir`: The pretrained model to use (name of the model directory). If none is given it will automatically use 
+the latest trained model.
+- `--backwards`: Optional flag to perform B->A inference instead of the default A->B.
+
+More command line options can be found with `--help`.
 
 ## Results
 
-TODO
-
-## References
-
-- [Unpaired Image-to-Image Translation using Cycle-Consistent Adversarial Networks](https://arxiv.org/abs/1703.10593)
-- [Instance Normalization: The Missing Ingredient for Fast Stylization](https://arxiv.org/abs/1607.08022)
-- The official implementation in Torch: https://github.com/junyanz/CycleGAN
-  - The data downloading script is from the author's code.
-
+Example on the domains "Photos" and "[Ukiyo-e](https://en.wikipedia.org/wiki/Ukiyo-e)" trained with images only. Training took 4 hours on a GTX 1080ti.
+<p align = 'center'>
+<img src = 'test_image.jpeg' width = '33%'>
+<img src = 'test_output.jpeg' width = '33%'>
+<img src = 'circle_output.jpeg' width = '33%'>
+</p>

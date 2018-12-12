@@ -3,6 +3,7 @@ import argparse
 
 def get_train_parser():
     parser = argparse.ArgumentParser(description="Run commands")
+    #TODO: Remove this argument
     parser.add_argument('-t', '--train', default=True, type=bool,
                         help="Training mode")
     parser.add_argument('--task', type=str, default='videos',
