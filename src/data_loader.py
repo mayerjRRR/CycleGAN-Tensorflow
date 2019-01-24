@@ -128,6 +128,12 @@ def get_video_frame_sequences(task_name, sequencial_frames):
         frames = get_video_frames(video_name)
         consecutive_frames = get_consecutive_frames(frames, sequencial_frames)
         frame_sequences = np.concatenate((frame_sequences, consecutive_frames), axis=1)
+
+    if frame_sequences.size == 0:
+        frames = get_path_list(os.path.join(task_name, "frames"))
+        consecutive_frames = get_consecutive_frames(frames, sequencial_frames)
+        frame_sequences = np.concatenate((frame_sequences, consecutive_frames), axis=1)
+
     return frame_sequences.transpose()
 
 

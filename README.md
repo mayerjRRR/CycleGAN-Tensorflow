@@ -42,7 +42,7 @@ Once training, check the status on Tensorboard:
 $ tensorboard --logdir=./logs
 ```
 
-> **Carefully check Tensorboard for the first 1000 iterations. You need to run the experiment again if dark and bright regions are reversed like the exmaple below. This GAN implementation is sensitive to the initialization.**
+> **Carefully check Tensorboard for the first 1000 iterations. You need to run the experiment again if dark and bright regions are reversed like the example below. This GAN implementation is sensitive to the initialization.**
 
 ![wrong-example](assets/wrong-initialization.png)
 
@@ -69,9 +69,17 @@ More command line options can be found with `--help`.
 
 ## Results
 
-Example on the domains "Photos" and "[Ukiyo-e](https://en.wikipedia.org/wiki/Ukiyo-e)" trained with images only. Training took 4 hours on a GTX 1080ti.
+Example on the domains "Photos" and "[Ukiyo-e](https://en.wikipedia.org/wiki/Ukiyo-e)" trained with images only. Training took 10 hours on a GTX 1080ti.
+
 <p align = 'center'>
 <img src = 'test_image.jpeg' width = '33%'>
 <img src = 'test_output.jpeg' width = '33%'>
 <img src = 'circle_output.jpeg' width = '33%'>
+</p>
+
+Example on the domains "Horse" and "Zebra" trained with images only (no temporal consistency).
+
+<p align = 'center'>
+<img src = 'horse_gif.gif' width = '49%'>
+<img src = 'zebra_gif.gif' width = '49%'>
 </p>

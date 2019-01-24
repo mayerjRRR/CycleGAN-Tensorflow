@@ -3,9 +3,7 @@ from src.utils import argument_parser
 import cv2
 from src.utils.image_utils import load_float_image, save_float_image, is_image, is_video, load_all_video_float_frames, save_frames_to_video
 from src.utils.utils import get_latest_model
-#TODO: Support Video Inference
 #TODO; Support Image Directory Inference
-#TODO: Support inference on lastest model directory
 
 def run(args):
     forwards, input, model_dir, output = parse_arguments(args)
@@ -33,13 +31,20 @@ def process_video(input, output, forwards, model_dir):
 
     height, width, _ = frames[0].shape
 
+    if height % 8 == 0 and width % 8 == 0:
+        good_height, good_width = ((height//8)+1)*8, ((width//8)+1)*8
+    else:
+        good_height, good_width = height, width
+
+    good_height, good_width = 720, 1280
+
     resized_frames = []
     for frame in frames:
-        resized_frames.append(cv2.resize(frame, (height, height)))
+        resized_frames.append(cv2.resize(frame, (good_width, good_height)))
 
-    inference_machine = InferenceMachine(height, width, model_dir)
+    inference_machine = InferenceMachine(good_height, good_width, model_dir)
 
-    result_frames = inference_machine.multi_frame_inference(frames, forwards)
+    result_frames = inference_machine.multi_frame_inference(resized_frames, forwards)
 
     save_frames_to_video(result_frames, output)
 
@@ -50,7 +55,7 @@ def process_single_image(input, output, forwards, model_dir):
 
     #determine resolution
     height, width, _ = input_image.shape
-    #TODO: Support Make work for non power of two resolutions
+    #TODO: Make work for non power of two resolutions
     if height % 8 == 0 and width % 8 == 0:
         good_height, good_width = ((height//8)+1)*8, ((width//8)+1)*8
     else:
