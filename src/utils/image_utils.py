@@ -55,6 +55,15 @@ def load_all_video_float_frames(file_path):
     video_capture.release()
     return frames
 
+def iterate_all_video_float_frames(file_path):
+    video_capture = cv2.VideoCapture(file_path)
+    ret, frame = video_capture.read()
+    while ret:
+        rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        yield rgb_frame
+        ret, frame = video_capture.read()
+    video_capture.release()
+
 def save_frames_to_video(frames, file_name, framerate=30.0):
     fourcc = cv2.VideoWriter_fourcc(*'MP4V')
     frame_shape = np.array(frames[0]).shape

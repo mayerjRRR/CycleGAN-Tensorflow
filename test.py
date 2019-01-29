@@ -1,8 +1,9 @@
 from src.inference_machine import InferenceMachine
 from src.utils import argument_parser
 import cv2
-from src.utils.image_utils import load_float_image, save_float_image, is_image, is_video, load_all_video_float_frames, save_frames_to_video
+from src.utils.image_utils import load_float_image, save_float_image, is_image, is_video, load_all_video_float_frames, save_frames_to_video, iterate_all_video_float_frames, float_to_unit8
 from src.utils.utils import get_latest_model
+
 #TODO; Support Image Directory Inference
 
 def run(args):
@@ -12,7 +13,7 @@ def run(args):
         model_dir = get_latest_model()
 
     if is_video(input):
-        process_video(input, output, forwards, model_dir)
+        process_video2(input, output, forwards, model_dir)
     elif is_image(input):
         process_single_image(input, output, forwards, model_dir)
 
@@ -47,6 +48,41 @@ def process_video(input, output, forwards, model_dir):
     result_frames = inference_machine.multi_frame_inference(resized_frames, forwards)
 
     save_frames_to_video(result_frames, output)
+
+
+def process_video2(input, output, forwards, model_dir):
+
+    print("Opening input video file...")
+    video_capture = cv2.VideoCapture(input)
+
+    height, width, frame_rate = int(video_capture.get(cv2.CAP_PROP_FRAME_HEIGHT)),int( video_capture.get(cv2.CAP_PROP_FRAME_WIDTH)), video_capture.get(cv2.CAP_PROP_FPS)
+    if height % 8 == 0 and width % 8 == 0:
+        good_height, good_width =((height // 8) + 1) * 8, ((width // 8) + 1) * 8
+    else:
+        good_height, good_width = height, width
+    inference_machine = InferenceMachine(good_height, good_width, model_dir)
+
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+
+    print("Opening input video file...")
+    video_writer = cv2.VideoWriter(output, fourcc, frame_rate, (width, height))
+
+    frame_counter = 1
+    for frame in iterate_all_video_float_frames(input):
+        print(f"Processing Frame {frame_counter}...", sep=' ', end='\r', flush=True)
+        frame_counter+=1
+        resized_frame = cv2.resize(frame, (good_width, good_height))
+
+        result = inference_machine.single_image_inference(resized_frame, forwards)
+        result = cv2.resize(result, (width, height))
+        uint8_frame = float_to_unit8(result)
+        bgr_frame = cv2.cvtColor(uint8_frame, cv2.COLOR_RGB2BGR)
+        video_writer.write(bgr_frame)
+
+    print("Done.")
+    video_capture.release()
+    video_writer.release()
+
 
 
 def process_single_image(input, output, forwards, model_dir):
