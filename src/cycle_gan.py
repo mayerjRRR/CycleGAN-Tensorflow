@@ -13,6 +13,7 @@ from src.components.tensor_board_summary import TensorBoardSummary
 from src.utils.history_queue import HistoryQueue
 from src.utils.utils import logger
 
+import cv2
 
 class CycleGan(object):
 
@@ -21,10 +22,13 @@ class CycleGan(object):
 
         self.placeholders = Placeholders(self._batch_size, self._image_shape)
         self.networks = Networks(self.placeholders)
+
+
         self.images = Images(self.placeholders, self.networks, self._image_shape, self._batch_size, self._augment_shape)
         self.losses = Losses(self.networks, self.placeholders, self.images, self._cycle_loss_coeff)
         self.optimizers = Optimizers(self.networks, self.losses, self.placeholders)
         self.tb_summary = TensorBoardSummary(self.images, self.losses, self.placeholders)
+
 
     def init_parameters(self, image_height, image_width, batch_size, cycle_loss_coeff, log_step):
         self.init_args(image_height, image_width, batch_size, cycle_loss_coeff, log_step)
@@ -103,7 +107,12 @@ class CycleGan(object):
         return fake_a, fake_b
 
     def get_real_images(self, data_A, data_B, sess):
-        image_a = sess.run(data_A)[:,0]
+        a = sess.run(data_A)
+        fst = a[:,0]
+        scnd = a[:,-1]
+        input_fr = np.concatenate([fst,scnd], axis=-1)
+        flow = sess.run(self.networks.fnet, feed_dict={self.placeholders.fnet_placeholder: input_fr})
+        image_a = a[:,0]
         image_b = sess.run(data_B)[:,0]
         return image_a, image_b
 

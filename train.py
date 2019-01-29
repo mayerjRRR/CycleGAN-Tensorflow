@@ -33,6 +33,10 @@ def train(args, model, train_A, train_B):
     logger.info('Trainable vars:')
     var_list = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES,
                                  tf.get_variable_scope().name)
+
+    var_list_fnet = tf.get_collection(tf.GraphKeys.MODEL_VARIABLES, scope='fnet')
+    weight_initializer = tf.train.Saver(var_list_fnet)
+
     for v in var_list:
         logger.info('  %s %s', v.name, v.get_shape())
     if args.load_model != '':
@@ -64,6 +68,9 @@ def train(args, model, train_A, train_B):
     if args.train:
         logger.info("Starting training session.")
         with sv.managed_session() as sess:
+
+            weight_initializer.restore(sess, './fnet/fnet-0')
+
             model.train(sess, summary_writer, next_a, next_b)
 
 

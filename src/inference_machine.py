@@ -1,6 +1,7 @@
 import tensorflow as tf
 
 from src.cycle_gan import CycleGan
+from fnet.fnet import fnet
 
 
 class InferenceMachine():
@@ -8,7 +9,7 @@ class InferenceMachine():
 
         self.model = CycleGan(image_height=height, image_width=width, batch_size=1)
 
-        weight_initiallizer = tf.train.Saver()
+        saver = tf.train.Saver()
 
         init_op = tf.global_variables_initializer()
         local_init_op = tf.local_variables_initializer()
@@ -17,7 +18,7 @@ class InferenceMachine():
         self.sess = tf.Session(config=config)
         self.sess.run(init_op)
         self.sess.run(local_init_op)
-        weight_initiallizer.restore(self.sess, tf.train.latest_checkpoint(model_dir))
+        saver.restore(self.sess, tf.train.latest_checkpoint(model_dir))
 
     def __del__(self):
         self.sess.close()
