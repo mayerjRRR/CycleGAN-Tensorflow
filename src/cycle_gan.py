@@ -14,6 +14,7 @@ from src.utils.history_queue import HistoryQueue
 from src.utils.utils import logger
 
 import cv2
+import tensorflow as tf
 
 class CycleGan(object):
 
@@ -65,6 +66,7 @@ class CycleGan(object):
             lr = self.get_learning_rate(epoch, lr_decay, lr_initial, num_initial_iter)
 
             image_a, image_b = self.get_real_images(data_A, data_B, sess)
+            flow_a, flow_b = self.get_optical_flow(image_a, image_b, sess)
             fake_a, fake_b = self.get_fake_images(history_a, history_b, image_a, image_b, sess)
 
             fetches = self.get_fetches(step)
@@ -106,13 +108,23 @@ class CycleGan(object):
         fake_b = history_b.query(fake_b)
         return fake_a, fake_b
 
-    def get_real_images(self, data_A, data_B, sess):
-        a = sess.run(data_A)
-        fst = a[:,0]
-        scnd = a[:,-1]
+    def get_optical_flow(self, image_a, image_b, sess):
+        #TODO: make image_a multiframe, compute pairs of optical flow, wrap frames
+        fst = image_a#[:,0]
+        scnd = image_a#[:,-1]
         input_fr = np.concatenate([fst,scnd], axis=-1)
-        flow = sess.run(self.networks.fnet, feed_dict={self.placeholders.fnet_placeholder: input_fr})
-        image_a = a[:,0]
+
+
+        warped = sess.run(self.networks.pre_input_warp, feed_dict={self.placeholders.fnet_placeholder: input_fr})
+        cv2.imshow("first", fst[0])
+        cv2.imshow("second",scnd[0])
+        cv2.imshow("warped",warped[0])
+        cv2.waitKey(0)
+
+        return None, None
+
+    def get_real_images(self, data_A, data_B, sess):
+        image_a = sess.run(data_A)[:,0]
         image_b = sess.run(data_B)[:,0]
         return image_a, image_b
 

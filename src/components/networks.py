@@ -25,4 +25,10 @@ class Networks:
 
     def init_fnet(self, placeholders: Placeholders):
         with tf.variable_scope('fnet'):
-            self.fnet = fnet(placeholders.fnet_placeholder)
+
+            preprocessed_input = (placeholders.fnet_placeholder+1)/2
+            self.fnet = fnet(preprocessed_input)
+        with tf.variable_scope('warp_image'):
+            est_flow = tf.image.resize_images(self.fnet, placeholders.fnet_placeholder.shape.as_list()[1:-1])
+            self.pre_input_warp = tf.contrib.image.dense_image_warp(placeholders.fnet_placeholder[:, :, :, :3],
+                                                                    est_flow)
