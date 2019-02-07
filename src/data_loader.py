@@ -11,13 +11,12 @@ dataset_names = ['trainA', 'trainB']
 image_format_file_ending = 'jpg'
 video_format_file_ending = 'mp4'
 video_index_padding = 1 + 6 + 1
-frame_sequence_length = 3
 
 
-def get_training_datasets(task_name, image_size, batch_size, dataset_dir="datasets") -> [tf.data.Dataset]:
+def get_training_datasets(task_name, image_size, batch_size, dataset_dir="datasets",frame_sequence_length = 3) -> [tf.data.Dataset]:
     with tf.device('/cpu:0'):
         verify_directory_structure(task_name, dataset_dir)
-        image_path_tensors = get_image_paths(task_name, dataset_dir)
+        image_path_tensors = get_image_paths(task_name, dataset_dir,frame_sequence_length)
         datasets = build_datasets(image_path_tensors, image_size, batch_size)
         return datasets
 
@@ -53,8 +52,8 @@ def build_dataset(image_path, image_size, batch_size):
     return dataset
 
 
-def get_image_paths(task_name, dataset_dir):
-    image_path_lists = get_path_lists(task_name, dataset_dir)
+def get_image_paths(task_name, dataset_dir,frame_sequence_length):
+    image_path_lists = get_path_lists(task_name, dataset_dir,frame_sequence_length)
     image_path_tensors = get_path_tensors(image_path_lists)
 
     return image_path_tensors
@@ -68,7 +67,7 @@ def get_path_tensors(image_path_lists):
     return image_path_tensors
 
 
-def get_path_lists(task_name, dataset_dir):
+def get_path_lists(task_name, dataset_dir, frame_sequence_length):
     image_path_lists = []
     for dir_name in dataset_names:
         base_dir = os.path.join(dataset_dir, task_name)
