@@ -68,6 +68,7 @@ class CycleGan(object):
             image_a, image_b = self.get_real_images(data_A, data_B, sess)
             flow_a, flow_b = self.get_optical_flow(image_a, image_b, sess)
             fake_a, fake_b = self.get_fake_images(history_a, history_b, image_a, image_b, sess)
+            warped_image_a, waperd_image_b, warped_fake_a, warped_fake_b = self.get_warped_images(image_a, image_b, fake_a, fake_b, flow_a, flow_b)
 
             fetches = self.get_fetches(step)
 
@@ -110,22 +111,24 @@ class CycleGan(object):
 
     def get_optical_flow(self, image_a, image_b, sess):
         #TODO: make image_a multiframe, compute pairs of optical flow, wrap frames
-        fst = image_a#[:,0]
-        scnd = image_a#[:,-1]
-        input_fr = np.concatenate([fst,scnd], axis=-1)
+        flow_a = self.get_flow(image_a, sess)
+        flow_b = self.get_flow(image_b, sess)
 
+        return flow_a, flow_b
 
-        warped = sess.run(self.networks.pre_input_warp, feed_dict={self.placeholders.fnet_placeholder: input_fr})
-        cv2.imshow("first", fst[0])
-        cv2.imshow("second",scnd[0])
-        cv2.imshow("warped",warped[0])
-        cv2.waitKey(0)
-
-        return None, None
+    def get_flow(self, image_series, sess):
+        previous = image_series[:, 0]
+        current = image_series[:, 1]
+        next = image_series[:, 2]
+        backwards_input = np.concatenate([[previous], [current]], axis=-1)
+        forwards_input = np.concatenate([[next], [current]], axis=-1)
+        backwards = sess.run(self.networks.fnet, feed_dict={self.placeholders.fnet_placeholder: backwards_input})
+        forwards = sess.run(self.networks.fnet, feed_dict={self.placeholders.fnet_placeholder: forwards_input})
+        return np.stack((backwards, forwards), axis=1)
 
     def get_real_images(self, data_A, data_B, sess):
-        image_a = sess.run(data_A)[:,0]
-        image_b = sess.run(data_B)[:,0]
+        image_a = sess.run(data_A)
+        image_b = sess.run(data_B)
         return image_a, image_b
 
     def write_summary(self, fetched, step, steps, summary_writer):

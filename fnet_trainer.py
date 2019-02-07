@@ -31,7 +31,7 @@ def train(image_size = 256, batch_size = 8, dataset_directory="datasets", task="
     var_list = tf.get_collection(tf.GraphKeys.MODEL_VARIABLES, scope='fnet')
     saver = tf.train.Saver(var_list)
 
-    optimizer = tf.train.AdamOptimizer().minimize(loss)
+    optimizer = tf.train.AdamOptimizer(learning_rate=0.0002).minimize(loss)
 
 
     tf.summary.scalar('L1-loss', loss)
