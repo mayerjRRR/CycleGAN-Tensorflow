@@ -6,7 +6,7 @@ def get_train_parser():
     #TODO: Remove this argument
     parser.add_argument('-t', '--train', default=True, type=bool,
                         help="Training mode")
-    parser.add_argument('--task', type=str, default='videos',
+    parser.add_argument('--task', type=str, default='vidzebra',
                         help='Task name')
     parser.add_argument('--dataset_directory', type=str, default='datasets', help='Location of the training data')
     parser.add_argument('--log_directory', type=str, default='./logs', help='Location that the logs will we stored')

@@ -1,5 +1,6 @@
 import tensorflow as tf
 
+frame_sequence_length = 3
 
 class Placeholders:
     def __init__(self, batch_size, image_shape):
@@ -25,4 +26,10 @@ class Placeholders:
     def init_fnet_placeholders(self, batch_size, image_shape):
         shape = [batch_size] + image_shape
         shape[-1] = shape[-1]*2
-        self.fnet_placeholder = tf.placeholder(tf.float32, shape, name='fnet_input')
+        self.fnet_input_placeholder = tf.placeholder(tf.float32, shape, name='fnet_input')
+
+        warp_input_shape = [batch_size] + [frame_sequence_length] + image_shape
+
+        self.image_warp_input = tf.placeholder(tf.float32, warp_input_shape, name='fnet_input')
+        self.fake_warp_input = tf.placeholder(tf.float32, warp_input_shape, name='fnet_input')
+

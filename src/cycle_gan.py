@@ -66,18 +66,19 @@ class CycleGan(object):
             lr = self.get_learning_rate(epoch, lr_decay, lr_initial, num_initial_iter)
 
             image_a, image_b = self.get_real_images(data_A, data_B, sess)
-            flow_a, flow_b = self.get_optical_flow(image_a, image_b, sess)
-            fake_a, fake_b = self.get_fake_images(history_a, history_b, image_a, image_b, sess)
-            warped_image_a, waperd_image_b, warped_fake_a, warped_fake_b = self.get_warped_images(image_a, image_b, fake_a, fake_b, flow_a, flow_b)
+            fake_a, fake_b = self.get_fake_images(image_a, image_b, sess)
+            warped_image_a, waperd_image_b, warped_fake_a, warped_fake_b = self.get_warped_images(image_a, image_b, fake_a, fake_b, sess)
+
+            fake_a_history, fake_b_history = self.query_history_queue(warped_fake_a, warped_fake_b, history_a, history_b)
 
             fetches = self.get_fetches(step)
 
-            fetched = sess.run(fetches, feed_dict={self.placeholders.image_a: image_a,
-                                                   self.placeholders.image_b: image_b,
+            fetched = sess.run(fetches, feed_dict={self.placeholders.image_a: image_a[:,1],
+                                                   self.placeholders.image_b: image_b[:,1],
                                                    self.placeholders.is_train: True,
                                                    self.placeholders.lr: lr,
-                                                   self.placeholders.history_fake_a_placeholder: fake_a,
-                                                   self.placeholders.history_fake_b_placeholder: fake_b})
+                                                   self.placeholders.history_fake_a_placeholder: fake_a_history[:,1],
+                                                   self.placeholders.history_fake_b_placeholder: fake_b_history[:,1]})
 
             self.write_summary(fetched, step, steps, summary_writer)
 
@@ -100,31 +101,57 @@ class CycleGan(object):
         else:
             return lr_initial
 
-    def get_fake_images(self, history_a, history_b, image_a, image_b, sess):
+    def get_fake_images(self, image_a, image_b, sess):
+        previous_a = image_a[:, 0]
+        current_a = image_a[:, 1]
+        next_a = image_a[:, 2]
+
+        previous_b = image_b[:, 0]
+        current_b = image_b[:, 1]
+        next_b = image_b[:, 2]
+
+        prev_fake_a, prev_fake_b = self.get_fake_image(previous_a, previous_b, sess)
+        cur_fake_a, cur_fake_b = self.get_fake_image(current_a, current_b, sess)
+        next_fake_a, next_fake_b = self.get_fake_image(next_a, next_b, sess)
+
+        fake_a = np.stack([prev_fake_a,cur_fake_a,next_fake_a],axis=1)
+        fake_b = np.stack([prev_fake_b,cur_fake_b,next_fake_b],axis=1)
+
+        return fake_a, fake_b
+
+    def get_fake_image(self, image_a, image_b, sess):
+        #TODO: remove this workaround
         fake_a, fake_b = sess.run([self.images.image_ba, self.images.image_ab],
                                   feed_dict={self.placeholders.image_a: image_a,
                                              self.placeholders.image_b: image_b,
                                              self.placeholders.is_train: True})
+        return fake_a, fake_b
+
+    def query_history_queue(self, fake_a, fake_b, history_a, history_b):
         fake_a = history_a.query(fake_a)
         fake_b = history_b.query(fake_b)
         return fake_a, fake_b
 
-    def get_optical_flow(self, image_a, image_b, sess):
-        #TODO: make image_a multiframe, compute pairs of optical flow, wrap frames
+    def get_optical_flows(self, image_a, image_b, sess):
+        #TODO: make image_a multiframe, compute pairs of optical flow, warp frames
         flow_a = self.get_flow(image_a, sess)
         flow_b = self.get_flow(image_b, sess)
 
         return flow_a, flow_b
 
     def get_flow(self, image_series, sess):
-        previous = image_series[:, 0]
-        current = image_series[:, 1]
-        next = image_series[:, 2]
-        backwards_input = np.concatenate([[previous], [current]], axis=-1)
-        forwards_input = np.concatenate([[next], [current]], axis=-1)
-        backwards = sess.run(self.networks.fnet, feed_dict={self.placeholders.fnet_placeholder: backwards_input})
-        forwards = sess.run(self.networks.fnet, feed_dict={self.placeholders.fnet_placeholder: forwards_input})
+        backwards, forwards = sess.run([self.networks.backwards_flow, self.networks.forwards_flow], feed_dict={self.placeholders.image_warp_input: image_series})
         return np.stack((backwards, forwards), axis=1)
+
+    def get_warped_images(self, image_a, image_b, fake_a, fake_b, sess):
+        warped_image_a, warped_fake_a = sess.run([self.networks.warped_real, self.networks.warped_fake],
+                                                 feed_dict={self.placeholders.image_warp_input: image_a,
+                                                            self.placeholders.fake_warp_input: fake_a})
+        warped_image_b, warped_fake_b = sess.run([self.networks.warped_real, self.networks.warped_fake],
+                                                 feed_dict={self.placeholders.image_warp_input: image_b,
+                                                            self.placeholders.fake_warp_input: fake_b})
+
+        return warped_image_a, warped_image_b, warped_fake_a, warped_fake_b
 
     def get_real_images(self, data_A, data_B, sess):
         image_a = sess.run(data_A)
@@ -189,3 +216,5 @@ class CycleGan(object):
             images = np.concatenate((image_b, image_ba, image_bab), axis=2)
             images = np.squeeze(images, axis=0)
             imsave(os.path.join(base_dir, 'b_to_a_{}.jpg'.format(step)), images)
+
+
