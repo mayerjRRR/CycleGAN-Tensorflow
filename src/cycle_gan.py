@@ -1,8 +1,5 @@
-import os
-
-from tqdm import trange
-from scipy.misc import imsave
 import numpy as np
+from tqdm import trange
 
 from src.components.images import Images
 from src.components.losses import Losses
@@ -13,23 +10,19 @@ from src.components.tensor_board_summary import TensorBoardSummary
 from src.utils.history_queue import HistoryQueue
 from src.utils.utils import logger
 
-import cv2
-import tensorflow as tf
 
 class CycleGan(object):
 
     def __init__(self, image_height=256, image_width=None, batch_size=4, cycle_loss_coeff=1, log_step=10):
-        self.init_parameters(image_height,image_width, batch_size, cycle_loss_coeff, log_step)
+        self.init_parameters(image_height, image_width, batch_size, cycle_loss_coeff, log_step)
 
         self.placeholders = Placeholders(self._batch_size, self._image_shape)
         self.networks = Networks(self.placeholders)
-
 
         self.images = Images(self.placeholders, self.networks, self._image_shape, self._batch_size, self._augment_shape)
         self.losses = Losses(self.networks, self.placeholders, self.images, self._cycle_loss_coeff)
         self.optimizers = Optimizers(self.networks, self.losses, self.placeholders)
         self.tb_summary = TensorBoardSummary(self.images, self.losses, self.placeholders)
-
 
     def init_parameters(self, image_height, image_width, batch_size, cycle_loss_coeff, log_step):
         self.init_args(image_height, image_width, batch_size, cycle_loss_coeff, log_step)
@@ -45,10 +38,9 @@ class CycleGan(object):
         self._image_width = image_width
 
     def init_image_dimensions(self):
-        self._augment_shape = [self._image_height + int(self._image_height/8), self._image_width+ int(self._image_width/8)]
+        self._augment_shape = [self._image_height + int(self._image_height / 8),
+                               self._image_width + int(self._image_width / 8)]
         self._image_shape = [self._image_height, self._image_width, 3]
-
-
 
     def train(self, sess, summary_writer, data_A, data_B):
         logger.info('Start training.')
@@ -67,18 +59,20 @@ class CycleGan(object):
 
             image_a, image_b = self.get_real_images(data_A, data_B, sess)
             fake_a, fake_b = self.get_fake_images(image_a, image_b, sess)
-            warped_image_a, waperd_image_b, warped_fake_a, warped_fake_b = self.get_warped_images(image_a, image_b, fake_a, fake_b, sess)
+            warped_image_a, warped_image_b, warped_fake_a, warped_fake_b = self.get_warped_images(image_a, image_b,
+                                                                                                  fake_a, fake_b, sess)
 
-            fake_a_history, fake_b_history = self.query_history_queue(warped_fake_a, warped_fake_b, history_a, history_b)
+            fake_a_history, fake_b_history = self.query_history_queue(warped_fake_a, warped_fake_b, history_a,
+                                                                      history_b)
 
             fetches = self.get_fetches(step)
 
-            fetched = sess.run(fetches, feed_dict={self.placeholders.image_a: image_a[:,1],
-                                                   self.placeholders.image_b: image_b[:,1],
+            fetched = sess.run(fetches, feed_dict={self.placeholders.image_a: image_a[:, 1],
+                                                   self.placeholders.image_b: image_b[:, 1],
                                                    self.placeholders.is_train: True,
                                                    self.placeholders.lr: lr,
-                                                   self.placeholders.history_fake_a_placeholder: fake_a_history[:,1],
-                                                   self.placeholders.history_fake_b_placeholder: fake_b_history[:,1]})
+                                                   self.placeholders.history_fake_a_placeholder: fake_a_history[:, 1],
+                                                   self.placeholders.history_fake_b_placeholder: fake_b_history[:, 1]})
 
             self.write_summary(fetched, step, steps, summary_writer)
 
@@ -102,6 +96,7 @@ class CycleGan(object):
             return lr_initial
 
     def get_fake_images(self, image_a, image_b, sess):
+        # TODO: Make this more elegant
         previous_a = image_a[:, 0]
         current_a = image_a[:, 1]
         next_a = image_a[:, 2]
@@ -114,13 +109,13 @@ class CycleGan(object):
         cur_fake_a, cur_fake_b = self.get_fake_image(current_a, current_b, sess)
         next_fake_a, next_fake_b = self.get_fake_image(next_a, next_b, sess)
 
-        fake_a = np.stack([prev_fake_a,cur_fake_a,next_fake_a],axis=1)
-        fake_b = np.stack([prev_fake_b,cur_fake_b,next_fake_b],axis=1)
+        fake_a = np.stack([prev_fake_a, cur_fake_a, next_fake_a], axis=1)
+        fake_b = np.stack([prev_fake_b, cur_fake_b, next_fake_b], axis=1)
 
         return fake_a, fake_b
 
     def get_fake_image(self, image_a, image_b, sess):
-        #TODO: remove this workaround
+        # TODO: remove this workaround
         fake_a, fake_b = sess.run([self.images.image_ba, self.images.image_ab],
                                   feed_dict={self.placeholders.image_a: image_a,
                                              self.placeholders.image_b: image_b,
@@ -133,14 +128,14 @@ class CycleGan(object):
         return fake_a, fake_b
 
     def get_optical_flows(self, image_a, image_b, sess):
-        #TODO: make image_a multiframe, compute pairs of optical flow, warp frames
         flow_a = self.get_flow(image_a, sess)
         flow_b = self.get_flow(image_b, sess)
 
         return flow_a, flow_b
 
     def get_flow(self, image_series, sess):
-        backwards, forwards = sess.run([self.networks.backwards_flow, self.networks.forwards_flow], feed_dict={self.placeholders.image_warp_input: image_series})
+        backwards, forwards = sess.run([self.networks.backwards_flow, self.networks.forwards_flow],
+                                       feed_dict={self.placeholders.image_warp_input: image_series})
         return np.stack((backwards, forwards), axis=1)
 
     def get_warped_images(self, image_a, image_b, fake_a, fake_b, sess):
@@ -170,7 +165,7 @@ class CycleGan(object):
         fetches = []
         fetches = self.add_losses(fetches)
         fetches = self.add_generator_optimizer(fetches)
-        fetches = self.add_discriminator_optimizer(fetches, step)
+        fetches = self.add_discriminator_optimizer(fetches)
         fetches = self.add_summary(fetches, step)
         return fetches
 
@@ -183,8 +178,7 @@ class CycleGan(object):
         fetches += [self.optimizers.optimizer_G_ab, self.optimizers.optimizer_G_ba]
         return fetches
 
-    def add_discriminator_optimizer(self, fetches, step):
-       # if step % 2 == 0:
+    def add_discriminator_optimizer(self, fetches):
         fetches += [self.optimizers.optimizer_D_a, self.optimizers.optimizer_D_b]
         return fetches
 
@@ -192,29 +186,3 @@ class CycleGan(object):
         if step % self._log_step == 0:
             fetches += [self.tb_summary.summary_op]
         return fetches
-
-    def test(self, sess, data_A, data_B, base_dir):
-        # TODO: Implement Iterator/Dataset based solution
-        step = 0
-        for data in data_A:
-            step += 1
-            fetches = [self.images.image_ab, self.images.image_aba]
-            image_a = np.expand_dims(data, axis=0)
-            image_ab, image_aba = sess.run(fetches, feed_dict={self.placeholders.image_a: image_a,
-                                                               self.placeholders.is_train: False})
-            images = np.concatenate((image_a, image_ab, image_aba), axis=2)
-            images = np.squeeze(images, axis=0)
-            imsave(os.path.join(base_dir, 'a_to_b_{}.jpg'.format(step)), images)
-
-        step = 0
-        for data in data_B:
-            step += 1
-            fetches = [self.image_ba, self.image_bab]
-            image_b = np.expand_dims(data, axis=0)
-            image_ba, image_bab = sess.run(fetches, feed_dict={self.image_b: image_b,
-                                                               self.is_train: False})
-            images = np.concatenate((image_b, image_ba, image_bab), axis=2)
-            images = np.squeeze(images, axis=0)
-            imsave(os.path.join(base_dir, 'b_to_a_{}.jpg'.format(step)), images)
-
-
