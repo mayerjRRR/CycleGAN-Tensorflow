@@ -1,6 +1,7 @@
 import os
 import logging
 from glob import glob
+import tensorflow as tf
 
 checkpoint_directory = "logs"
 

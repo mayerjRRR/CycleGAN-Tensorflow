@@ -23,6 +23,10 @@ class Networks:
         self.discriminator_b = Discriminator('discriminator_b', is_train=placeholders.is_train,
                                              norm='instance', activation='leaky')
 
+        self.discriminator_temp = Discriminator('discriminator_temp', is_train=placeholders.is_train,
+                                             norm='instance', activation='leaky')
+
+
     def init_fnet(self, placeholders: Placeholders):
        # with tf.variable_scope('fnet'):
        #     preprocessed_input = (placeholders.fnet_input_placeholder + 1) / 2
@@ -42,8 +46,6 @@ class Networks:
         current = frame_sequence[:, 1]
         next = frame_sequence[:, 2]
 
-        print(current.get_shape())
-
         backwards_flow = self.get_flow(previous, current)
         forwards_flow = self.get_flow(next, current)
 
@@ -51,9 +53,6 @@ class Networks:
 
     def get_flow(self, first, second):
         input = tf.concat([first, second], axis=-1)
-
-        print("Shape: "+str(input.get_shape()))
-
         with tf.variable_scope('fnet',reuse=tf.AUTO_REUSE):
             flow = fnet(input)
         return tf.image.resize_images(flow,first.shape.as_list()[1:-1])
@@ -69,3 +68,12 @@ class Networks:
         next_warped = tf.contrib.image.dense_image_warp(next, forwards_flow)
 
         return tf.stack([previous_warped,current,next_warped],axis=1)
+
+    def apply_inference_on_multiframe(self, frames, generator):
+
+        frame_tensor_shape = frames.get_shape().as_list()
+        target_shape = frame_tensor_shape.copy()
+        target_shape[0] *= target_shape[1]
+        target_shape.pop(1)
+
+        return tf.reshape(generator(tf.reshape(frames, target_shape)),frame_tensor_shape)

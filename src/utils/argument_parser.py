@@ -16,7 +16,7 @@ def get_train_parser():
                         help="Use instance norm instead of batch norm")
     parser.add_argument('--log_step', default=100, type=int,
                         help="Tensorboard log frequency")
-    parser.add_argument('--batch_size', default=4, type=int,
+    parser.add_argument('--batch_size', default=1, type=int,
                         help="Batch size")
     parser.add_argument('--image_size', default=256, type=int,
                         help="Image size")

@@ -57,22 +57,22 @@ class CycleGan(object):
             epoch = step // epoch_length
             lr = self.get_learning_rate(epoch, lr_decay, lr_initial, num_initial_iter)
 
-            image_a, image_b = self.get_real_images(data_A, data_B, sess)
-            fake_a, fake_b = self.get_fake_images(image_a, image_b, sess)
-            warped_image_a, warped_image_b, warped_fake_a, warped_fake_b = self.get_warped_images(image_a, image_b,
-                                                                                                  fake_a, fake_b, sess)
+            images_a, images_b = self.get_real_images(data_A, data_B, sess)
+            fakes_a, fakes_b = self.get_fake_images(images_a, images_b, sess)
+            warped_images_a, warped_images_b, warped_fakes_a, warped_fakes_b = self.get_warped_images(images_a, images_b,
+                                                                                                  fakes_a, fakes_b, sess)
 
-            fake_a_history, fake_b_history = self.query_history_queue(warped_fake_a, warped_fake_b, history_a,
+            fake_a_history, fake_b_history = self.query_history_queue(warped_fakes_a, warped_fakes_b, history_a,
                                                                       history_b)
 
             fetches = self.get_fetches(step)
 
-            fetched = sess.run(fetches, feed_dict={self.placeholders.image_a: image_a[:, 1],
-                                                   self.placeholders.image_b: image_b[:, 1],
+            fetched = sess.run(fetches, feed_dict={self.placeholders.frames_a: images_a,
+                                                   self.placeholders.frames_b: images_b,
                                                    self.placeholders.is_train: True,
                                                    self.placeholders.lr: lr,
-                                                   self.placeholders.history_fake_a_placeholder: fake_a_history[:, 1],
-                                                   self.placeholders.history_fake_b_placeholder: fake_b_history[:, 1]})
+                                                   self.placeholders.history_fake_warped_frames_a_placeholder: fake_a_history,
+                                                   self.placeholders.history_fake_warped_frames_b_placeholder: fake_b_history})
 
             self.write_summary(fetched, step, steps, summary_writer)
 
@@ -83,7 +83,7 @@ class CycleGan(object):
         epoch_length = num_batch * self._batch_size
         num_initial_iter = 100
         num_decay_iter = 100
-        lr_initial = 0.0002
+        lr_initial = 0.0001
         lr_decay = lr_initial / num_decay_iter
         initial_step = sess.run(self.placeholders.global_step)
         num_global_step = (num_initial_iter + num_decay_iter) * epoch_length
@@ -170,8 +170,8 @@ class CycleGan(object):
         return fetches
 
     def add_losses(self, fetches):
-        fetches += [self.losses.loss_D_a, self.losses.loss_D_b, self.losses.loss_G_ab,
-                    self.losses.loss_G_ba, self.losses.loss_cycle]
+        fetches += [self.losses.loss_D_a, self.losses.loss_D_b, self.losses.loss_G_spat_ab,
+                    self.losses.loss_G_spat_ba, self.losses.loss_cycle]
         return fetches
 
     def add_generator_optimizer(self, fetches):
@@ -179,7 +179,7 @@ class CycleGan(object):
         return fetches
 
     def add_discriminator_optimizer(self, fetches):
-        fetches += [self.optimizers.optimizer_D_a, self.optimizers.optimizer_D_b]
+        fetches += [self.optimizers.optimizer_D_a, self.optimizers.optimizer_D_b, self.optimizers.optimizer_D_temp]
         return fetches
 
     def add_summary(self, fetches, step):
