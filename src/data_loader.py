@@ -24,7 +24,6 @@ def get_training_datasets(task_name, image_size, batch_size, dataset_dir="datase
 def build_datasets(image_path_tensors, image_size, batch_size):
     datasets = []
     for image_path in image_path_tensors:
-        print(f"Shape of Tensor: {tf.shape(image_path)}")
         dataset = build_dataset(image_path, image_size, batch_size)
         datasets.append(dataset)
     return datasets

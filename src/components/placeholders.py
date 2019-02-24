@@ -11,6 +11,7 @@ class Placeholders:
 
     def init_training_placeholders(self):
         self.is_train = tf.placeholder(tf.bool, name='is_train')
+        self.video_training = tf.placeholder(tf.bool, name='video_training')
         self.lr = tf.placeholder(tf.float32, name='lr')
         self.global_step = tf.train.get_or_create_global_step(
             graph=None)
@@ -23,8 +24,8 @@ class Placeholders:
         self.frames_b = tf.placeholder(tf.float32, [batch_size,frame_sequence_length] + image_shape, name='frames_b')
 
     def init_fake_history_placeholders(self, batch_size, image_shape):
-        self.history_fake_a_placeholder = tf.placeholder(tf.float32, [batch_size] + image_shape, name='history_fake_a')
-        self.history_fake_b_placeholder = tf.placeholder(tf.float32, [batch_size] + image_shape, name='history_fake_b')
+        self.history_fake_a = tf.placeholder(tf.float32, [batch_size] + image_shape, name='history_fake_a')
+        self.history_fake_b = tf.placeholder(tf.float32, [batch_size] + image_shape, name='history_fake_b')
 
         self.history_fake_warped_frames_a_placeholder = tf.placeholder(tf.float32, [batch_size,frame_sequence_length] + image_shape, name='history_fake_a')
         self.history_fake_warped_frames_b_placeholder = tf.placeholder(tf.float32, [batch_size,frame_sequence_length] + image_shape, name='history_fake_b')

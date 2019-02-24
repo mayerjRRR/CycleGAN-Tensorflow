@@ -35,7 +35,7 @@ def train(args, model, train_A, train_B):
                                  tf.get_variable_scope().name)
 
     var_list_fnet = tf.get_collection(tf.GraphKeys.MODEL_VARIABLES, scope='fnet')
-    weight_initializer = tf.train.Saver(var_list_fnet)
+    fnet_loader = tf.train.Saver(var_list_fnet)
 
     for v in var_list:
         logger.info('  %s %s', v.name, v.get_shape())
@@ -53,6 +53,7 @@ def train(args, model, train_A, train_B):
     def init_fn(sess):
         logger.info('Initializing all parameters.')
         sess.run(init_all_op)
+        fnet_loader.restore(sess, './fnet/fnet-0')
 
     sv = tf.train.Supervisor(is_chief=True,
                              logdir=logdir,
@@ -65,13 +66,10 @@ def train(args, model, train_A, train_B):
                              global_step=model.placeholders.global_step,
                              save_model_secs=300,
                              save_summaries_secs=30)
-    if args.train:
+    if True :
         logger.info("Starting training session.")
         with sv.managed_session() as sess:
-
-            weight_initializer.restore(sess, './fnet/fnet-0')
-
-            model.train(sess, summary_writer, next_a, next_b)
+            model.train_on_videos(sess, summary_writer, next_a, next_b)
 
 
 def main():

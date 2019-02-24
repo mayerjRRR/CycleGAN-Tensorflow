@@ -28,13 +28,7 @@ class Networks:
 
 
     def init_fnet(self, placeholders: Placeholders):
-       # with tf.variable_scope('fnet'):
-       #     preprocessed_input = (placeholders.fnet_input_placeholder + 1) / 2
-       #     self.fnet = fnet(preprocessed_input)
-       # with tf.variable_scope('warp_image'):
-       #     est_flow = tf.image.resize_images(self.fnet, placeholders.fnet_input_placeholder.shape.as_list()[1:-1])
-       #     self.pre_input_warp = tf.contrib.image.dense_image_warp(placeholders.fnet_input_placeholder[:, :, :, :3],
-       #           est_flow)
+
         flows = self.get_flows(placeholders.image_warp_input)
         self.warped_real = self.warp(placeholders.image_warp_input, flows)
         self.warped_fake = self.warp(placeholders.fake_warp_input, flows)
@@ -77,3 +71,4 @@ class Networks:
         target_shape.pop(1)
 
         return tf.reshape(generator(tf.reshape(frames, target_shape)),frame_tensor_shape)
+
