@@ -11,12 +11,12 @@ class Losses:
         self.define_losses(images, cycle_loss_coeff)
 
     def define_discriminator_output(self, networks: Networks, placeholders: Placeholders, images: Images):
-        self.D_real_a = networks.discriminator_a(images.warped_frames_a[:, 1])
-        self.D_fake_a = networks.discriminator_a(images.frames_ba[:, 1])
-        self.D_real_b = networks.discriminator_b(images.warped_frames_b[:, 1])
-        self.D_fake_b = networks.discriminator_b(images.frames_ab[:, 1])
-        self.D_history_fake_a = networks.discriminator_a(placeholders.history_fake_warped_frames_a_placeholder[:, 1])
-        self.D_history_fake_b = networks.discriminator_b(placeholders.history_fake_warped_frames_b_placeholder[:, 1])
+        self.D_real_a = networks.discriminator_spatial_a(images.warped_frames_a[:, 1])
+        self.D_fake_a = networks.discriminator_spatial_a(images.frames_ba[:, 1])
+        self.D_real_b = networks.discriminator_spatial_b(images.warped_frames_b[:, 1])
+        self.D_fake_b = networks.discriminator_spatial_b(images.frames_ab[:, 1])
+        self.D_history_fake_a = networks.discriminator_spatial_a(placeholders.history_fake_warped_frames_a_placeholder[:, 1])
+        self.D_history_fake_b = networks.discriminator_spatial_b(placeholders.history_fake_warped_frames_b_placeholder[:, 1])
 
         #TODO: Move to temp discriminator
         def layer_frames_in_channels(input_frames):
@@ -26,13 +26,13 @@ class Losses:
             shape.pop();
             return tf.reshape(reshaped, shape);
 
-        self.D_temp_real_a = networks.discriminator_temp(layer_frames_in_channels(images.warped_frames_a))
-        self.D_temp_fake_a = networks.discriminator_temp(layer_frames_in_channels(images.warped_frames_ba))
-        self.D_temp_history_fake_a = networks.discriminator_temp(layer_frames_in_channels(placeholders.history_fake_warped_frames_a_placeholder))
+        self.D_temp_real_a = networks.discriminator_temporal(layer_frames_in_channels(images.warped_frames_a))
+        self.D_temp_fake_a = networks.discriminator_temporal(layer_frames_in_channels(images.warped_frames_ba))
+        self.D_temp_history_fake_a = networks.discriminator_temporal(layer_frames_in_channels(placeholders.history_fake_warped_frames_a_placeholder))
 
-        self.D_temp_real_b = networks.discriminator_temp(layer_frames_in_channels(images.warped_frames_b))
-        self.D_temp_fake_b = networks.discriminator_temp(layer_frames_in_channels(images.warped_frames_ab))
-        self.D_temp_history_fake_b = networks.discriminator_temp(layer_frames_in_channels(placeholders.history_fake_warped_frames_b_placeholder))
+        self.D_temp_real_b = networks.discriminator_temporal(layer_frames_in_channels(images.warped_frames_b))
+        self.D_temp_fake_b = networks.discriminator_temporal(layer_frames_in_channels(images.warped_frames_ab))
+        self.D_temp_history_fake_b = networks.discriminator_temporal(layer_frames_in_channels(placeholders.history_fake_warped_frames_b_placeholder))
 
     def define_losses(self, images: Images, cycle_loss_coeff):
         self.define_discriminator_loss()

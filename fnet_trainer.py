@@ -36,7 +36,7 @@ def train(image_size=256, batch_size=8, dataset_directory="datasets", task="vidz
 
             if iteration % 100 == 0:
                 write_summary(iteration, result, summary_writer)
-            if iteration % 1000 == 0:
+            if iteration % 550 == 0:
                 save_model(iteration, saver, sess)
             iteration += 1
 

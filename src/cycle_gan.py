@@ -6,6 +6,7 @@ from src.components.losses import Losses
 from src.components.networks import Networks
 from src.components.optimizers import Optimizers
 from src.components.placeholders import Placeholders
+from src.components.savers import Savers
 from src.components.tensor_board_summary import TensorBoardSummary
 from src.utils.history_queue import HistoryQueue
 from src.utils.utils import logger
@@ -13,7 +14,7 @@ from src.utils.utils import logger
 
 class CycleGan(object):
 
-    def __init__(self, image_height=256, image_width=None, batch_size=4, cycle_loss_coeff=1, log_step=10):
+    def __init__(self, save_dir, image_height=256, image_width=None, batch_size=4, cycle_loss_coeff=1, log_step=10):
         self.init_parameters(image_height, image_width, batch_size, cycle_loss_coeff, log_step)
 
         self.placeholders = Placeholders(self._batch_size, self._image_shape)
@@ -24,15 +25,19 @@ class CycleGan(object):
         self.optimizers = Optimizers(self.networks, self.losses, self.placeholders)
         self.tb_summary = TensorBoardSummary(self.images, self.losses, self.placeholders)
 
+        self.savers = Savers(self.networks, self.placeholders, save_dir)
+
     def init_parameters(self, image_height, image_width, batch_size, cycle_loss_coeff, log_step):
-        self.init_args(image_height, image_width, batch_size, cycle_loss_coeff, log_step)
+        self.init_args(image_height, image_width, batch_size, cycle_loss_coeff, log_step, 550)
         self.init_image_dimensions()
 
-    def init_args(self, image_height, image_width, batch_size, cycle_loss_coeff, log_step):
+    def init_args(self, image_height, image_width, batch_size, cycle_loss_coeff, log_step, save_step):
         self._log_step = log_step
+        self._save_step = save_step
         self._batch_size = batch_size
         self._image_height = image_height
         self._cycle_loss_coeff = cycle_loss_coeff
+        self._save_step = save_step
         if image_width is None:
             image_width = image_height
         self._image_width = image_width
@@ -68,6 +73,8 @@ class CycleGan(object):
                                                    self.placeholders.video_training: True})
             if self.should_write_summary(step):
                 self.write_summary(fetched, step, steps, summary_writer)
+            if self.should_save_model(step):
+                self.savers.save_all(sess, global_step=step)
 
     def train_on_images(self, sess, summary_writer, image_data_a, image_data_b):
         # TODO: implement
@@ -92,7 +99,8 @@ class CycleGan(object):
                                                    self.placeholders.video_training: False})
             if self.should_write_summary(step):
                 self.write_summary(fetched, step, steps, summary_writer)
-
+            if self.should_save_model(step):
+                self.savers.save_all(sess)
 
     def init_training(self, sess):
         logger.info('Start training.')
@@ -104,9 +112,11 @@ class CycleGan(object):
         steps = trange(initial_step, num_global_step, total=num_global_step, initial=initial_step)
         return epoch_length, history_a, history_b, lr_decay, lr_initial, num_initial_iter, steps
 
-
     def should_write_summary(self, step):
         return step % self._log_step == 0
+
+    def should_save_model(self, step):
+        return step % self._save_step == 0
 
     def init_training_parameters(self, sess):
         # TODO: Replace hard-coded number, refactor, maybe think of infinity loop
@@ -186,8 +196,8 @@ class CycleGan(object):
         summary_writer.add_summary(fetched[-1], step)
         summary_writer.flush()
         steps.set_description(
-            'Loss: D_a({:.3f}) D_b({:.3f}) G_ab({:.3f}) G_ba({:.3f}) G_temporal({:.3f}) cycle({:.3f})'.format(
-                fetched[0], fetched[1], fetched[2], fetched[3], fetched[5], fetched[4]))
+            'Loss: D_a({:.3f}) D_b({:.3f}) D_temporal({:.3f}) G_ab({:.3f}) G_ba({:.3f}) cycle({:.3f})'.format(
+                fetched[0], fetched[1], fetched[5], fetched[2], fetched[3], fetched[5], fetched[4]))
 
     def get_fetches(self, step, video_training):
         fetches = []
