@@ -14,15 +14,15 @@ from src.utils.utils import logger
 
 class CycleGan(object):
 
-    def __init__(self, save_dir, image_height=256, image_width=None, batch_size=4, cycle_loss_coeff=1, log_step=10):
+    def __init__(self, save_dir, image_height=256, image_width=None, batch_size=4, cycle_loss_coeff=1, log_step=10, train_videos=True, train_images=False):
         self.init_parameters(image_height, image_width, batch_size, cycle_loss_coeff, log_step)
 
         self.placeholders = Placeholders(self._batch_size, self._image_shape)
         self.networks = Networks(self.placeholders)
 
         self.images = Images(self.placeholders, self.networks, self._image_shape, self._batch_size, self._augment_shape)
-        self.losses = Losses(self.networks, self.placeholders, self.images, self._cycle_loss_coeff)
-        self.optimizers = Optimizers(self.networks, self.losses, self.placeholders)
+        self.losses = Losses(self.networks, self.placeholders, self.images, self._cycle_loss_coeff, train_videos, train_images)
+        self.optimizers = Optimizers(self.networks, self.losses, self.placeholders, train_videos)
         self.tb_summary = TensorBoardSummary(self.images, self.losses, self.placeholders)
 
         self.savers = Savers(self.networks, self.placeholders, save_dir)
@@ -68,16 +68,15 @@ class CycleGan(object):
                                                    self.placeholders.frames_b: frames_b,
                                                    self.placeholders.is_train: True,
                                                    self.placeholders.lr: lr,
-                                                   self.placeholders.history_fake_warped_frames_a_placeholder: fake_a_history,
-                                                   self.placeholders.history_fake_warped_frames_b_placeholder: fake_b_history,
-                                                   self.placeholders.video_training: True})
+                                                   self.placeholders.history_fake_warped_frames_a: fake_a_history,
+                                                   self.placeholders.history_fake_warped_frames_b: fake_b_history})
             if self.should_write_summary(step):
                 self.write_summary(fetched, step, steps, summary_writer)
             if self.should_save_model(step):
                 self.savers.save_all(sess, global_step=step)
 
     def train_on_images(self, sess, summary_writer, image_data_a, image_data_b):
-        # TODO: implement
+        # TODO: dont't fetch temp_disc optimizer
         epoch_length, history_a, history_b, lr_decay, lr_initial, num_initial_iter, steps = self.init_training(sess)
         for step in steps:
             lr = self.get_learning_rate(step, epoch_length, lr_decay, lr_initial, num_initial_iter)
@@ -95,10 +94,10 @@ class CycleGan(object):
                                                    self.placeholders.is_train: True,
                                                    self.placeholders.lr: lr,
                                                    self.placeholders.history_fake_a: fake_a_history,
-                                                   self.placeholders.history_fake_b: fake_b_history,
-                                                   self.placeholders.video_training: False})
+                                                   self.placeholders.history_fake_b: fake_b_history})
             if self.should_write_summary(step):
-                self.write_summary(fetched, step, steps, summary_writer)
+                pass
+                #self.write_summary(fetched, step, steps, summary_writer)
             if self.should_save_model(step):
                 self.savers.save_all(sess)
 
@@ -184,7 +183,8 @@ class CycleGan(object):
         return self.get_dataset_sample(data_A, data_B, sess)
 
     def get_real_images(self, data_A, data_B, sess):
-        return self.get_dataset_sample(data_A, data_B, sess)
+        image_a, image_b = self.get_dataset_sample(data_A, data_B, sess)
+        return image_a[:,0],image_b[:,0]
 
     def get_dataset_sample(self, data_A, data_B, sess):
         image_a = sess.run(data_A)

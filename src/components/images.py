@@ -14,10 +14,9 @@ class Images:
     #TODO: Move to Dataset maybe
     def augment_data_for_training(self, placeholders: Placeholders, image_shape, batch_size, augment_shape):
         def augment_image(image):
-            #image = tf.image.resize_images(image, augment_shape)
-            #image = tf.random_crop(image, [batch_size] + image_shape)
-            #TODO: Turn off for sequence, find a way to reactivate
-            #image = tf.map_fn(tf.image.random_flip_left_right, image)
+            image = tf.image.resize_images(image, augment_shape)
+            image = tf.random_crop(image, [batch_size] + image_shape)
+            image = tf.map_fn(tf.image.random_flip_left_right, image)
             return image
 
         self.image_a = tf.cond(placeholders.is_train,

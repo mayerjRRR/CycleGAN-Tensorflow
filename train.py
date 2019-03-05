@@ -26,6 +26,7 @@ def run(args):
     logger.info('Events directory: %s', logdir)
 
     logger.info('Build graph:')
+    #TODO: create video or image cyclegan
     model = CycleGan(logdir, args.image_size, batch_size=args.batch_size, cycle_loss_coeff=args.cycle_loss_coeff,
                      log_step=args.log_step)
 
@@ -68,7 +69,8 @@ def train(model, train_A, train_B, logdir):
         model.savers.load_all(sess)
 
         #model.savers.save_all(sess)
-        tf.train.write_graph(sess.graph, logdir, 'piff.pbtxt')
+        #tf.train.write_graph(sess.graph, logdir, 'piff.pbtxt')
+        #TODO: switch automagically
         model.train_on_videos(sess, summary_writer, next_a, next_b)
 
 
