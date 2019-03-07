@@ -25,8 +25,10 @@ class TensorBoardSummary:
 
             tf.summary.scalar('model/D_temp_a_real', tf.reduce_mean(losses.D_temp_real_a))
             tf.summary.scalar('model/D_temp_a_fake', tf.reduce_mean(losses.D_temp_fake_a))
+            tf.summary.scalar('model/D_temp_a_history_fake', tf.reduce_mean(losses.D_temp_history_fake_a))
             tf.summary.scalar('model/D_temp_b_real', tf.reduce_mean(losses.D_temp_real_b))
             tf.summary.scalar('model/D_temp_b_fake', tf.reduce_mean(losses.D_temp_fake_b))
+            tf.summary.scalar('model/D_temp_b_history_fake', tf.reduce_mean(losses.D_temp_history_fake_b))
         if (train_images):
             tf.summary.scalar('model/D_image_a_real', tf.reduce_mean(losses.D_real_image_a))
             tf.summary.scalar('model/D_image_a_fake', tf.reduce_mean(losses.D_fake_image_a))
@@ -34,26 +36,40 @@ class TensorBoardSummary:
             tf.summary.scalar('model/D_image_b_fake', tf.reduce_mean(losses.D_fake_image_b))
 
         tf.summary.scalar('model/lr', placeholders.lr)
+
+
         if (train_videos):
             tf.summary.image('A/Previous', images.frames_a[0:1,0])
             tf.summary.image('A/Current', images.frames_a[0:1,1])
             tf.summary.image('A/Next', images.frames_a[0:1,2])
+            tf.summary.image('A/Previous_Diff', tf.abs(images.frames_a[0:1,1]-images.frames_a[0:1,0]))
+            tf.summary.image('A/Next_Diff', tf.abs(images.frames_a[0:1,1]-images.frames_a[0:1,2]))
 
             tf.summary.image('A_Warped/Previous', images.warped_frames_a[0:1,0])
             tf.summary.image('A_Warped/Current', images.warped_frames_a[0:1,1])
             tf.summary.image('A_Warped/Next', images.warped_frames_a[0:1,2])
+            tf.summary.image('A_Warped/Previous_Diff', tf.abs(images.warped_frames_a[0:1,1]-images.warped_frames_a[0:1,0]))
+            tf.summary.image('A_Warped/Next_Diff', tf.abs(images.warped_frames_a[0:1,1]-images.warped_frames_a[0:1,2]))
+
 
             tf.summary.image('AB/Previous', images.frames_ab[0:1,0])
             tf.summary.image('AB/Current', images.frames_ab[0:1,1])
             tf.summary.image('AB/Next', images.frames_ab[0:1,2])
+            tf.summary.image('AB/Previous_Diff', tf.abs(images.frames_ab[0:1,1]-images.frames_ab[0:1,0]))
+            tf.summary.image('AB/Next_Diff', tf.abs(images.frames_ab[0:1,1]-images.frames_ab[0:1,2]))
 
             tf.summary.image('AB_Warped/Previous', images.warped_frames_ab[0:1,0])
             tf.summary.image('AB_Warped/Current', images.warped_frames_ab[0:1,1])
             tf.summary.image('AB_Warped/Next', images.warped_frames_ab[0:1,2])
+            tf.summary.image('AB_Warped/Previous_Diff', tf.abs(images.warped_frames_ab[0:1,1]-images.warped_frames_ab[0:1,0]))
+            tf.summary.image('AB_Warped/Next_Diff', tf.abs(images.warped_frames_ab[0:1,1]-images.warped_frames_ab[0:1,2]))
+
 
             tf.summary.image('ABA/Previous', images.frames_aba[0:1,0])
             tf.summary.image('ABA/Current', images.frames_aba[0:1,1])
             tf.summary.image('ABA/Next', images.frames_aba[0:1,2])
+            tf.summary.image('ABA/Previous_Diff', tf.abs(images.frames_aba[0:1,1]-images.frames_aba[0:1,0]))
+            tf.summary.image('ABA/Next_Diff', tf.abs(images.frames_aba[0:1,1]-images.frames_aba[0:1,2]))
 
             tf.summary.image('B/B', images.warped_frames_b[0:1,1])
             tf.summary.image('B/B-A', images.frames_ba[0:1,1])

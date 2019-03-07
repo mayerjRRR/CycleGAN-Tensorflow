@@ -101,5 +101,5 @@ class Losses:
         self.loss_cycle = cycle_loss_coeff * (self.loss_rec_aba + self.loss_rec_bab)
 
     def define_total_generator_loss(self):
-        self.loss_G_ab_final = self.loss_G_spat_ab + 0.2 * self.loss_G_temp_ab + self.loss_cycle
-        self.loss_G_ba_final = self.loss_G_spat_ba + 0.2 * self.loss_G_temp_ba + self.loss_cycle
+        self.loss_G_ab_final = self.loss_G_spat_ab + 0.4 * self.loss_G_temp_ab + self.loss_cycle
+        self.loss_G_ba_final = self.loss_G_spat_ba + 0.4 * self.loss_G_temp_ba + self.loss_cycle

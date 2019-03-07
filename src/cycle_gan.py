@@ -14,24 +14,31 @@ from src.utils.utils import logger
 
 class CycleGan(object):
 
-    def __init__(self, save_dir, image_height=256, image_width=None, batch_size=4, cycle_loss_coeff=1, log_step=10, train_videos=True, train_images=False):
-        self.init_parameters(image_height, image_width, batch_size, cycle_loss_coeff, log_step, train_videos, train_images)
+    def __init__(self, save_dir, image_height=256, image_width=None, batch_size=4, cycle_loss_coeff=1, log_step=10,
+                 train_videos=True, train_images=False):
+        self.init_parameters(image_height, image_width, batch_size, cycle_loss_coeff, log_step, train_videos,
+                             train_images)
 
         self.placeholders = Placeholders(self._batch_size, self._image_shape)
         self.networks = Networks(self.placeholders)
 
         self.images = Images(self.placeholders, self.networks, self._image_shape, self._batch_size, self._augment_shape)
-        self.losses = Losses(self.networks, self.placeholders, self.images, self._cycle_loss_coeff, self.train_videos, self.train_images)
+        self.losses = Losses(self.networks, self.placeholders, self.images, self._cycle_loss_coeff, self.train_videos,
+                             self.train_images)
         self.optimizers = Optimizers(self.networks, self.losses, self.placeholders, self.train_videos)
-        self.tb_summary = TensorBoardSummary(self.images, self.losses, self.placeholders, self.train_videos, self.train_images)
+        self.tb_summary = TensorBoardSummary(self.images, self.losses, self.placeholders, self.train_videos,
+                                             self.train_images)
 
         self.savers = Savers(self.networks, self.placeholders, save_dir)
 
-    def init_parameters(self, image_height, image_width, batch_size, cycle_loss_coeff, log_step, train_videos, train_images):
-        self.init_args(image_height, image_width, batch_size, cycle_loss_coeff, log_step, 550, train_videos, train_images)
+    def init_parameters(self, image_height, image_width, batch_size, cycle_loss_coeff, log_step, train_videos,
+                        train_images):
+        self.init_args(image_height, image_width, batch_size, cycle_loss_coeff, log_step, 550, train_videos,
+                       train_images)
         self.init_image_dimensions()
 
-    def init_args(self, image_height, image_width, batch_size, cycle_loss_coeff, log_step, save_step, train_videos, train_images):
+    def init_args(self, image_height, image_width, batch_size, cycle_loss_coeff, log_step, save_step, train_videos,
+                  train_images):
         self._log_step = log_step
         self._save_step = save_step
         self._batch_size = batch_size
@@ -55,11 +62,16 @@ class CycleGan(object):
             lr = self.get_learning_rate(step, epoch_length, lr_decay, lr_initial, num_initial_iter)
 
             frames_a, frames_b = self.get_real_frames(frame_data_a, frame_data_b, sess)
-            fakes_a, fakes_b = self.get_fake_frames(frames_a, frames_b, sess)
-            warped_frames_a, warped_frames_b, warped_fakes_a, warped_fakes_b = self.get_warped_images(frames_a,
-                                                                                                      frames_b,
-                                                                                                      fakes_a, fakes_b,
-                                                                                                      sess)
+            # fakes_a, fakes_b = self.get_fake_frames(frames_a, frames_b, sess)
+            # warped_frames_a, warped_frames_b, warped_fakes_a, warped_fakes_b = self.get_warped_images(frames_a,
+            #                                                                                           frames_b,
+            #                                                                                           fakes_a, fakes_b,
+            #                                                                                           sess)
+            warped_fakes_a, warped_fakes_b = sess.run([self.images.warped_frames_ba, self.images.warped_frames_ab],
+                                                      feed_dict={self.placeholders.frames_a: frames_a,
+                                                                 self.placeholders.frames_b: frames_b,
+                                                                 self.placeholders.is_train: True,
+                                                                 self.placeholders.lr: lr})
 
             fake_a_history, fake_b_history = self.query_history_queue(warped_fakes_a, warped_fakes_b, history_a,
                                                                       history_b)
@@ -185,7 +197,7 @@ class CycleGan(object):
 
     def get_real_images(self, data_A, data_B, sess):
         image_a, image_b = self.get_dataset_sample(data_A, data_B, sess)
-        return image_a[:,0],image_b[:,0]
+        return image_a[:, 0], image_b[:, 0]
 
     def get_dataset_sample(self, data_A, data_B, sess):
         image_a = sess.run(data_A)

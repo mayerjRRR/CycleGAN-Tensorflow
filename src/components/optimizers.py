@@ -16,7 +16,7 @@ class Optimizers:
                 .minimize(losses.loss_D_temp, var_list=networks.discriminator_temporal.var_list)
 
             fnet_variable_list = tf.get_collection(tf.GraphKeys.MODEL_VARIABLES, scope='fnet')
-            self.optimizer_fnet = tf.train.AdamOptimizer(learning_rate=placeholders.lr, beta1=0.5) \
+            self.optimizer_fnet = tf.train.AdamOptimizer(learning_rate=placeholders.lr*0.5, beta1=0.5) \
                 .minimize(losses.loss_D_temp, var_list=fnet_variable_list)
         else:
             self.optimizer_D_temp = tf.constant(0,dtype=tf.float32)
