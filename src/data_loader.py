@@ -33,7 +33,7 @@ def build_dataset(image_path, image_size, batch_size):
     dataset = tf.data.Dataset.from_tensor_slices(image_path)
     dataset = dataset.repeat()
     dataset = dataset.shuffle(buffer_size=10000)
-    dataset = dataset.prefetch(64)
+    dataset = dataset.prefetch(16)
 
     def load_image(filename):
         image_string = tf.read_file(filename)

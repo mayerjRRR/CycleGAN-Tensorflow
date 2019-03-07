@@ -15,23 +15,23 @@ from src.utils.utils import logger
 class CycleGan(object):
 
     def __init__(self, save_dir, image_height=256, image_width=None, batch_size=4, cycle_loss_coeff=1, log_step=10, train_videos=True, train_images=False):
-        self.init_parameters(image_height, image_width, batch_size, cycle_loss_coeff, log_step)
+        self.init_parameters(image_height, image_width, batch_size, cycle_loss_coeff, log_step, train_videos, train_images)
 
         self.placeholders = Placeholders(self._batch_size, self._image_shape)
         self.networks = Networks(self.placeholders)
 
         self.images = Images(self.placeholders, self.networks, self._image_shape, self._batch_size, self._augment_shape)
-        self.losses = Losses(self.networks, self.placeholders, self.images, self._cycle_loss_coeff, train_videos, train_images)
-        self.optimizers = Optimizers(self.networks, self.losses, self.placeholders, train_videos)
-        self.tb_summary = TensorBoardSummary(self.images, self.losses, self.placeholders)
+        self.losses = Losses(self.networks, self.placeholders, self.images, self._cycle_loss_coeff, self.train_videos, self.train_images)
+        self.optimizers = Optimizers(self.networks, self.losses, self.placeholders, self.train_videos)
+        self.tb_summary = TensorBoardSummary(self.images, self.losses, self.placeholders, self.train_videos, self.train_images)
 
         self.savers = Savers(self.networks, self.placeholders, save_dir)
 
-    def init_parameters(self, image_height, image_width, batch_size, cycle_loss_coeff, log_step):
-        self.init_args(image_height, image_width, batch_size, cycle_loss_coeff, log_step, 550)
+    def init_parameters(self, image_height, image_width, batch_size, cycle_loss_coeff, log_step, train_videos, train_images):
+        self.init_args(image_height, image_width, batch_size, cycle_loss_coeff, log_step, 550, train_videos, train_images)
         self.init_image_dimensions()
 
-    def init_args(self, image_height, image_width, batch_size, cycle_loss_coeff, log_step, save_step):
+    def init_args(self, image_height, image_width, batch_size, cycle_loss_coeff, log_step, save_step, train_videos, train_images):
         self._log_step = log_step
         self._save_step = save_step
         self._batch_size = batch_size
@@ -41,6 +41,8 @@ class CycleGan(object):
         if image_width is None:
             image_width = image_height
         self._image_width = image_width
+        self.train_videos = train_videos
+        self.train_images = train_images
 
     def init_image_dimensions(self):
         self._augment_shape = [self._image_height + int(self._image_height / 8),
@@ -96,8 +98,7 @@ class CycleGan(object):
                                                    self.placeholders.history_fake_a: fake_a_history,
                                                    self.placeholders.history_fake_b: fake_b_history})
             if self.should_write_summary(step):
-                pass
-                #self.write_summary(fetched, step, steps, summary_writer)
+                self.write_summary(fetched, step, steps, summary_writer)
             if self.should_save_model(step):
                 self.savers.save_all(sess)
 
@@ -219,7 +220,7 @@ class CycleGan(object):
     def add_discriminator_optimizer(self, fetches, video_training):
         fetches += [self.optimizers.optimizer_D_a, self.optimizers.optimizer_D_b]
         if video_training:
-            fetches += [self.optimizers.optimizer_D_temp]
+            fetches += [self.optimizers.optimizer_D_temp, self.optimizers.optimizer_fnet]
         return fetches
 
     def add_summary(self, fetches, step):

@@ -14,6 +14,7 @@ def run(args):
     logger.info('Build datasets:')
     train_A, train_B = get_training_datasets(args.task, args.image_size, args.batch_size,
                                              dataset_dir=args.dataset_directory)
+    train_videos = is_video_data(train_A)
 
     if args.load_model != '':
         model_name = args.load_model
@@ -26,11 +27,15 @@ def run(args):
     logger.info('Events directory: %s', logdir)
 
     logger.info('Build graph:')
-    #TODO: create video or image cyclegan
+    #TODO: extend for hybrid data set
     model = CycleGan(logdir, args.image_size, batch_size=args.batch_size, cycle_loss_coeff=args.cycle_loss_coeff,
-                     log_step=args.log_step)
+                     log_step=args.log_step, train_videos=train_videos, train_images=not train_videos)
 
     train(model, train_A, train_B, logdir)
+
+
+def is_video_data(train_A):
+    return len(train_A.output_shapes) is 5 and (train_A.output_shapes[1] > 1)
 
 
 def train(model, train_A, train_B, logdir):
@@ -40,7 +45,6 @@ def train(model, train_A, train_B, logdir):
     variables_to_save = tf.global_variables()
     init_op = tf.variables_initializer(variables_to_save)
     init_all_op = tf.global_variables_initializer()
-    saver = FastSaver(variables_to_save)
     logger.info('Trainable vars:')
     var_list = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES,
                                  tf.get_variable_scope().name)
@@ -71,7 +75,11 @@ def train(model, train_A, train_B, logdir):
         #model.savers.save_all(sess)
         #tf.train.write_graph(sess.graph, logdir, 'piff.pbtxt')
         #TODO: switch automagically
-        model.train_on_videos(sess, summary_writer, next_a, next_b)
+        if (model.train_videos):
+            model.train_on_videos(sess, summary_writer, next_a, next_b)
+        else:
+            model.train_on_images(sess, summary_writer, next_a, next_b)
+
 
 
 def main():

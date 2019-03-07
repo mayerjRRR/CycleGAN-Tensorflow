@@ -3,6 +3,7 @@ import tensorflow as tf
 from src.components.images import Images
 from src.components.networks import Networks
 from src.components.placeholders import Placeholders
+from src.utils.tensor_ops import layer_frames_in_channels
 
 
 class Losses:
@@ -36,12 +37,6 @@ class Losses:
 
     def define_temporal_discriminator_output(self, images: Images, networks: Networks, placeholders: Placeholders):
         # TODO: Move to temp discriminator
-        def layer_frames_in_channels(input_frames):
-            reshaped = tf.transpose(input_frames, perm=[0, 2, 3, 1, 4])
-            shape = reshaped.get_shape().as_list()
-            shape[-2] *= shape[-1]
-            shape.pop();
-            return tf.reshape(reshaped, shape);
 
         self.D_temp_real_a = networks.discriminator_temporal(layer_frames_in_channels(images.warped_frames_a))
         self.D_temp_fake_a = networks.discriminator_temporal(layer_frames_in_channels(images.warped_frames_ba))
