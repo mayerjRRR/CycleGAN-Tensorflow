@@ -14,7 +14,7 @@ from src.utils.utils import logger
 
 class CycleGan(object):
 
-    def __init__(self, save_dir, image_height=256, image_width=None, batch_size=4, cycle_loss_coeff=1, log_step=10,
+    def __init__(self, save_dir, init_dir=None, image_height=256, image_width=None, batch_size=4, cycle_loss_coeff=1, log_step=10,
                  train_videos=True, train_images=False):
         self.init_parameters(image_height, image_width, batch_size, cycle_loss_coeff, log_step, train_videos,
                              train_images)
@@ -29,7 +29,7 @@ class CycleGan(object):
         self.tb_summary = TensorBoardSummary(self.images, self.losses, self.placeholders, self.train_videos,
                                              self.train_images)
 
-        self.savers = Savers(self.networks, self.placeholders, save_dir)
+        self.savers = Savers(self.networks, self.placeholders, save_dir, init_dir)
 
     def init_parameters(self, image_height, image_width, batch_size, cycle_loss_coeff, log_step, train_videos,
                         train_images):
@@ -82,8 +82,8 @@ class CycleGan(object):
                                                    self.placeholders.frames_b: frames_b,
                                                    self.placeholders.is_train: True,
                                                    self.placeholders.lr: lr,
-                                                   self.placeholders.history_fake_warped_frames_a: fake_a_history,
-                                                   self.placeholders.history_fake_warped_frames_b: fake_b_history})
+                                                   self.placeholders.history_fake_temp_frames_a: fake_a_history,
+                                                   self.placeholders.history_fake_temp_frames_b: fake_b_history})
             if self.should_write_summary(step):
                 self.write_summary(fetched, step, steps, summary_writer)
             if self.should_save_model(step):

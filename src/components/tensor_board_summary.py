@@ -77,7 +77,7 @@ class TensorBoardSummary:
         if (train_images):
             tf.summary.image('A/A', images.image_a[0:1])
             tf.summary.image('A/A-B', images.image_ab[0:1])
-            tf.summary.image('S/A-B-A', images.image_aba[0:1])
+            tf.summary.image('A/A-B-A', images.image_aba[0:1])
 
             tf.summary.image('B/B', images.image_b[0:1])
             tf.summary.image('B/B-A', images.image_ba[0:1])

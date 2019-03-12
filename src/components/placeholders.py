@@ -26,8 +26,8 @@ class Placeholders:
         self.history_fake_a = tf.placeholder(tf.float32, [batch_size] + image_shape, name='history_fake_a')
         self.history_fake_b = tf.placeholder(tf.float32, [batch_size] + image_shape, name='history_fake_b')
 
-        self.history_fake_warped_frames_a = tf.placeholder(tf.float32, [batch_size, frame_sequence_length] + image_shape, name='history_fake_a')
-        self.history_fake_warped_frames_b = tf.placeholder(tf.float32, [batch_size, frame_sequence_length] + image_shape, name='history_fake_b')
+        self.history_fake_temp_frames_a = tf.placeholder(tf.float32, [batch_size, frame_sequence_length] + image_shape, name='history_fake_a')
+        self.history_fake_temp_frames_b = tf.placeholder(tf.float32, [batch_size, frame_sequence_length] + image_shape, name='history_fake_b')
 
     def init_fnet_placeholders(self, batch_size, image_shape):
         shape = [batch_size] + image_shape

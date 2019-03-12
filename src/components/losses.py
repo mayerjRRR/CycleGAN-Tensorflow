@@ -23,9 +23,9 @@ class Losses:
         self.D_real_frame_b = networks.discriminator_spatial_b(images.warped_frames_b[:, 1])
         self.D_fake_frame_b = networks.discriminator_spatial_b(images.frames_ab[:, 1])
         self.D_history_fake_frame_a = networks.discriminator_spatial_a(
-            placeholders.history_fake_warped_frames_a[:, 1])
+            placeholders.history_fake_temp_frames_a[:, 1])
         self.D_history_fake_frame_b = networks.discriminator_spatial_b(
-            placeholders.history_fake_warped_frames_b[:, 1])
+            placeholders.history_fake_temp_frames_b[:, 1])
 
     def define_discriminator_output_images(self, images: Images, networks: Networks, placeholders: Placeholders):
         self.D_real_image_a = networks.discriminator_spatial_a(images.image_a)
@@ -36,17 +36,16 @@ class Losses:
         self.D_history_fake_image_b = networks.discriminator_spatial_b(placeholders.history_fake_b)
 
     def define_temporal_discriminator_output(self, images: Images, networks: Networks, placeholders: Placeholders):
-        # TODO: Move to temp discriminator
 
-        self.D_temp_real_a = networks.discriminator_temporal(layer_frames_in_channels(images.warped_frames_a))
-        self.D_temp_fake_a = networks.discriminator_temporal(layer_frames_in_channels(images.warped_frames_ba))
+        self.D_temp_real_a = networks.discriminator_temporal(layer_frames_in_channels(images.frames_a))
+        self.D_temp_fake_a = networks.discriminator_temporal(layer_frames_in_channels(images.frames_ba))
         self.D_temp_history_fake_a = networks.discriminator_temporal(
-            layer_frames_in_channels(placeholders.history_fake_warped_frames_a))
+            layer_frames_in_channels(placeholders.history_fake_temp_frames_a))
 
-        self.D_temp_real_b = networks.discriminator_temporal(layer_frames_in_channels(images.warped_frames_b))
-        self.D_temp_fake_b = networks.discriminator_temporal(layer_frames_in_channels(images.warped_frames_ab))
+        self.D_temp_real_b = networks.discriminator_temporal(layer_frames_in_channels(images.frames_b))
+        self.D_temp_fake_b = networks.discriminator_temporal(layer_frames_in_channels(images.frames_ab))
         self.D_temp_history_fake_b = networks.discriminator_temporal(
-            layer_frames_in_channels(placeholders.history_fake_warped_frames_b))
+            layer_frames_in_channels(placeholders.history_fake_temp_frames_b))
 
     def define_losses(self, images: Images, cycle_loss_coeff, train_videos, train_images):
         self.define_discriminator_loss(train_videos, train_images)
