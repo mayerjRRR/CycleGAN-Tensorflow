@@ -28,7 +28,7 @@ class Saver:
             print(f"Trying to initialize {self.name} from {self.init_path}.")
             try:
                 self.saver.restore(session, tf.train.latest_checkpoint(self.init_path))
-                print(f"Successfully restored {self.name} from {tf.train.latest_checkpoint(self.init_path)}!")
+                print(f"Successfully initialized {self.name} from {tf.train.latest_checkpoint(self.init_path)}!")
             except:
                 print(f"Could not initialize {self.name} from {self.init_path}. Maybe it doesn't exist!")
 
@@ -75,7 +75,7 @@ class Savers:
                                         init_path=self.get_init_path(networks.generator_ba.name), name="Generator BA")
 
     def init_global_step_saver(self, placeholders):
-        self.global_step_saver = Saver([placeholders.global_step], os.path.join(self.save_dir, "global_step"),
+        self.global_step_saver = Saver([placeholders.global_step], save_path=self.get_save_path("global_step"),
                                        name="Global Step")
 
     def save_all(self, session, global_step=None):

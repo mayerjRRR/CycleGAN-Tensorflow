@@ -40,7 +40,15 @@ def build_dataset(image_path, image_size, batch_size):
         image_decoded = tf.image.decode_jpeg(image_string, channels=3)
         image_normalized = tf.image.convert_image_dtype(image_decoded, dtype=tf.float32)
         image_normalized = (image_normalized * 2) - 1
-        image_resized = tf.image.resize_images(image_normalized, [image_size, image_size])
+
+        shape = tf.shape(image_normalized)
+        min_resolution = tf.minimum(shape[0],shape[1])
+        image_cropped = tf.image.resize_image_with_crop_or_pad(
+            image_normalized,
+            min_resolution,
+            min_resolution
+        )
+        image_resized = tf.image.resize_images(image_cropped, [image_size, image_size])
         return image_resized
 
     def load_images(filenames):

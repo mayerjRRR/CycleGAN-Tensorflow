@@ -9,33 +9,37 @@ class TensorBoardSummary:
     def __init__(self, images: Images, losses: Losses,
                  placeholders: Placeholders, train_videos, train_images):
         #TODO: implement for images
-        tf.summary.scalar('loss/dis_A', losses.loss_D_a)
-        tf.summary.scalar('loss/dis_B', losses.loss_D_b)
+        tf.summary.scalar('Losses/Spacial_Discriminator_A', losses.loss_D_a)
+        tf.summary.scalar('Losses/Spacial_Discriminator_B', losses.loss_D_b)
         if(train_videos):
-            tf.summary.scalar('loss/dis_temp', losses.loss_D_temp)
-        tf.summary.scalar('loss/gen_AB', losses.loss_G_spat_ab)
-        tf.summary.scalar('loss/gen_BA', losses.loss_G_spat_ba)
-        tf.summary.scalar('loss/cycle', losses.loss_cycle)
+            tf.summary.scalar('Losses/Temporal_Discriminator', losses.loss_D_temp)
+        tf.summary.scalar('Losses/Generator_AB', losses.loss_G_spat_ab)
+        tf.summary.scalar('Losses/Generator_BA', losses.loss_G_spat_ba)
+        tf.summary.scalar('Losses/Cycle_Loss', losses.loss_cycle)
         #TODO: track discriminator output individually
         if (train_videos):
-            tf.summary.scalar('model/D_frame_a_real', tf.reduce_mean(losses.D_real_frame_a))
-            tf.summary.scalar('model/D_frame_a_fake', tf.reduce_mean(losses.D_fake_frame_a))
-            tf.summary.scalar('model/D_frame_b_real', tf.reduce_mean(losses.D_real_frame_b))
-            tf.summary.scalar('model/D_frame_b_fake', tf.reduce_mean(losses.D_fake_frame_b))
+            tf.summary.scalar('Spacial_Discriminator_Output/Real_Frame_A', tf.reduce_mean(losses.D_real_frame_a))
+            tf.summary.scalar('Spacial_Discriminator_Output/Fake_Frame_A', tf.reduce_mean(losses.D_fake_frame_a))
+            tf.summary.scalar('Spacial_Discriminator_Output/Fake_History_Frame_A', tf.reduce_mean(losses.D_history_fake_frame_a))
+            tf.summary.scalar('Spacial_Discriminator_Output/Real_Frame_B', tf.reduce_mean(losses.D_real_frame_b))
+            tf.summary.scalar('Spacial_Discriminator_Output/Fake_Frame_B', tf.reduce_mean(losses.D_fake_frame_b))
+            tf.summary.scalar('Spacial_Discriminator_Output/Fake_History_Frame_B', tf.reduce_mean(losses.D_history_fake_frame_b))
 
-            tf.summary.scalar('model/D_temp_a_real', tf.reduce_mean(losses.D_temp_real_a))
-            tf.summary.scalar('model/D_temp_a_fake', tf.reduce_mean(losses.D_temp_fake_a))
-            tf.summary.scalar('model/D_temp_a_history_fake', tf.reduce_mean(losses.D_temp_history_fake_a))
-            tf.summary.scalar('model/D_temp_b_real', tf.reduce_mean(losses.D_temp_real_b))
-            tf.summary.scalar('model/D_temp_b_fake', tf.reduce_mean(losses.D_temp_fake_b))
-            tf.summary.scalar('model/D_temp_b_history_fake', tf.reduce_mean(losses.D_temp_history_fake_b))
+            tf.summary.scalar('Temporal_Discriminator_Output/Real_Frames_A', tf.reduce_mean(losses.D_temp_real_a))
+            tf.summary.scalar('Temporal_Discriminator_Output/Fake_Frames_A', tf.reduce_mean(losses.D_temp_fake_a))
+            tf.summary.scalar('Temporal_Discriminator_Output/Fake_Frames_from_History_A', tf.reduce_mean(losses.D_temp_history_fake_a))
+            tf.summary.scalar('Temporal_Discriminator_Output/Real_Frames_B', tf.reduce_mean(losses.D_temp_real_b))
+            tf.summary.scalar('Temporal_Discriminator_Output/Fake_Frames_B', tf.reduce_mean(losses.D_temp_fake_b))
+            tf.summary.scalar('Temporal_Discriminator_Output/Fake_Frames_from_History_B', tf.reduce_mean(losses.D_temp_history_fake_b))
+
+            tf.summary.scalar('Model_Parameters/Temporal_Loss_Weight', losses.temp_loss_weigth)
         if (train_images):
-            tf.summary.scalar('model/D_image_a_real', tf.reduce_mean(losses.D_real_image_a))
-            tf.summary.scalar('model/D_image_a_fake', tf.reduce_mean(losses.D_fake_image_a))
-            tf.summary.scalar('model/D_image_b_real', tf.reduce_mean(losses.D_real_image_b))
-            tf.summary.scalar('model/D_image_b_fake', tf.reduce_mean(losses.D_fake_image_b))
+            tf.summary.scalar('Spacial_Discriminator_Output/D_image_a_real', tf.reduce_mean(losses.D_real_image_a))
+            tf.summary.scalar('Spacial_Discriminator_Output/D_image_a_fake', tf.reduce_mean(losses.D_fake_image_a))
+            tf.summary.scalar('Spacial_Discriminator_Output/D_image_b_real', tf.reduce_mean(losses.D_real_image_b))
+            tf.summary.scalar('Spacial_Discriminator_Output/D_image_b_fake', tf.reduce_mean(losses.D_fake_image_b))
 
-        tf.summary.scalar('model/lr', placeholders.lr)
+        tf.summary.scalar('Model_Parameters/Learning_Rate', placeholders.lr)
 
 
         if (train_videos):

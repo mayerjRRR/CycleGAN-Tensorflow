@@ -14,7 +14,7 @@ def is_video_data(train_A):
     return len(train_A.output_shapes) is 5 and (train_A.output_shapes[1] > 1)
 
 
-def train(model, train_A, train_B, logdir):
+def train(model, train_A, train_B, logdir, learning_rate):
     # TODO: extract into class or method
     next_a = train_A.make_one_shot_iterator().get_next()
     next_b = train_B.make_one_shot_iterator().get_next()
@@ -52,9 +52,9 @@ def train(model, train_A, train_B, logdir):
         # tf.train.write_graph(sess.graph, logdir, 'piff.pbtxt')
         # TODO: switch automagically
         if (model.train_videos):
-            model.train_on_videos(sess, summary_writer, next_a, next_b)
+            model.train_on_videos(sess, summary_writer, next_a, next_b,learning_rate)
         else:
-            model.train_on_images(sess, summary_writer, next_a, next_b)
+            model.train_on_images(sess, summary_writer, next_a, next_b,learning_rate)
 
 
 def main():
@@ -72,15 +72,16 @@ def main():
         model_name = f"{args.task}_{date}"
     logdir = args.log_directory
     makedirs(logdir)
-    logdir = os.path.join(logdir, model_name)
-    logger.info('Events directory: %s', logdir)
+    init_dir = os.path.join(logdir, args.init_model)
+    save_dir = os.path.join(logdir, model_name)
+    logger.info('Events directory: %s', save_dir)
 
     logger.info('Build graph:')
     # TODO: extend for hybrid data set
-    model = CycleGan(logdir, init_dir=args.init_model,image_height=args.image_size, batch_size=args.batch_size, cycle_loss_coeff=args.cycle_loss_coeff,
+    model = CycleGan(save_dir=save_dir, init_dir=init_dir,image_height=args.image_size, batch_size=args.batch_size, cycle_loss_coeff=args.cycle_loss_coeff,
                      log_step=args.log_step, train_videos=train_videos, train_images=not train_videos)
 
-    train(model, train_A, train_B, logdir)
+    train(model, train_A, train_B, save_dir, args.learning_rate)
 
 
 if __name__ == "__main__":

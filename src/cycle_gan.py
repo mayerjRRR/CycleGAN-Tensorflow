@@ -56,17 +56,12 @@ class CycleGan(object):
                                self._image_width + int(self._image_width / 8)]
         self._image_shape = [self._image_height, self._image_width, 3]
 
-    def train_on_videos(self, sess, summary_writer, frame_data_a, frame_data_b):
-        epoch_length, history_a, history_b, lr_decay, lr_initial, num_initial_iter, steps = self.init_training(sess)
+    def train_on_videos(self, sess, summary_writer, frame_data_a, frame_data_b, learning_rate):
+        epoch_length, history_a, history_b, lr_decay, lr_initial, num_initial_iter, steps = self.init_training(sess, learning_rate)
         for step in steps:
             lr = self.get_learning_rate(step, epoch_length, lr_decay, lr_initial, num_initial_iter)
 
             frames_a, frames_b = self.get_real_frames(frame_data_a, frame_data_b, sess)
-            # fakes_a, fakes_b = self.get_fake_frames(frames_a, frames_b, sess)
-            # warped_frames_a, warped_frames_b, warped_fakes_a, warped_fakes_b = self.get_warped_images(frames_a,
-            #                                                                                           frames_b,
-            #                                                                                           fakes_a, fakes_b,
-            #                                                                                           sess)
             warped_fakes_a, warped_fakes_b = sess.run([self.images.warped_frames_ba, self.images.warped_frames_ab],
                                                       feed_dict={self.placeholders.frames_a: frames_a,
                                                                  self.placeholders.frames_b: frames_b,
@@ -89,9 +84,9 @@ class CycleGan(object):
             if self.should_save_model(step):
                 self.savers.save_all(sess, global_step=step)
 
-    def train_on_images(self, sess, summary_writer, image_data_a, image_data_b):
+    def train_on_images(self, sess, summary_writer, image_data_a, image_data_b, learning_rate):
         # TODO: dont't fetch temp_disc optimizer
-        epoch_length, history_a, history_b, lr_decay, lr_initial, num_initial_iter, steps = self.init_training(sess)
+        epoch_length, history_a, history_b, lr_decay, lr_initial, num_initial_iter, steps = self.init_training(sess, learning_rate)
         for step in steps:
             lr = self.get_learning_rate(step, epoch_length, lr_decay, lr_initial, num_initial_iter)
 
@@ -114,10 +109,10 @@ class CycleGan(object):
             if self.should_save_model(step):
                 self.savers.save_all(sess)
 
-    def init_training(self, sess):
+    def init_training(self, sess, learning_rate):
         logger.info('Start training.')
         epoch_length, initial_step, lr_decay, lr_initial, num_global_step, num_initial_iter = \
-            self.init_training_parameters(sess)
+            self.init_training_parameters(sess, learning_rate)
         history_a = HistoryQueue(shape=self._image_shape, size=50)
         history_b = HistoryQueue(shape=self._image_shape, size=50)
         # TODO: infinite loop
@@ -130,14 +125,14 @@ class CycleGan(object):
     def should_save_model(self, step):
         return step % self._save_step == 0
 
-    def init_training_parameters(self, sess):
+    def init_training_parameters(self, sess, learning_rate):
         # TODO: Replace hard-coded number, refactor, maybe think of infinity loop
         epoch_length = 1000  # min(len(data_A), len(data_B))
         num_batch = epoch_length // self._batch_size
         epoch_length = num_batch * self._batch_size
         num_initial_iter = 100
         num_decay_iter = 100
-        lr_initial = 0.0001
+        lr_initial = learning_rate
         lr_decay = lr_initial / num_decay_iter
         initial_step = sess.run(self.placeholders.global_step)
         num_global_step = (num_initial_iter + num_decay_iter) * epoch_length
@@ -232,7 +227,7 @@ class CycleGan(object):
     def add_discriminator_optimizer(self, fetches, video_training):
         fetches += [self.optimizers.optimizer_D_a, self.optimizers.optimizer_D_b]
         if video_training:
-            fetches += [self.optimizers.optimizer_D_temp, self.optimizers.optimizer_fnet]
+            fetches += [self.optimizers.optimizer_D_temp]
         return fetches
 
     def add_summary(self, fetches, step):

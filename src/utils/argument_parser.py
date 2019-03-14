@@ -9,6 +9,8 @@ def get_train_parser():
     parser.add_argument('--log_directory', type=str, default='./logs', help='Location that the logs will we stored')
     parser.add_argument('--cycle_loss_coeff', type=float, default=10,
                         help='Cycle Consistency Loss coefficient')
+    parser.add_argument('--learning_rate', type=float, default=0.00005,
+                        help='Initial Learning Rate')
     parser.add_argument('--instance_normalization', default=True, type=bool,
                         help="Use instance norm instead of batch norm")
     parser.add_argument('--log_step', default=100, type=int,
