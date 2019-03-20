@@ -92,7 +92,13 @@ class Savers:
                 self.global_step_saver]
 
     def get_init_path(self, name):
-        return os.path.join(self.init_dir, name)
+        if name is None or self.init_dir is None:
+            return None
+        else:
+            return os.path.join(self.init_dir, name)
 
     def get_save_path(self, name):
-        return os.path.join(self.save_dir, name)
+        if name is None or self.save_dir is None:
+            return None
+        else:
+            return os.path.join(self.save_dir, name)

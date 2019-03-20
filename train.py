@@ -48,9 +48,6 @@ def train(model, train_A, train_B, logdir, learning_rate):
         summary_writer.add_graph(sess.graph)
         model.savers.load_all(sess)
 
-        # model.savers.save_all(sess)
-        # tf.train.write_graph(sess.graph, logdir, 'piff.pbtxt')
-        # TODO: switch automagically
         if (model.train_videos):
             model.train_on_videos(sess, summary_writer, next_a, next_b,learning_rate)
         else:
@@ -61,8 +58,14 @@ def main():
     args, _ = argument_parser.get_train_parser().parse_known_args()
 
     logger.info('Build datasets:')
-    train_A, train_B = get_training_datasets(args.task, args.image_size, args.batch_size,
+
+    if not args.force_image:
+        train_A, train_B = get_training_datasets(args.task, args.image_size, args.batch_size,
                                              dataset_dir=args.dataset_directory)
+    else:
+        train_A, train_B = get_training_datasets(args.task, args.image_size, args.batch_size,
+                                                 dataset_dir=args.dataset_directory, frame_sequence_length=1)
+
     train_videos = is_video_data(train_A)
 
     if args.load_model != '':

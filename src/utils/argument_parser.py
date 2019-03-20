@@ -24,7 +24,9 @@ def get_train_parser():
     parser.add_argument('--load_model', default='',
                         help='Model path to load and save to (e.g., train_2017-07-07_01-23-45)')
     parser.add_argument('--init_model', default='',
-                        help='Model path to initialize model from (e.g., train_2017-07-07_01-23-45). ')
+                        help='Model path to initialize model from (e.g., train_2017-07-07_01-23-45)')
+    parser.add_argument('--force_image', default=False, type=bool,
+                        help='Force image training even with video data')
     return parser
 
 def get_inference_parser():
