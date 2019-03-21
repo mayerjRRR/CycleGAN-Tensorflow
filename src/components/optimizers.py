@@ -16,7 +16,7 @@ class Optimizers:
                 .minimize(losses.loss_D_temp, var_list=networks.discriminator_temporal.var_list)
 
             # TODO: Train with L1/L2-Loss eventually
-            fnet_variable_list = tf.get_collection(tf.GraphKeys.MODEL_VARIABLES, scope='fnet')
+            #fnet_variable_list = tf.get_collection(tf.GraphKeys.MODEL_VARIABLES, scope='fnet')
             #self.optimizer_fnet = tf.train.AdamOptimizer(learning_rate=placeholders.lr*0.5, beta1=0.5) \
             #    .minimize(losses.loss_D_temp, var_list=fnet_variable_list)
         else:

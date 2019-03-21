@@ -21,14 +21,12 @@ class CycleGan(object):
 
         self.placeholders = Placeholders(self._batch_size, self._image_shape)
         self.networks = Networks(self.placeholders)
-
-        self.images = Images(self.placeholders, self.networks, self._image_shape, self._batch_size, self._augment_shape)
+        self.images = Images(self.placeholders, self.networks, self._augment_shape)
         self.losses = Losses(self.networks, self.placeholders, self.images, self._cycle_loss_coeff, self.train_videos,
                              self.train_images)
         self.optimizers = Optimizers(self.networks, self.losses, self.placeholders, self.train_videos)
         self.tb_summary = TensorBoardSummary(self.images, self.losses, self.placeholders, self.train_videos,
                                              self.train_images)
-
         self.savers = Savers(self.networks, self.placeholders, save_dir, init_dir)
 
     def init_parameters(self, image_height, image_width, batch_size, cycle_loss_coeff, log_step, train_videos,
@@ -85,7 +83,6 @@ class CycleGan(object):
                 self.savers.save_all(sess, global_step=step)
 
     def train_on_images(self, sess, summary_writer, image_data_a, image_data_b, learning_rate):
-        # TODO: dont't fetch temp_disc optimizer
         epoch_length, history_a, history_b, lr_decay, lr_initial, num_initial_iter, steps = self.init_training(sess, learning_rate)
         for step in steps:
             lr = self.get_learning_rate(step, epoch_length, lr_decay, lr_initial, num_initial_iter)
@@ -115,7 +112,6 @@ class CycleGan(object):
             self.init_training_parameters(sess, learning_rate)
         history_a = HistoryQueue(shape=self._image_shape, size=50)
         history_b = HistoryQueue(shape=self._image_shape, size=50)
-        # TODO: infinite loop
         steps = trange(initial_step, num_global_step, total=num_global_step, initial=initial_step)
         return epoch_length, history_a, history_b, lr_decay, lr_initial, num_initial_iter, steps
 
@@ -126,10 +122,7 @@ class CycleGan(object):
         return step % self._save_step == 0
 
     def init_training_parameters(self, sess, learning_rate):
-        # TODO: Replace hard-coded number, refactor, maybe think of infinity loop
-        epoch_length = 1000  # min(len(data_A), len(data_B))
-        num_batch = epoch_length // self._batch_size
-        epoch_length = num_batch * self._batch_size
+        epoch_length = 1000
         num_initial_iter = 100
         num_decay_iter = 100
         lr_initial = learning_rate
@@ -201,14 +194,15 @@ class CycleGan(object):
 
     def write_summary(self, fetched, step, steps, summary_writer):
 
-        summary_writer.add_summary(fetched[-1], step)
+        summary_writer.add_summary(fetched['summary'], step)
         summary_writer.flush()
+        losses = fetched['losses']
         steps.set_description(
             'Loss: D_a({:.3f}) D_b({:.3f}) D_temporal({:.3f}) G_ab({:.3f}) G_ba({:.3f}) cycle({:.3f})'.format(
-                fetched[0], fetched[1], fetched[5], fetched[2], fetched[3], fetched[5], fetched[4]))
+                losses[0], losses[1], losses[5], losses[2], losses[3], losses[4]))
 
     def get_fetches(self, step, video_training):
-        fetches = []
+        fetches = {}
         fetches = self.add_losses(fetches)
         fetches = self.add_generator_optimizer(fetches)
         fetches = self.add_discriminator_optimizer(fetches, video_training)
@@ -216,21 +210,29 @@ class CycleGan(object):
         return fetches
 
     def add_losses(self, fetches):
-        fetches += [self.losses.loss_D_a, self.losses.loss_D_b, self.losses.loss_G_spat_ab,
+        fetches['losses'] = [self.losses.loss_D_a, self.losses.loss_D_b, self.losses.loss_G_spat_ab,
                     self.losses.loss_G_spat_ba, self.losses.loss_cycle, self.losses.loss_D_temp]
         return fetches
 
     def add_generator_optimizer(self, fetches):
-        fetches += [self.optimizers.optimizer_G_ab, self.optimizers.optimizer_G_ba]
+        fetches['generator_optimizer'] = [self.optimizers.optimizer_G_ab, self.optimizers.optimizer_G_ba]
         return fetches
 
     def add_discriminator_optimizer(self, fetches, video_training):
-        fetches += [self.optimizers.optimizer_D_a, self.optimizers.optimizer_D_b]
+        fetches['discriminator_optimizer'] = [self.optimizers.optimizer_D_a, self.optimizers.optimizer_D_b]
         if video_training:
-            fetches += [self.optimizers.optimizer_D_temp]
+            fetches['discriminator_optimizer'] += [self.optimizers.optimizer_D_temp]
         return fetches
 
     def add_summary(self, fetches, step):
         if self.should_write_summary(step):
-            fetches += [self.tb_summary.summary_op]
+            fetches['summary'] = self.tb_summary.summary_op
         return fetches
+
+    def add_fakes(self, fetches, video_training):
+        if video_training:
+            fetches['fakes'] = [self.images.warped_frames_ba, self.images.warped_frames_ab]
+        else:
+            fetches['fakes'] = [self.images.image_ba, self.images.image_ab]
+
+

@@ -100,6 +100,16 @@ class Losses:
 
         self.loss_cycle = cycle_loss_coeff * (self.loss_rec_aba + self.loss_rec_bab)
 
+    def define_identity_loss(self, identity_loss_coeff, images: Images, train_images):
+        if train_images:
+            self.loss_id_ab = tf.reduce_mean(tf.abs(images.image_a - images.image_ab))
+            self.loss_id_ba = tf.reduce_mean(tf.abs(images.image_b - images.image_ba))
+        else:
+            self.loss_id_ab = tf.reduce_mean(tf.abs(images.warped_frames_a[:, 1] - images.frames_ab[:, 1]))
+            self.loss_id_ba = tf.reduce_mean(tf.abs(images.warped_frames_b[:, 1] - images.frames_ba[:, 1]))
+
+        self.loss_cycle = identity_loss_coeff * (self.loss_rec_aba + self.loss_rec_bab)
+
     def define_total_generator_loss(self):
         self.loss_G_ab_final = self.loss_G_spat_ab + self.loss_G_temp_ab + self.loss_cycle
         self.loss_G_ba_final = self.loss_G_spat_ba + self.loss_G_temp_ba + self.loss_cycle
