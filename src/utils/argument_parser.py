@@ -2,6 +2,8 @@ import argparse
 
 
 def get_train_parser():
+
+    #TODO: Add identity weight and all the things that are now hardcoded
     parser = argparse.ArgumentParser(description="Training commands")
     parser.add_argument('--task', type=str, default='vidzebra',
                         help='Task name')
