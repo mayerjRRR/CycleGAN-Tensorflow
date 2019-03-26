@@ -80,7 +80,7 @@ def get_path_lists(task_name, dataset_dir, frame_sequence_length):
         base_dir = os.path.join(dataset_dir, task_name)
         data_dir = os.path.join(base_dir, dir_name)
         is_video_data = contains_videos(data_dir)
-        print(f"Training with {is_video_data} vidoes from {data_dir}")
+        print(f"Training with {'videos' if is_video_data else 'images'} from {data_dir}")
         if is_video_data:
             task_image_paths = get_video_frame_sequences(data_dir, frame_sequence_length)
         else:

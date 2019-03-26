@@ -5,6 +5,7 @@ import tensorflow as tf
 
 checkpoint_directory = "logs"
 
+# TODO: remove logger or use properly
 logging.info("Start CycleGAN")
 logger = logging.getLogger('cycle-gan')
 logger.setLevel(logging.INFO)

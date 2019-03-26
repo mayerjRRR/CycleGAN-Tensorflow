@@ -1,3 +1,6 @@
+
+# TODO REWORK!!!!!!!!!!!!!!!!!!!
+
 # Temporal CycleGAN
 
 The goal is to create a temporally consistent CylceGAN, based on [Youngwoon Lee's implementation](https://github.com/gitlimlab/CycleGAN-Tensorflow) of a CycleGAN in Tensorflow.
@@ -5,10 +8,9 @@ The goal is to create a temporally consistent CylceGAN, based on [Youngwoon Lee'
 ## Dependencies
 
 - Python 3.6
-- [Tensorflow 1.5.0](https://www.tensorflow.org/)
+- [Tensorflow 1.8.0](https://www.tensorflow.org/)
 - [NumPy](https://pypi.python.org/pypi/numpy)
 - [SciPy](https://pypi.python.org/pypi/scipy)
-- [Pillow](https://pillow.readthedocs.io/en/4.0.x/)
 - [tqdm](https://github.com/tqdm/tqdm)
 - OpenCV
 
@@ -42,9 +44,6 @@ Once training, check the status on Tensorboard:
 $ tensorboard --logdir=./logs
 ```
 
-> **Carefully check Tensorboard for the first 1000 iterations. You need to run the experiment again if dark and bright regions are reversed like the example below. This GAN implementation is sensitive to the initialization.**
-
-![wrong-example](assets/wrong-initialization.png)
 
 ### Inference
 

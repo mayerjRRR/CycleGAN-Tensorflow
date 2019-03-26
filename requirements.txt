@@ -1,0 +1,7 @@
+tensorflow-gpu==1.8.0
+numpy
+scipy
+tqdm
+opencv-python
+keras
+tensorboard

@@ -65,6 +65,16 @@ class Networks:
 
     def apply_inference_on_multiframe(self, frames, generator):
 
+        '''
+        TODO
+        1. generate first fake frame with black frame as input (tf.concat([first, tf.constant(-1.0, shape=[b,256, 235,3])], -1) )
+        2. compute flow from first to second
+        3. warp first output frame to space of second
+        4. generate second fake with tf.concat([second, warped_first_fake))
+
+        5. 2-4. analogue for third frame
+        '''
+
         frame_tensor_shape = frames.get_shape().as_list()
         target_shape = frame_tensor_shape.copy()
         target_shape[0] *= target_shape[1]
