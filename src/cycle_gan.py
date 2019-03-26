@@ -14,35 +14,36 @@ from src.utils.utils import logger
 
 class CycleGan(object):
 
-    def __init__(self, save_dir, init_dir=None, image_height=256, image_width=None, batch_size=4, cycle_loss_coeff=1,
+    def __init__(self, save_dir, init_dir=None, image_height=256, image_width=None, batch_size=4, cycle_loss_coeff=10, identity_loss_coeff =5,
                  log_step=10,
                  train_videos=True, train_images=False):
-        self.init_parameters(image_height, image_width, batch_size, cycle_loss_coeff, log_step, train_videos,
+        self.init_parameters(image_height, image_width, batch_size, cycle_loss_coeff,identity_loss_coeff, log_step, train_videos,
                              train_images)
 
         self.placeholders = Placeholders(self._batch_size, self._image_shape)
         self.networks = Networks(self.placeholders)
         self.images = Images(self.placeholders, self.networks, self._augment_shape)
-        self.losses = Losses(self.networks, self.placeholders, self.images, self._cycle_loss_coeff, self.train_videos,
+        self.losses = Losses(self.networks, self.placeholders, self.images, self._cycle_loss_coeff, self._identity_loss_coeff, self.train_videos,
                              self.train_images)
         self.optimizers = Optimizers(self.networks, self.losses, self.placeholders, self.train_videos)
         self.tb_summary = TensorBoardSummary(self.images, self.losses, self.placeholders, self.train_videos,
                                              self.train_images)
         self.savers = Savers(self.networks, self.placeholders, save_dir, init_dir)
 
-    def init_parameters(self, image_height, image_width, batch_size, cycle_loss_coeff, log_step, train_videos,
+    def init_parameters(self, image_height, image_width, batch_size, cycle_loss_coeff, identity_loss_coeff, log_step, train_videos,
                         train_images):
-        self.init_args(image_height, image_width, batch_size, cycle_loss_coeff, log_step, 550, train_videos,
+        self.init_args(image_height, image_width, batch_size, cycle_loss_coeff, identity_loss_coeff, log_step, 550, train_videos,
                        train_images)
         self.init_image_dimensions()
 
-    def init_args(self, image_height, image_width, batch_size, cycle_loss_coeff, log_step, save_step, train_videos,
+    def init_args(self, image_height, image_width, batch_size, cycle_loss_coeff, identity_loss_coeff, log_step, save_step, train_videos,
                   train_images):
         self._log_step = log_step
         self._save_step = save_step
         self._batch_size = batch_size
         self._image_height = image_height
-        self._cycle_loss_coeff = cycle_loss_coeff
+        self._cycle_loss_coeff = cycle_loss_coeff#
+        self._identity_loss_coeff = identity_loss_coeff
         self._save_step = save_step
         if image_width is None:
             image_width = image_height

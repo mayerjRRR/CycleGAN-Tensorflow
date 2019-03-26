@@ -25,6 +25,7 @@ class TensorBoardSummary:
         tf.summary.scalar('Losses/Generator_AB', losses.loss_G_spat_ab)
         tf.summary.scalar('Losses/Generator_BA', losses.loss_G_spat_ba)
         tf.summary.scalar('Losses/Cycle_Loss', losses.loss_cycle)
+        tf.summary.scalar('Losses/Identity_Loss', losses.loss_identity)
 
     def add_spacial_discriminator_outputs(self, losses, train_images, train_videos):
         if train_videos:
@@ -60,6 +61,7 @@ class TensorBoardSummary:
     def add_model_parameters(self, losses, placeholders, train_videos):
         if train_videos:
             tf.summary.scalar('Model_Parameters/Temporal_Loss_Weight', losses.temp_loss_weigth)
+        tf.summary.scalar('Model_Parameters/Identity_Loss_Weight', losses.identity_fade_out_weight)
         tf.summary.scalar('Model_Parameters/Learning_Rate', placeholders.lr)
 
     def add_images(self, images, train_images, train_videos):

@@ -9,9 +9,13 @@ def get_train_parser():
                         help='Task name')
     parser.add_argument('--dataset_directory', type=str, default='datasets', help='Location of the training data')
     parser.add_argument('--log_directory', type=str, default='./logs', help='Location that the logs will we stored')
+    parser.add_argument('--temp_loss_coeff', type=float, default=1,
+                        help='Temporal Discriminator Loss coefficient')
     parser.add_argument('--cycle_loss_coeff', type=float, default=10,
                         help='Cycle Consistency Loss coefficient')
-    parser.add_argument('--learning_rate', type=float, default=0.00005,
+    parser.add_argument('--identity_loss_coeff', type=float, default=5,
+                        help='Identity Loss coefficient')
+    parser.add_argument('--learning_rate', type=float, default=0.0001,
                         help='Initial Learning Rate')
     parser.add_argument('--instance_normalization', default=True, type=bool,
                         help="Use instance norm instead of batch norm")
