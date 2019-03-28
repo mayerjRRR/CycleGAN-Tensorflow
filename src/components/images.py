@@ -43,17 +43,17 @@ class Images:
         self.image_aba = networks.generator_ba(self.image_ab)
 
     def define_fake_frames(self, networks: Networks):
-        self.flows_a = networks.get_flows(self.frames_a)
-        self.flows_b = networks.get_flows(self.frames_b)
+        self.flows_a = networks.get_flows_to_middle_frame(self.frames_a)
+        self.flows_b = networks.get_flows_to_middle_frame(self.frames_b)
 
-        self.warped_frames_a = networks.warp(self.frames_a, self.flows_a)
-        self.warped_frames_b = networks.warp(self.frames_b, self.flows_b)
+        self.warped_frames_a = networks.warp_to_middle_frame(self.frames_a, self.flows_a)
+        self.warped_frames_b = networks.warp_to_middle_frame(self.frames_b, self.flows_b)
 
         self.frames_ab = networks.apply_inference_on_multiframe(self.frames_a, networks.generator_ab)
         self.frames_ba = networks.apply_inference_on_multiframe(self.frames_b, networks.generator_ba)
 
-        self.warped_frames_ab = networks.warp(self.frames_ab, self.flows_a)
-        self.warped_frames_ba = networks.warp(self.frames_ba, self.flows_b)
+        self.warped_frames_ab = networks.warp_to_middle_frame(self.frames_ab, self.flows_a)
+        self.warped_frames_ba = networks.warp_to_middle_frame(self.frames_ba, self.flows_b)
 
         self.frames_aba = networks.apply_inference_on_multiframe(self.frames_ab, networks.generator_ba)
         self.frames_bab = networks.apply_inference_on_multiframe(self.frames_ba, networks.generator_ab)

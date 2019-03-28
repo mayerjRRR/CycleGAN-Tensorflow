@@ -62,15 +62,13 @@ def main():
 
     train_videos = is_video_data(train_A)
 
-    if training_config.model_directory != '':
-        model_name = training_config.model_directory
-    else:
+    if training_config.model_directory == '':
         date = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        model_name = f"{training_config.task_name}_{date}"
+        training_config.model_directory = f"{training_config.task_name}_{date}"
     log_dir = training_config.logging_directory
     makedirs(log_dir)
     training_config.initialization_model = os.path.join(log_dir, training_config.initialization_model)
-    training_config.logging_directory = os.path.join(log_dir, model_name)
+    training_config.logging_directory = os.path.join(log_dir, training_config.model_directory)
     logger.info(f"Checkpoints and Logs will be saved to {training_config.logging_directory}")
 
     # TODO: extend for hybrid data set

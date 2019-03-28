@@ -29,12 +29,12 @@ class Networks:
 
     def init_fnet(self, placeholders: Placeholders):
 
-        flows = self.get_flows(placeholders.image_warp_input)
-        self.warped_real = self.warp(placeholders.image_warp_input, flows)
-        self.warped_fake = self.warp(placeholders.fake_warp_input, flows)
+        flows = self.get_flows_to_middle_frame(placeholders.image_warp_input)
+        self.warped_real = self.warp_to_middle_frame(placeholders.image_warp_input, flows)
+        self.warped_fake = self.warp_to_middle_frame(placeholders.fake_warp_input, flows)
 
 
-    def get_flows(self, frame_sequence):
+    def get_flows_to_middle_frame(self, frame_sequence):
         frame_sequence = (frame_sequence+1)/2
         previous = frame_sequence[:, 0]
         current = frame_sequence[:, 1]
@@ -51,7 +51,7 @@ class Networks:
             flow = fnet(input)
         return tf.image.resize_images(flow,first.shape.as_list()[1:-1])
 
-    def warp(self, frame_sequence, flows):
+    def warp_to_middle_frame(self, frame_sequence, flows):
         previous = frame_sequence[:, 0]
         current = frame_sequence[:, 1]
         next = frame_sequence[:, 2]
@@ -62,6 +62,9 @@ class Networks:
         next_warped = tf.contrib.image.dense_image_warp(next, forwards_flow)
 
         return tf.stack([previous_warped,current,next_warped],axis=1)
+
+    def warp_frame(self, frame, flow):
+        return tf.contrib.image.dense_image_warp(frame, flow)
 
     def apply_inference_on_multiframe(self, frames, generator):
 
@@ -79,12 +82,16 @@ class Networks:
         third = frames[:, 2]
 
         first_input = tf.concat([first, tf.constant(-1.0, shape=first.get_shape().as_list())], axis=-1)
+        first_flow = self.get_flow(first, second)
         first_output = generator(first_input)
+        first_warped = self.warp_frame(first_output, first_flow)
 
-        second_input = tf.concat([second, first_output], axis=-1)
+        second_input = tf.concat([second, first_warped], axis=-1)
+        second_flow = self.get_flow(second, third)
         second_output = generator(second_input)
+        second_warped = self.warp_frame(second_output, second_flow)
 
-        third_input = tf.concat([third, second_output], axis=-1)
+        third_input = tf.concat([third, second_warped], axis=-1)
         third_output = generator(third_input)
 
         return tf.stack([first_output,second_output,third_output], axis=1)
