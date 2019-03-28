@@ -74,11 +74,26 @@ class Networks:
 
         5. 2-4. analogue for third frame
         '''
+        first = frames[:, 0]
+        second = frames[:, 1]
+        third = frames[:, 2]
 
-        frame_tensor_shape = frames.get_shape().as_list()
-        target_shape = frame_tensor_shape.copy()
-        target_shape[0] *= target_shape[1]
-        target_shape.pop(1)
+        first_input = tf.concat([first, tf.constant(-1.0, shape=first.get_shape().as_list())], axis=-1)
+        first_output = generator(first_input)
 
-        return tf.reshape(generator(tf.reshape(frames, target_shape)),frame_tensor_shape)
+        second_input = tf.concat([second, first_output], axis=-1)
+        second_output = generator(second_input)
+
+        third_input = tf.concat([third, second_output], axis=-1)
+        third_output = generator(third_input)
+
+        return tf.stack([first_output,second_output,third_output], axis=1)
+
+
+        #frame_tensor_shape = frames.get_shape().as_list()
+        #target_shape = frame_tensor_shape.copy()
+        #target_shape[0] *= target_shape[1]
+        #target_shape.pop(1)
+
+        #return tf.reshape(generator(tf.reshape(frames, target_shape)),frame_tensor_shape)
 

@@ -12,7 +12,7 @@ def get_train_parser():
                         help='Temporal Discriminator Loss coefficient')
     parser.add_argument('--cycle_loss_coeff', type=float, default=10,
                         help='Cycle Consistency Loss coefficient')
-    parser.add_argument('--identity_loss_coeff', type=float, default=5,
+    parser.add_argument('--identity_loss_coeff', type=float, default=15,
                         help='Identity Loss coefficient')
     parser.add_argument('--identity_loss_fadeout', type=bool, default=True,
                         help='Whether the identity loss should fade out.')

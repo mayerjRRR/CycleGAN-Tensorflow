@@ -15,7 +15,7 @@ class Losses:
 
     def define_discriminator_output(self, networks: Networks, placeholders: Placeholders, images: Images):
         self.define_discriminator_output_video(images, networks, placeholders)
-        self.define_discriminator_output_images(images, networks, placeholders)
+        #self.define_discriminator_output_images(images, networks, placeholders)
         self.define_temporal_discriminator_output(images, networks, placeholders)
 
     def define_discriminator_output_video(self, images: Images, networks: Networks, placeholders: Placeholders):

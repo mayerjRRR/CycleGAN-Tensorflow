@@ -9,7 +9,7 @@ class Images:
 
     def __init__(self, placeholders: Placeholders, networks: Networks, augment_shape):
         self.define_input(placeholders, augment_shape)
-        self.define_fake_images(networks)
+        #self.define_fake_images(networks)
         self.define_fake_frames(networks)
 
     def define_input(self, placeholders: Placeholders, augment_shape):
