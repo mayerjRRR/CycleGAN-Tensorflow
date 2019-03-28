@@ -4,14 +4,14 @@ from src.components.images import Images
 from src.components.networks import Networks
 from src.components.placeholders import Placeholders
 from src.utils.tensor_ops import layer_frames_in_channels
+from src.utils.argument_parser import TrainingConfig
 
 
 class Losses:
-    def __init__(self, networks: Networks, placeholders: Placeholders, images: Images, cycle_loss_coeff,
-                 identity_loss_coeff, train_videos,
-                 train_images):
+    def __init__(self, networks: Networks, placeholders: Placeholders, images: Images, training_config: TrainingConfig,
+                 train_videos, train_images):
         self.define_discriminator_output(networks, placeholders, images)
-        self.define_losses(images, placeholders, cycle_loss_coeff, identity_loss_coeff, train_videos, train_images)
+        self.define_losses(images, placeholders, training_config, train_videos, train_images)
 
     def define_discriminator_output(self, networks: Networks, placeholders: Placeholders, images: Images):
         self.define_discriminator_output_video(images, networks, placeholders)
@@ -48,13 +48,12 @@ class Losses:
         self.D_temp_history_fake_b = networks.discriminator_temporal(
             layer_frames_in_channels(placeholders.history_fake_temp_frames_b))
 
-    def define_losses(self, images: Images, placeholders: Placeholders, cycle_loss_coeff, identity_loss_coeff,
-                      train_videos, train_images):
+    def define_losses(self, images: Images, placeholders: Placeholders, training_config, train_videos, train_images):
         self.define_discriminator_loss(train_videos, train_images)
         self.define_spacial_generator_loss(train_images)
         self.define_temporal_generator_loss(placeholders, train_videos)
-        self.define_cycle_loss(images, cycle_loss_coeff, train_images)
-        self.define_identity_loss(images, placeholders, identity_loss_coeff, train_images)
+        self.define_cycle_loss(images, training_config.cycle_loss_coefficient, train_images)
+        self.define_identity_loss(images, placeholders, training_config.identity_loss_coefficient, train_images)
         self.define_total_generator_loss()
 
     def define_discriminator_loss(self, train_videos, train_images):

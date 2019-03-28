@@ -14,7 +14,7 @@ def train(image_size=256, batch_size=8, dataset_directory="datasets", task="vidz
 
     saver = get_saver()
 
-    optimizer = tf.train.AdamOptimizer(learning_rate=0.0002).minimize(l1_warp_loss)
+    optimizer = tf.train.AdamOptimizer(learning_rate=0.0001).minimize(l1_warp_loss)
 
     summary_op = create_summary(first_frame, first_frame_warped, l1_warp_loss, second_frame, warp_difference_bw)
     summary_writer = tf.summary.FileWriter('./fnet/log/' + strftime("%Y_%m_%d_%H_%M_%S", gmtime()))

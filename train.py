@@ -6,8 +6,9 @@ import tensorflow as tf
 from src.data_loader import get_training_datasets
 from src.cycle_gan import CycleGan
 import src.utils.argument_parser as argument_parser
-from src.utils.fast_saver import FastSaver
-from src.utils.utils import logger, makedirs
+from src.utils.utils import get_logger, makedirs
+
+logger = get_logger("main")
 
 
 def is_video_data(train_A):
@@ -21,15 +22,10 @@ def train(model, train_A, train_B, logdir, learning_rate):
     variables_to_save = tf.global_variables()
     init_op = tf.variables_initializer(variables_to_save)
     init_all_op = tf.global_variables_initializer()
-    logger.info('Trainable vars:')
-    var_list = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES,
-                                 tf.get_variable_scope().name)
 
     var_list_fnet = tf.get_collection(tf.GraphKeys.MODEL_VARIABLES, scope='fnet')
     fnet_loader = tf.train.Saver(var_list_fnet)
 
-    for v in var_list:
-        logger.info('  %s %s', v.name, v.get_shape())
     summary_writer = tf.summary.FileWriter(logdir)
 
     def init_fn(sess):
@@ -37,7 +33,6 @@ def train(model, train_A, train_B, logdir, learning_rate):
         sess.run(init_all_op)
         fnet_loader.restore(sess, './fnet/fnet-0')
 
-    logger.info("Starting training session.")
 
     config = tf.ConfigProto()
     config.gpu_options.allow_growth = True
@@ -48,6 +43,7 @@ def train(model, train_A, train_B, logdir, learning_rate):
         summary_writer.add_graph(sess.graph)
         model.savers.load_all(sess)
 
+        logger.info(f"Starting {'video' if model.train_videos else 'image'} training.")
         if (model.train_videos):
             model.train_on_videos(sess, summary_writer, next_a, next_b,learning_rate)
         else:
@@ -55,37 +51,34 @@ def train(model, train_A, train_B, logdir, learning_rate):
 
 
 def main():
-    args, _ = argument_parser.get_train_parser().parse_known_args()
-
-    logger.info('Build datasets:')
-
-    if not args.force_image:
-        train_A, train_B = get_training_datasets(args.task, args.image_size, args.batch_size,
-                                             dataset_dir=args.dataset_directory)
+    training_config = argument_parser.get_training_config()
+    logger.info('Building datasets...')
+    if not training_config.force_image_training:
+        train_A, train_B = get_training_datasets(training_config.task_name, training_config.input_width, training_config.batch_size,
+                                             dataset_dir=training_config.dataset_directory)
     else:
-        train_A, train_B = get_training_datasets(args.task, args.image_size, args.batch_size,
-                                                 dataset_dir=args.dataset_directory, frame_sequence_length=1)
+        train_A, train_B = get_training_datasets(training_config.task_name, training_config.input_width, training_config.batch_size,
+                                                 dataset_dir=training_config.dataset_directory, frame_sequence_length=1)
 
     train_videos = is_video_data(train_A)
 
-    if args.load_model != '':
-        model_name = args.load_model
+    if training_config.model_directory != '':
+        model_name = training_config.model_directory
     else:
         date = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        model_name = f"{args.task}_{date}"
-    logdir = args.log_directory
-    makedirs(logdir)
-    init_dir = os.path.join(logdir, args.init_model)
-    save_dir = os.path.join(logdir, model_name)
-    logger.info('Events directory: %s', save_dir)
+        model_name = f"{training_config.task_name}_{date}"
+    log_dir = training_config.logging_directory
+    makedirs(log_dir)
+    training_config.initialization_model = os.path.join(log_dir, training_config.initialization_model)
+    training_config.logging_directory = os.path.join(log_dir, model_name)
+    logger.info(f"Checkpoints and Logs will be saved to {training_config.logging_directory}")
 
-    logger.info('Build graph:')
     # TODO: extend for hybrid data set
-    model = CycleGan(save_dir=save_dir, init_dir=init_dir,image_height=args.image_size, batch_size=args.batch_size, cycle_loss_coeff=args.cycle_loss_coeff,
-                     log_step=args.log_step, train_videos=train_videos, train_images=not train_videos)
 
-    train(model, train_A, train_B, save_dir, args.learning_rate)
+    logger.info('Building cyclegan:')
+    model = CycleGan(training_config=training_config, train_videos=train_videos, train_images=not train_videos)
 
+    train(model, train_A, train_B, training_config.logging_directory, training_config.learning_rate)
 
 if __name__ == "__main__":
     main()

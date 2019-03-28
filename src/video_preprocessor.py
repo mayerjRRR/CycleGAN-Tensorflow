@@ -2,6 +2,9 @@ import cv2
 import os
 
 from src.utils.utils import get_all_video_paths
+from src.utils.utils import get_logger
+
+logger = get_logger("video_preprocessor")
 
 frame_directory_name = 'frames'
 
@@ -10,26 +13,26 @@ def preprocess_videos(path):
     video_paths = get_all_video_paths(path)
 
     if os.path.exists(frame_dir):
-        print("Frame directory already exists, no preprocessing needed!")
+        logger.info("Frame directory already exists, no preprocessing needed!")
         return
     else:
         os.makedirs(frame_dir)
 
-    print(f"Preprocessing {len(video_paths)} videos.")
+    logger.info(f"Preprocessing {len(video_paths)} videos.")
     for path in video_paths:
-        print(f"Preprocessing {path}...")
+        logger.info(f"Preprocessing {path}...")
         extract_video_frames(path, frame_dir)
 
 
 def extract_video_frames(video_path, frame_directory):
     videoCapture = cv2.VideoCapture(video_path)
     if not videoCapture.isOpened():
-        print('Error opening video {}'.format(video_path))
+        logger.info('Error opening video {}'.format(video_path))
         return
 
     ret, frame = videoCapture.read()
     if len(frame.shape) != 3 or frame.shape[2] != 3:
-        print('Wrong image {} with shape {}'.format(video_path, frame.shape))
+        logger.info('Wrong image {} with shape {}'.format(video_path, frame.shape))
         return
 
     image_format = ".jpg"
@@ -47,5 +50,5 @@ def extract_video_frames(video_path, frame_directory):
         ret, frame = videoCapture.read()
         frame_index += 1
 
-    print(f"Extracted {frame_index} frames.")
+    logger.info(f"Extracted {frame_index} frames.")
     videoCapture.release()

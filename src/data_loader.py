@@ -3,6 +3,7 @@ import os.path
 import tensorflow as tf
 import numpy as np
 from glob import glob as get_all_paths
+from src.utils.utils import get_logger
 
 from src.video_preprocessor import preprocess_videos
 from src.utils.utils import contains_videos
@@ -11,6 +12,8 @@ dataset_names = ['trainA', 'trainB']
 image_format_file_ending = 'jpg'
 video_format_file_ending = 'mp4'
 video_index_padding = 1 + 6 + 1
+
+logger = get_logger("data_loader")
 
 
 def get_training_datasets(task_name, image_size, batch_size, dataset_dir="datasets",frame_sequence_length = 3) -> [tf.data.Dataset]:
@@ -80,7 +83,7 @@ def get_path_lists(task_name, dataset_dir, frame_sequence_length):
         base_dir = os.path.join(dataset_dir, task_name)
         data_dir = os.path.join(base_dir, dir_name)
         is_video_data = contains_videos(data_dir)
-        print(f"Training with {'videos' if is_video_data else 'images'} from {data_dir}")
+        logger.info(f"Training with {'video' if is_video_data else 'image'} data from {data_dir}")
         if is_video_data:
             task_image_paths = get_video_frame_sequences(data_dir, frame_sequence_length)
         else:

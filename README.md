@@ -1,18 +1,26 @@
+# Temporally Coherent CycleGAN
 
-# TODO REWORK!!!!!!!!!!!!!!!!!!!
+The goal is to create a temporally coherent CylceGAN. 
 
-# Temporal CycleGAN
+<p align = 'center'>
+<img src = 'horse.gif' width = '49%'>
+<img src = 'zebra_temp.gif' width = '49%'>
+</p>
 
-The goal is to create a temporally consistent CylceGAN, based on [Youngwoon Lee's implementation](https://github.com/gitlimlab/CycleGAN-Tensorflow) of a CycleGAN in Tensorflow.
+The implementation is based on [Youngwoon Lee's implementation](https://github.com/gitlimlab/CycleGAN-Tensorflow) of a CycleGAN in Tensorflow.
 
-## Dependencies
+## Installation 
 
-- Python 3.6
-- [Tensorflow 1.8.0](https://www.tensorflow.org/)
-- [NumPy](https://pypi.python.org/pypi/numpy)
-- [SciPy](https://pypi.python.org/pypi/scipy)
-- [tqdm](https://github.com/tqdm/tqdm)
-- OpenCV
+### Prerequisites:
+
+- a working Python 3.6.x installation
+- a working CUDA installation for tensorflow 1.8.0 
+- optionally a virtual environment
+
+### Installation:
+
+- clone the repository 
+- ``pip install -r requirements.txt``
 
 ## Usage
 
@@ -24,7 +32,7 @@ The goal is to create a temporally consistent CylceGAN, based on [Youngwoon Lee'
 $ python train.py --task <taskname>
 ```
 
-The corresponding `./dataset/<taskname>` directory should contain `trainA` and `trainB` directories containg training
+The corresponding `./dataset/<taskname>` directory should contain `trainA` and `trainB` directories containing training
 data for domain A and domain B respectively. 
 
 The training data can be either images or videos for each domain. Handling of different data types is done automatically.
@@ -32,7 +40,6 @@ The training data can be either images or videos for each domain. Handling of di
 Command line options:
 
 - `--task` : Name of the task, specifies the training data directory
-- `--batch_size`: Batch size, default is 4 (Empirical sweet spot for GTX 1080ti)
 - `--image_size`: Resolution of the training data, default is 256
 - `--load_model`: Optional log/checkpoint directory of an existing model, use to continue training
 
@@ -52,7 +59,7 @@ Applies a domain transfer using a trained model to an input. Works for images an
 Example:
 
 ``
-python test.py --input "test_image.jpeg" --output "test_output.jpeg" --model_dir "logs/videos_2018-12-01_16-45-08"
+python test.py --input "test_image.jpeg" --output "test_output.jpeg"
 ``
 
 Command line options:
@@ -68,17 +75,10 @@ More command line options can be found with `--help`.
 
 ## Results
 
-Example on the domains "Photos" and "[Ukiyo-e](https://en.wikipedia.org/wiki/Ukiyo-e)" trained with images only. Training took 10 hours on a GTX 1080ti.
+Example on the domains "Horse" and "Zebra" trained without (middle) and with temporal discriminator (right).
 
 <p align = 'center'>
-<img src = 'test_image.jpeg' width = '33%'>
-<img src = 'test_output.jpeg' width = '33%'>
-<img src = 'circle_output.jpeg' width = '33%'>
-</p>
-
-Example on the domains "Horse" and "Zebra" trained with images only (no temporal consistency).
-
-<p align = 'center'>
-<img src = 'horse_gif.gif' width = '49%'>
-<img src = 'zebra_gif.gif' width = '49%'>
+<img src = 'horse.gif' width = '99%'>
+<img src = 'zebra_non_temp.gif' width = '99%'>
+<img src = 'zebra_temp.gif' width = '99%'>
 </p>

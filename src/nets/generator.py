@@ -1,11 +1,12 @@
 import tensorflow as tf
-from src.utils.utils import logger
+from src.utils.utils import get_logger
 from src.nets import ops
 
+logger = get_logger("generator")
 
 class Generator(object):
     def __init__(self, name, is_train, norm='instance', activation='relu'):
-        logger.info('Init Generator %s', name)
+        logger.info(f"Initializing Generator {name}", )
         self.name = name
         self._is_train = is_train
         self._norm = norm

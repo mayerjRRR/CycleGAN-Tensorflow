@@ -1,11 +1,12 @@
 import tensorflow as tf
-from src.utils.utils import logger
+from src.utils.utils import get_logger
 from src.nets import ops
 
+logger = get_logger("discriminator")
 
 class Discriminator(object):
     def __init__(self, name, is_train, norm='instance', activation='leaky'):
-        logger.info('Init Discriminator %s', name)
+        logger.info(f"Initializing Discriminator {name}...")
         self.name = name
         self._is_train = is_train
         self._norm = norm

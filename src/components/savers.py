@@ -5,6 +5,9 @@ import tensorflow as tf
 from src.components.networks import Networks
 from src.components.placeholders import Placeholders
 
+from src.utils.utils import get_logger
+
+logger = get_logger("savers")
 
 class Saver:
     def __init__(self, variable_list, save_path, init_path=None, name="Unnamed Graph"):
@@ -18,19 +21,19 @@ class Saver:
     def load(self, session):
         try:
             self.saver.restore(session, tf.train.latest_checkpoint(self.save_path))
-            print(f"Successfully restored {self.name} from {tf.train.latest_checkpoint(self.save_path)}!")
+            logger.info(f"Successfully restored {self.name} from {tf.train.latest_checkpoint(self.save_path)}!")
         except:
-            print(f"Could not restore {self.name} from {self.save_path}. Maybe it doesn't exist!")
+            logger.warning(f"Could not restore {self.name} from {self.save_path}. Maybe it doesn't exist!")
             self.attempt_restoring_from_initialization_checkpoint(session)
 
     def attempt_restoring_from_initialization_checkpoint(self, session):
         if self.init_path:
-            print(f"Trying to initialize {self.name} from {self.init_path}.")
+            logger.info(f"Trying to initialize {self.name} from {self.init_path}.")
             try:
                 self.saver.restore(session, tf.train.latest_checkpoint(self.init_path))
-                print(f"Successfully initialized {self.name} from {tf.train.latest_checkpoint(self.init_path)}!")
+                logger.info(f"Successfully initialized {self.name} from {tf.train.latest_checkpoint(self.init_path)}!")
             except:
-                print(f"Could not initialize {self.name} from {self.init_path}. Maybe it doesn't exist!")
+                logger.warning(f"Could not initialize {self.name} from {self.init_path}. Maybe it doesn't exist!")
 
     def save(self, session, global_step):
         self.saver.save(session, os.path.join(self.save_path, "model.ckpt"), global_step=global_step,

@@ -1,14 +1,14 @@
 import os
 import logging
 from glob import glob
-import tensorflow as tf
 
 checkpoint_directory = "logs"
 
-# TODO: remove logger or use properly
-logging.info("Start CycleGAN")
-logger = logging.getLogger('cycle-gan')
-logger.setLevel(logging.INFO)
+def get_logger(name=None):
+    logging.info(f"Start {name}")
+    logger = logging.getLogger(name)
+    logger.setLevel(logging.INFO)
+    return logger
 
 def makedirs(path):
     if not os.path.exists(path):
