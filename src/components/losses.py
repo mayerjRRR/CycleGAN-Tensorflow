@@ -111,7 +111,7 @@ class Losses:
             self.loss_id_ba = tf.reduce_mean(tf.abs(images.warped_frames_b[:, 1] - images.frames_ba[:, 1]))
 
         self.identity_fade_out_weight = fade_out_weight(placeholders.global_step, 500, 1000, "identity_fade_out_weight")
-        self.loss_identity = identity_loss_coeff * (self.loss_rec_aba + self.loss_rec_bab)
+        self.loss_identity = self.identity_fade_out_weight*identity_loss_coeff * (self.loss_rec_aba + self.loss_rec_bab)
 
     def define_total_generator_loss(self):
         self.loss_G_ab_final = self.loss_G_spat_ab + self.loss_G_temp_ab + self.loss_cycle + self.loss_identity

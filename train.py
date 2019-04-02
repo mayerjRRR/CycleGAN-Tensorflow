@@ -68,7 +68,7 @@ def main():
     log_dir = training_config.logging_directory
     makedirs(log_dir)
     training_config.initialization_model = os.path.join(log_dir, training_config.initialization_model)
-    training_config.logging_directory = os.path.join(log_dir, training_config.model_directory)
+    training_config.model_directory = os.path.join(log_dir, training_config.model_directory)
     logger.info(f"Checkpoints and Logs will be saved to {training_config.logging_directory}")
 
     # TODO: extend for hybrid data set
@@ -76,7 +76,7 @@ def main():
     logger.info('Building cyclegan:')
     model = CycleGan(training_config=training_config, train_videos=train_videos, train_images=not train_videos)
 
-    train(model, train_A, train_B, training_config.logging_directory, training_config.learning_rate)
+    train(model, train_A, train_B, training_config.model_directory, training_config.learning_rate)
 
 if __name__ == "__main__":
     main()

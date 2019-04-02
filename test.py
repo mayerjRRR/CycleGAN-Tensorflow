@@ -78,7 +78,7 @@ def compute_inference_resolution(height, width):
 def process_and_store_frame(frame, inference_machine, video_writer, forwards, height, width,
                             inference_height, inference_width):
     resized_frame = cv2.resize(frame, (inference_width, inference_height))
-    result = inference_machine.single_image_inference(resized_frame, forwards)
+    result = inference_machine.recurrent_inference(resized_frame, forwards)
     resized_result = cv2.resize(result, (width, height))
     uint8_result = float_to_unit8(resized_result)
     bgr_result = cv2.cvtColor(uint8_result, cv2.COLOR_RGB2BGR)
@@ -106,7 +106,7 @@ def process_single_image(input, output, forwards, model_dir):
 def process_single_float_image(input_image, inference_machine, forwards, height, width, inference_height,
                                inference_width):
     input_image = cv2.resize(input_image, (inference_width, inference_height))
-    result = inference_machine.single_image_inference(input_image, forwards)
+    result = inference_machine.recurrent_inference(input_image, forwards)
     result = cv2.resize(result, (width, height))
     return result
 

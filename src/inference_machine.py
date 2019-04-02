@@ -2,6 +2,9 @@ import os.path
 import tensorflow as tf
 from src.components.savers import Saver
 from src.nets.generator import Generator
+import numpy as np
+
+from src.utils.warp_utils import pseudorecurrent_inference
 
 
 class InferenceMachine:
@@ -11,6 +14,9 @@ class InferenceMachine:
         self.create_session()
         self.restore_generator_weights()
 
+        self.last_frame_array = None
+        self.last_result_array = None
+
     def create_graph(self, model_dir, height, width):
 
         self.create_placeholders(height, width)
@@ -19,8 +25,9 @@ class InferenceMachine:
         self.create_savers(model_dir)
 
     def create_placeholders(self, height, width):
-        self.image_a = tf.placeholder(tf.float32, [1, height, width, 3], name='image_a')
-        self.image_b = tf.placeholder(tf.float32, [1, height, width, 3], name='image_b')
+        self.current_frame = tf.placeholder(tf.float32, [1, height, width, 3], name='current')
+        self.last_frame = tf.placeholder(tf.float32, [1, height, width, 3], name='last')
+        self.last_result = tf.placeholder(tf.float32, [1, height, width, 3], name='last_result')
 
     def create_generators(self):
         self.generator_ab = Generator('generator_ab', norm='instance',
@@ -29,14 +36,19 @@ class InferenceMachine:
                                       activation='relu', is_train=None)
 
     def define_generator_output(self):
-        self.image_ab = self.generator_ab(self.image_a)
-        self.image_ba = self.generator_ba(self.image_b)
+        self.image_ab = pseudorecurrent_inference(self.generator_ab, self.current_frame, self.last_frame, self.last_result)
+        self.image_ba = pseudorecurrent_inference(self.generator_ba, self.current_frame, self.last_frame, self.last_result)
+
 
     def create_savers(self, model_dir):
         self.generator_ab_saver = Saver(self.generator_ab.var_list,
                                         save_path=os.path.join(model_dir, self.generator_ab.name), name="Generator AB")
         self.generator_ba_saver = Saver(self.generator_ba.var_list,
                                         save_path=os.path.join(model_dir, self.generator_ba.name), name="Generator BA")
+
+        fnet_variable_list = tf.get_collection(tf.GraphKeys.MODEL_VARIABLES, scope='fnet')
+        self.fnet_saver = Saver(fnet_variable_list, save_path='./fnet',
+                                name="FNet")
 
     def create_session(self):
         config = tf.ConfigProto()
@@ -46,25 +58,22 @@ class InferenceMachine:
     def restore_generator_weights(self):
         self.generator_ab_saver.load(self.sess)
         self.generator_ba_saver.load(self.sess)
+        self.fnet_saver.load(self.sess)
 
     def __del__(self):
         self.sess.close()
 
-    def single_image_inference(self, input_image, forwards):
+    def recurrent_inference(self, input_image, forwards):
+
+        if self.last_frame_array is None:
+            self.last_frame_array = np.full_like(input_image, -1.0)
+            self.last_result_array = np.full_like(input_image, -1.0)
 
         graph = self._get_inference_graph(forwards)
 
-        result = self.sess.run(graph, feed_dict={self.image_a: [input_image],
-                                                 self.image_b: [input_image]})[0]
-        return result
-
-    def multi_frame_inference(self, input_frames, forwards):
-        result = []
-
-        graph = self._get_inference_graph(forwards)
-        for frame in input_frames:
-            result.append(self.sess.run(graph, feed_dict={self.image_a: [frame],
-                                                          self.image_b: [frame]})[0])
+        result = self.sess.run(graph, feed_dict={self.current_frame: [input_image],
+                                                 self.last_frame: [self.last_frame_array],
+                                                 self.last_result: [self.last_result_array]})[0]
         return result
 
     def _get_inference_graph(self, forwards):
