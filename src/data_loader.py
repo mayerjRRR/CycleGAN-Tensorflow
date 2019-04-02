@@ -99,6 +99,7 @@ def get_image_frame_sequences(data_dir):
 def get_path_list(data_dir):
     image_path_pattern = os.path.join(data_dir, f"*{image_format_file_ending}")
     task_image_paths = get_all_paths(image_path_pattern)
+    task_image_paths.sort(key=str.lower)
     return task_image_paths
 
 
@@ -128,8 +129,6 @@ def get_video_names(task_name):
 def get_video_frames(video_name):
     all_frames = get_all_paths(video_name + "_*." + image_format_file_ending)
     all_frames.sort(key=str.lower)
-    for i in range(10):
-        print(all_frames[i])
     return all_frames
 
 
