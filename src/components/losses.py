@@ -15,7 +15,7 @@ class Losses:
 
     def define_discriminator_output(self, networks: Networks, placeholders: Placeholders, images: Images):
         self.define_discriminator_output_video(images, networks, placeholders)
-        #self.define_discriminator_output_images(images, networks, placeholders)
+        # self.define_discriminator_output_images(images, networks, placeholders)
         self.define_temporal_discriminator_output(images, networks, placeholders)
 
     def define_discriminator_output_video(self, images: Images, networks: Networks, placeholders: Placeholders):
@@ -111,11 +111,11 @@ class Losses:
             self.loss_id_ba = tf.reduce_mean(tf.abs(images.warped_frames_b[:, 1] - images.frames_ba[:, 1]))
 
         self.identity_fade_out_weight = fade_out_weight(placeholders.global_step, 500, 1000, "identity_fade_out_weight")
-        self.loss_identity = self.identity_fade_out_weight*identity_loss_coeff * (self.loss_rec_aba + self.loss_rec_bab)
+        self.loss_identity = identity_loss_coeff * (self.loss_rec_aba + self.loss_rec_bab)
 
     def define_total_generator_loss(self):
-        self.loss_G_ab_final = self.loss_G_spat_ab + self.loss_G_temp_ab + self.loss_cycle + self.loss_identity
-        self.loss_G_ba_final = self.loss_G_spat_ba + self.loss_G_temp_ba + self.loss_cycle + self.loss_identity
+        self.loss_G_ab_final = self.loss_G_spat_ab + self.loss_G_temp_ab + self.loss_cycle + self.identity_fade_out_weight * self.loss_identity
+        self.loss_G_ba_final = self.loss_G_spat_ba + self.loss_G_temp_ba + self.loss_cycle + self.identity_fade_out_weight * self.loss_identity
 
 
 def fade_in_weight(step, start, duration, name):

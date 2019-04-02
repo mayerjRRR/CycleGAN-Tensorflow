@@ -3,6 +3,7 @@ import tensorflow as tf
 from src.components.networks import Networks
 from src.components.placeholders import Placeholders
 from src.utils.tensor_ops import extract_frames_from_channels, layer_frames_in_channels
+from src.utils.warp_utils import get_flows_to_middle_frame, warp_to_middle_frame, apply_inference_on_multiframe
 
 
 class Images:
@@ -43,17 +44,17 @@ class Images:
         self.image_aba = networks.generator_ba(self.image_ab)
 
     def define_fake_frames(self, networks: Networks):
-        self.flows_a = networks.get_flows_to_middle_frame(self.frames_a)
-        self.flows_b = networks.get_flows_to_middle_frame(self.frames_b)
+        self.flows_a = get_flows_to_middle_frame(self.frames_a)
+        self.flows_b = get_flows_to_middle_frame(self.frames_b)
 
-        self.warped_frames_a = networks.warp_to_middle_frame(self.frames_a, self.flows_a)
-        self.warped_frames_b = networks.warp_to_middle_frame(self.frames_b, self.flows_b)
+        self.warped_frames_a = warp_to_middle_frame(self.frames_a, self.flows_a)
+        self.warped_frames_b = warp_to_middle_frame(self.frames_b, self.flows_b)
 
-        self.frames_ab = networks.apply_inference_on_multiframe(self.frames_a, networks.generator_ab)
-        self.frames_ba = networks.apply_inference_on_multiframe(self.frames_b, networks.generator_ba)
+        self.frames_ab = apply_inference_on_multiframe(self.frames_a, networks.generator_ab)
+        self.frames_ba = apply_inference_on_multiframe(self.frames_b, networks.generator_ba)
 
-        self.warped_frames_ab = networks.warp_to_middle_frame(self.frames_ab, self.flows_a)
-        self.warped_frames_ba = networks.warp_to_middle_frame(self.frames_ba, self.flows_b)
+        self.warped_frames_ab = warp_to_middle_frame(self.frames_ab, self.flows_a)
+        self.warped_frames_ba = warp_to_middle_frame(self.frames_ba, self.flows_b)
 
-        self.frames_aba = networks.apply_inference_on_multiframe(self.frames_ab, networks.generator_ba)
-        self.frames_bab = networks.apply_inference_on_multiframe(self.frames_ba, networks.generator_ab)
+        self.frames_aba = apply_inference_on_multiframe(self.frames_ab, networks.generator_ba)
+        self.frames_bab = apply_inference_on_multiframe(self.frames_ba, networks.generator_ab)
