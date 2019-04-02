@@ -126,7 +126,11 @@ def get_video_names(task_name):
 
 
 def get_video_frames(video_name):
-    return get_all_paths(video_name + "_*." + image_format_file_ending)
+    all_frames = get_all_paths(video_name + "_*." + image_format_file_ending)
+    all_frames.sort(key=str.lower)
+    for i in range(10):
+        print(all_frames[i])
+    return all_frames
 
 
 def get_video_frame_sequences(task_name, sequencial_frames):
