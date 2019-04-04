@@ -69,7 +69,7 @@ def main():
     makedirs(log_dir)
     training_config.initialization_model = os.path.join(log_dir, training_config.initialization_model)
     training_config.model_directory = os.path.join(log_dir, training_config.model_directory)
-    logger.info(f"Checkpoints and Logs will be saved to {training_config.logging_directory}")
+    logger.info(f"Checkpoints and Logs will be saved to {training_config.model_directory}")
 
     # TODO: extend for hybrid data set
 
