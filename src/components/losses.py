@@ -51,7 +51,7 @@ class Losses:
     def define_losses(self, images: Images, placeholders: Placeholders, training_config, train_videos, train_images):
         self.define_discriminator_loss(train_videos, train_images)
         self.define_spacial_generator_loss(train_images)
-        self.define_temporal_generator_loss(placeholders, train_videos)
+        self.define_temporal_generator_loss(placeholders, train_videos, training_config.temporal_loss_coefficient)
         self.define_cycle_loss(images, training_config.cycle_loss_coefficient, train_images)
         self.define_identity_loss(images, placeholders, training_config.identity_loss_coefficient, train_images)
         self.define_total_generator_loss()
@@ -84,11 +84,11 @@ class Losses:
             self.loss_G_spat_ab = tf.reduce_mean(tf.squared_difference(self.D_fake_frame_b, 0.9))
             self.loss_G_spat_ba = tf.reduce_mean(tf.squared_difference(self.D_fake_frame_a, 0.9))
 
-    def define_temporal_generator_loss(self, placeholders: Placeholders, train_videos):
+    def define_temporal_generator_loss(self, placeholders: Placeholders, train_videos, temp_loss_coeff):
         if train_videos:
             self.temp_loss_weigth = fade_in_weight(placeholders.global_step, 2000, 4000, "temp_loss_weigth")
-            self.loss_G_temp_ab = self.temp_loss_weigth * tf.reduce_mean(tf.squared_difference(self.D_temp_fake_b, 0.9))
-            self.loss_G_temp_ba = self.temp_loss_weigth * tf.reduce_mean(tf.squared_difference(self.D_temp_fake_a, 0.9))
+            self.loss_G_temp_ab = self.temp_loss_weigth * temp_loss_coeff * tf.reduce_mean(tf.squared_difference(self.D_temp_fake_b, 0.9))
+            self.loss_G_temp_ba = self.temp_loss_weigth * temp_loss_coeff * tf.reduce_mean(tf.squared_difference(self.D_temp_fake_a, 0.9))
         else:
             self.loss_G_temp_ab = self.loss_G_temp_ba = tf.constant(0.0, dtype=tf.float32)
 

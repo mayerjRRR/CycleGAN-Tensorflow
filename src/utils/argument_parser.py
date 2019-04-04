@@ -8,7 +8,7 @@ def get_train_parser():
                         help='Task name')
     parser.add_argument('--dataset_directory', type=str, default='datasets', help='Location of the training data')
     parser.add_argument('--log_directory', type=str, default='./logs', help='Location that the logs will we stored')
-    parser.add_argument('--temp_loss_coeff', type=float, default=1,
+    parser.add_argument('--temp_loss_coeff', type=float, default=0.5,
                         help='Temporal Discriminator Loss coefficient')
     parser.add_argument('--cycle_loss_coeff', type=float, default=10,
                         help='Cycle Consistency Loss coefficient')
@@ -73,8 +73,8 @@ def get_training_config():
 def get_inference_parser():
     parser = argparse.ArgumentParser(description="Inference commands")
 
-    parser.add_argument('--input', type=str, help='Location of the input',default='test_image.jpeg')
-    parser.add_argument('--output', type=str, help='Location of the desired output',default='test_output.jpeg')
+    parser.add_argument('--input', type=str, help='Location of the input',default='results/test_image.jpeg')
+    parser.add_argument('--output', type=str, help='Location of the desired output',default='results/test_output.jpeg')
     parser.add_argument('--forwards', dest='forwards', action='store_true')
     parser.add_argument('--backwards', dest='forwards', action='store_false')
     parser.set_defaults(forwards=True)

@@ -1,7 +1,6 @@
 # Tensorflow logs / datasets / results
 logs/
 datasets/
-results/
 
 # Temporary files
 *.zip

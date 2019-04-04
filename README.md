@@ -3,8 +3,8 @@
 The goal is to create a temporally coherent CylceGAN. 
 
 <p align = 'center'>
-<img src = 'horse.gif' width = '49%'>
-<img src = 'zebra_temp.gif' width = '49%'>
+<img src = 'results/horse.gif' width = '49%'>
+<img src = 'results/zebra_temp.gif' width = '49%'>
 </p>
 
 The implementation is based on [Youngwoon Lee's implementation](https://github.com/gitlimlab/CycleGAN-Tensorflow) of a CycleGAN in Tensorflow.
@@ -78,7 +78,7 @@ More command line options can be found with `--help`.
 Example on the domains "Horse" and "Zebra" trained without (middle) and with temporal discriminator (right).
 
 <p align = 'center'>
-<img src = 'horse.gif' width = '99%'>
-<img src = 'zebra_non_temp.gif' width = '99%'>
-<img src = 'zebra_temp.gif' width = '99%'>
+<img src = 'results/horse.gif' width = '99%'>
+<img src = 'results/zebra_non_temp.gif' width = '99%'>
+<img src = 'results/zebra_temp.gif' width = '99%'>
 </p>
