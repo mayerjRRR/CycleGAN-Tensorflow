@@ -14,6 +14,8 @@ def get_train_parser():
                         help='Cycle Consistency Loss coefficient')
     parser.add_argument('--identity_loss_coeff', type=float, default=15,
                         help='Identity Loss coefficient')
+    parser.add_argument('--pingpong_loss_coeff', type=float, default=1.0,
+                        help='Identity Loss coefficient')
     parser.add_argument('--identity_loss_fadeout', type=bool, default=True,
                         help='Whether the identity loss should fade out.')
     parser.add_argument('--learning_rate', type=float, default=0.0001,
@@ -37,6 +39,8 @@ def get_train_parser():
                         help='Model path to initialize model from (e.g., train_2017-07-07_01-23-45)')
     parser.add_argument('--force_image', default=False, type=bool,
                         help='Force image training even with video data')
+    parser.add_argument('--frame_seq_length', default=3, type=int,
+                        help="Length of the frame sequence for training.")
     return parser
 
 class TrainingConfig:
@@ -46,6 +50,7 @@ class TrainingConfig:
         self.logging_directory = args.log_directory
 
         self.learning_rate = args.learning_rate
+        self.frame_sequence_length = args.frame_seq_length
         self.batch_size = args.batch_size
         self.input_width = args.image_width
         if args.image_height is not None:
@@ -56,6 +61,7 @@ class TrainingConfig:
         self.temporal_loss_coefficient = args.temp_loss_coeff
         self.cycle_loss_coefficient = args.cycle_loss_coeff
         self.identity_loss_coefficient = args.identity_loss_coeff
+        self.pingpong_loss_coefficient = args.pingpong_loss_coeff
         self.fadeout_identity_loss = args.identity_loss_fadeout
         self.force_image_training = args.force_image
 

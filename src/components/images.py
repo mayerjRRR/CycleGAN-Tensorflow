@@ -3,7 +3,7 @@ import tensorflow as tf
 from src.components.networks import Networks
 from src.components.placeholders import Placeholders
 from src.utils.tensor_ops import extract_frames_from_channels, layer_frames_in_channels
-from src.utils.warp_utils import get_flows_to_middle_frame, warp_to_middle_frame, apply_inference_on_multiframe
+from src.utils.warp_utils import get_flows_to_middle_frame, warp_to_middle_frame, apply_inference_on_multiframe, pingpongify
 
 
 class Images:
@@ -58,3 +58,6 @@ class Images:
 
         self.frames_aba = apply_inference_on_multiframe(self.frames_ab, networks.generator_ba)
         self.frames_bab = apply_inference_on_multiframe(self.frames_ba, networks.generator_ab)
+
+        self.pingpong_frames_ab = apply_inference_on_multiframe(pingpongify(self.frames_a),networks.generator_ab)
+        self.pingpong_frames_ba = apply_inference_on_multiframe(pingpongify(self.frames_b),networks.generator_ba)

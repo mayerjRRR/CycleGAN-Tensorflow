@@ -60,3 +60,15 @@ def apply_inference_on_multiframe(frames, generator):
         results.append(result)
 
     return tf.stack(results, axis=1)
+
+def pingpongify(frames):
+    reverse_frames = tf.reverse(frames, axis=[1])
+    pingpong_frames = tf.concat([frames, reverse_frames[:,1:]], axis=1)
+    return pingpong_frames
+
+def compute_pingpong_difference(pingpong_frames):
+    num_frames = pingpong_frames.shape.as_list()[1]
+    result_length = num_frames//2
+    ping = pingpong_frames[:,:result_length]
+    pong = tf.reverse(pingpong_frames[:,-result_length:], axis=[1])
+    return tf.abs(ping-pong)

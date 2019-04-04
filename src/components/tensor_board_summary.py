@@ -26,6 +26,8 @@ class TensorBoardSummary:
         tf.summary.scalar('Losses/Generator_BA', losses.loss_G_spat_ba)
         tf.summary.scalar('Losses/Cycle_Loss', losses.loss_cycle)
         tf.summary.scalar('Losses/Identity_Loss', losses.loss_identity)
+        tf.summary.scalar('Losses/PingPong_Loss_AB', losses.loss_pingpong_ab)
+        tf.summary.scalar('Losses/PingPong_Loss_BA', losses.loss_pingpong_ab)
 
     def add_spacial_discriminator_outputs(self, losses, train_images, train_videos):
         if train_videos:
@@ -58,9 +60,9 @@ class TensorBoardSummary:
             tf.summary.scalar('Temporal_Discriminator_Output/Fake_Frames_from_History_B',
                               tf.reduce_mean(losses.D_temp_history_fake_b))
 
-    def add_model_parameters(self, losses, placeholders, train_videos):
+    def add_model_parameters(self, losses: Losses, placeholders:Placeholders, train_videos):
         if train_videos:
-            tf.summary.scalar('Model_Parameters/Temporal_Loss_Weight', losses.temp_loss_weigth)
+            tf.summary.scalar('Model_Parameters/Temporal_Loss_Weight', losses.temp_loss_fade_in_weigth)
         tf.summary.scalar('Model_Parameters/Identity_Loss_Weight', losses.identity_fade_out_weight)
         tf.summary.scalar('Model_Parameters/Learning_Rate', placeholders.lr)
 
@@ -79,6 +81,7 @@ class TensorBoardSummary:
         self.add_fake_frames(images)
         self.add_warped_fake_frames(images)
         self.add_cycle_frames(images)
+        self.add_ping_pong_frames(images)
 
     def add_input_frames(self, images):
         tf.summary.image('A/Previous', images.frames_a[0:1, 0])
@@ -118,6 +121,10 @@ class TensorBoardSummary:
         tf.summary.image('ABA/Next', images.frames_aba[0:1, 2])
         tf.summary.image('ABA/Previous_Diff', tf.abs(images.frames_aba[0:1, 1] - images.frames_aba[0:1, 0]))
         tf.summary.image('ABA/Next_Diff', tf.abs(images.frames_aba[0:1, 1] - images.frames_aba[0:1, 2]))
+
+    def add_ping_pong_frames(self, images):
+        tf.summary.image('AB_Pingpong/Ping', images.pingpong_frames_ab[0,:3])
+        tf.summary.image('AB_Pingpong/Pong', images.pingpong_frames_ab[0,-3:])
 
     def add_b_frames(self, images):
         tf.summary.image('B/B', images.warped_frames_b[0:1, 1])

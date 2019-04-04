@@ -16,7 +16,7 @@ class CycleGan(object):
     def __init__(self, training_config: TrainingConfig, train_videos=True, train_images=False):
         self.init_parameters(training_config, train_videos, train_images)
 
-        self.placeholders = Placeholders(self.config.batch_size, self._image_shape)
+        self.placeholders = Placeholders(self.config.batch_size, self._image_shape, training_config.frame_sequence_length)
         self.networks = Networks(self.placeholders)
         self.images = Images(self.placeholders, self.networks, self._augment_shape)
         self.losses = Losses(self.networks, self.placeholders, self.images, self.config, self.train_videos, self.train_images)
