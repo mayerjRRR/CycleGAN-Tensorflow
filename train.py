@@ -55,7 +55,7 @@ def main():
     logger.info('Building datasets...')
     if not training_config.force_image_training:
         train_A, train_B = get_training_datasets(training_config.task_name, training_config.input_width, training_config.batch_size,
-                                             dataset_dir=training_config.dataset_directory, frame_sequence_length=training_config.frame_sequence_length)
+                                             dataset_dir=training_config.dataset_directory, frame_sequence_length=training_config.frame_sequence_length, force_video=training_config.force_video_data)
     else:
         train_A, train_B = get_training_datasets(training_config.task_name, training_config.input_width, training_config.batch_size,
                                                  dataset_dir=training_config.dataset_directory, frame_sequence_length=1)

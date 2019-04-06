@@ -16,10 +16,10 @@ video_index_padding = 1 + 6 + 1
 logger = get_logger("data_loader")
 
 
-def get_training_datasets(task_name, image_size, batch_size, dataset_dir="datasets",frame_sequence_length = 3) -> [tf.data.Dataset]:
+def get_training_datasets(task_name, image_size, batch_size, dataset_dir="datasets",frame_sequence_length = 3, force_video = False) -> [tf.data.Dataset]:
     with tf.device('/cpu:0'):
         verify_directory_structure(task_name, dataset_dir)
-        image_path_tensors = get_image_paths(task_name, dataset_dir,frame_sequence_length)
+        image_path_tensors = get_image_paths(task_name, dataset_dir,frame_sequence_length, force_video)
         datasets = build_datasets(image_path_tensors, image_size, batch_size)
         return datasets
 
@@ -62,8 +62,8 @@ def build_dataset(image_path, image_size, batch_size):
     return dataset
 
 
-def get_image_paths(task_name, dataset_dir,frame_sequence_length):
-    image_path_lists = get_path_lists(task_name, dataset_dir,frame_sequence_length)
+def get_image_paths(task_name, dataset_dir,frame_sequence_length, force_video):
+    image_path_lists = get_path_lists(task_name, dataset_dir,frame_sequence_length, force_video)
     image_path_tensors = get_path_tensors(image_path_lists)
 
     return image_path_tensors
@@ -77,12 +77,12 @@ def get_path_tensors(image_path_lists):
     return image_path_tensors
 
 
-def get_path_lists(task_name, dataset_dir, frame_sequence_length):
+def get_path_lists(task_name, dataset_dir, frame_sequence_length, force_video):
     image_path_lists = []
     for dir_name in dataset_names:
         base_dir = os.path.join(dataset_dir, task_name)
         data_dir = os.path.join(base_dir, dir_name)
-        is_video_data = contains_videos(data_dir)
+        is_video_data = force_video or contains_videos(data_dir)
         logger.info(f"Training with {'video' if is_video_data else 'image'} data from {data_dir}")
         if is_video_data:
             task_image_paths = get_video_frame_sequences(data_dir, frame_sequence_length)

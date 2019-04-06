@@ -39,6 +39,8 @@ def get_train_parser():
                         help='Model path to initialize model from (e.g., train_2017-07-07_01-23-45)')
     parser.add_argument('--force_image', default=False, type=bool,
                         help='Force image training even with video data')
+    parser.add_argument('--force_video', default=False, type=bool,
+                        help='Force video training even if videos files not present, frames directory must exist')
     parser.add_argument('--frame_seq_length', default=3, type=int,
                         help="Length of the frame sequence for training.")
     return parser
@@ -64,6 +66,7 @@ class TrainingConfig:
         self.pingpong_loss_coefficient = args.pingpong_loss_coeff
         self.fadeout_identity_loss = args.identity_loss_fadeout
         self.force_image_training = args.force_image
+        self.force_video_data = args.force_video
 
         self.logging_frequency = args.log_step
         self.saving_frequency = args.save_step
