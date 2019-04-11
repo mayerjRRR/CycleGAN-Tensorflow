@@ -12,7 +12,7 @@ def get_train_parser():
                         help='Temporal Discriminator Loss coefficient')
     parser.add_argument('--cycle_loss_coeff', type=float, default=10,
                         help='Cycle Consistency Loss coefficient')
-    parser.add_argument('--identity_loss_coeff', type=float, default=15,
+    parser.add_argument('--identity_loss_coeff', type=float, default=50,
                         help='Identity Loss coefficient')
     parser.add_argument('--pingpong_loss_coeff', type=float, default=1.0,
                         help='Identity Loss coefficient')
@@ -41,7 +41,7 @@ def get_train_parser():
                         help='Force image training even with video data')
     parser.add_argument('--force_video', default=False, type=bool,
                         help='Force video training even if videos files not present, frames directory must exist')
-    parser.add_argument('--frame_seq_length', default=3, type=int,
+    parser.add_argument('--frame_seq_length', default=4, type=int,
                         help="Length of the frame sequence for training.")
     return parser
 

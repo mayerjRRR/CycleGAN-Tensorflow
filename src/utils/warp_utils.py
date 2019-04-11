@@ -9,11 +9,24 @@ def get_flow(first, second):
         flow = fnet(input)
     return tf.image.resize_images(flow, first.shape.as_list()[1:-1])
 
+def stack_triplets_in_batch(frames):
+    num_frames = frames.shape.as_list()[1]
+    num_triplets = num_frames // 3
+
+    triplet_list = []
+    frame_list = tf.unstack(frames, axis=1)
+    for i in range(num_triplets):
+        triplet_list.append(tf.stack(frame_list[3*i:3*(i+1)], axis=1))
+
+    result = tf.concat(triplet_list, axis=0)
+    return  result
+
 
 def warp_to_middle_frame(frame_sequence, flows):
-    previous = frame_sequence[:, 0]
-    current = frame_sequence[:, 1]
-    next = frame_sequence[:, 2]
+
+    previous = frame_sequence[:, -3]
+    current = frame_sequence[:, -2]
+    next = frame_sequence[:, -1]
 
     backwards_flow, forwards_flow = flows
 
@@ -25,9 +38,9 @@ def warp_to_middle_frame(frame_sequence, flows):
 
 def get_flows_to_middle_frame(frame_sequence):
     frame_sequence = (frame_sequence + 1) / 2
-    previous = frame_sequence[:, 0]
-    current = frame_sequence[:, 1]
-    next = frame_sequence[:, 2]
+    previous = frame_sequence[:,-3]
+    current = frame_sequence[:, -2]
+    next = frame_sequence[:, -1]
 
     backwards_flow = get_flow(previous, current)
     forwards_flow = get_flow(next, current)
@@ -67,8 +80,13 @@ def pingpongify(frames):
     return pingpong_frames
 
 def compute_pingpong_difference(pingpong_frames):
-    num_frames = pingpong_frames.shape.as_list()[1]
-    result_length = num_frames//2
-    ping = pingpong_frames[:,:result_length]
-    pong = tf.reverse(pingpong_frames[:,-result_length:], axis=[1])
+    ping, pong = unpingpongify(pingpong_frames)
     return tf.abs(ping-pong)
+
+
+def unpingpongify(pingpong_frames):
+    num_frames = pingpong_frames.shape.as_list()[1]
+    result_length = (num_frames // 2)+1
+    ping = pingpong_frames[:, :result_length]
+    pong = tf.reverse(pingpong_frames[:, -result_length:], axis=[1])
+    return ping, pong
