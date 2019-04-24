@@ -5,6 +5,9 @@ import os
 video_formats = [".mp4"]
 image_formats = [".jpg", ".jpeg",".png"]
 
+def is_directory(path):
+    return os.path.isdir(path)
+
 def is_video(file_path):
     file_ending = get_file_format(file_path)
     return file_ending in video_formats
