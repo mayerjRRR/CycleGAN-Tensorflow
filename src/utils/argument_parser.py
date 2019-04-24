@@ -87,6 +87,8 @@ def get_inference_parser():
     parser.add_argument('--forwards', dest='forwards', action='store_true')
     parser.add_argument('--backwards', dest='forwards', action='store_false')
     parser.set_defaults(forwards=True)
+    parser.add_argument('--side_by_side', dest='with_old', action='store_true')
+    parser.set_defaults(with_old=False)
     parser.add_argument('--model_dir', type=str,
                         help='Model path to load (e.g., train_2017-07-07_01-23-45)')
     return parser

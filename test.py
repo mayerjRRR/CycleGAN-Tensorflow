@@ -17,11 +17,11 @@ def main():
         model_dir = get_latest_model()
 
     if is_video(input):
-        process_video(input, output, forwards, model_dir)
+        process_video(input, output, forwards, model_dir, args.with_old)
     elif is_image(input):
         process_single_image(input, output, forwards, model_dir)
     elif is_directory(input):
-        process_image_directory(input, output, forwards, model_dir)
+        process_image_directory(input, output, forwards, model_dir, args.with_old)
     else:
         print("Input must be either image, video, or directory containing images!")
 
@@ -34,7 +34,7 @@ def parse_arguments(args):
     return forwards, input, model_dir, output
 
 
-def process_image_directory(input, output, forwards, model_dir):
+def process_image_directory(input, output, forwards, model_dir, with_old):
     print("Opening input directory...")
     all_frames = glob.glob(input + "*.jpg")
     all_frames.sort(key=str.lower)
@@ -47,24 +47,19 @@ def process_image_directory(input, output, forwards, model_dir):
     inference_machine = InferenceMachine(inference_height, inference_width, model_dir)
 
     print("Creating output video file...")
-    video_writer = create_video_writer(frame_rate, height, output, width * 2)
+    video_writer = create_video_writer(frame_rate, height, output, width * 2 if with_old else width)
 
-    frame_counter = 1
     for frame_path in all_frames:
-        frame = cv2.imread(frame_path, 1)
-
-        rgb_frame = uint8_to_float(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
-        print(f"Processing Frame {frame_counter}...", sep=' ', end='\r', flush=True)
-        frame_counter += 1
-        process_and_store_frame_with_old(rgb_frame, inference_machine, video_writer, forwards, height, width,
-                                         inference_height, inference_width)
+        frame = load_float_image(frame_path)
+        process_and_store_frame(frame, inference_machine, video_writer, forwards, height, width,
+                                         inference_height, inference_width, with_old)
     print("Done.")
 
     video_writer.release()
 
 
 # TODO: Make class with state
-def process_video(input, output, forwards, model_dir):
+def process_video(input, output, forwards, model_dir, with_old):
     print("Opening input video file...")
     video_capture = cv2.VideoCapture(input)
 
@@ -74,11 +69,11 @@ def process_video(input, output, forwards, model_dir):
     inference_machine = InferenceMachine(inference_height, inference_width, model_dir)
 
     print("Creating output video file...")
-    video_writer = create_video_writer(frame_rate, height, output, width)
+    video_writer = create_video_writer(frame_rate, height, output, width * 2 if with_old else width)
 
     for frame in iterate_all_video_float_frames(input):
         process_and_store_frame(frame, inference_machine, video_writer, forwards, height, width,
-                                inference_height, inference_width)
+                                inference_height, inference_width, with_old)
     print("Done.")
 
     video_capture.release()
@@ -107,22 +102,13 @@ def compute_inference_resolution(height, width):
 
 
 def process_and_store_frame(frame, inference_machine, video_writer, forwards, height, width,
-                            inference_height, inference_width):
+                            inference_height, inference_width, with_old):
     resized_frame = cv2.resize(frame, (inference_width, inference_height))
     result = inference_machine.recurrent_inference(resized_frame, forwards)
     resized_result = cv2.resize(result, (width, height))
     uint8_result = float_to_unit8(resized_result)
-    bgr_result = cv2.cvtColor(uint8_result, cv2.COLOR_RGB2BGR)
-    video_writer.write(bgr_result)
-
-
-def process_and_store_frame_with_old(frame, inference_machine, video_writer, forwards, height, width,
-                                     inference_height, inference_width):
-    resized_frame = cv2.resize(frame, (inference_width, inference_height))
-    result = inference_machine.recurrent_inference(resized_frame, forwards)
-    resized_result = cv2.resize(result, (width, height))
-    uint8_result = float_to_unit8(resized_result)
-    uint8_result = np.concatenate([float_to_unit8(frame), uint8_result], axis=1)
+    if with_old:
+        uint8_result = np.concatenate([float_to_unit8(frame), uint8_result], axis=1)
     bgr_result = cv2.cvtColor(uint8_result, cv2.COLOR_RGB2BGR)
     video_writer.write(bgr_result)
 
