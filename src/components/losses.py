@@ -110,8 +110,8 @@ class Losses:
             self.loss_id_ab = tf.reduce_mean(tf.abs(images.image_a - images.image_ab))
             self.loss_id_ba = tf.reduce_mean(tf.abs(images.image_b - images.image_ba))
         else:
-            self.loss_id_ab = tf.reduce_mean(tf.abs(images.warped_frames_a[:, 1] - images.frames_ab[:, 1]))
-            self.loss_id_ba = tf.reduce_mean(tf.abs(images.warped_frames_b[:, 1] - images.frames_ba[:, 1]))
+            self.loss_id_ab = tf.reduce_mean(tf.abs(images.warped_frames_a[:, 1] - images.warped_frames_ab[:, 1]))
+            self.loss_id_ba = tf.reduce_mean(tf.abs(images.warped_frames_b[:, 1] - images.warped_frames_ba[:, 1]))
 
         self.identity_fade_out_weight = fade_out_weight(placeholders.global_step, 1000, 1500, "identity_fade_out_weight")
         self.loss_identity = identity_loss_coeff * (self.loss_rec_aba + self.loss_rec_bab)
