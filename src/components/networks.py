@@ -20,6 +20,6 @@ class Networks:
         self.discriminator_spatial_b = Discriminator('discriminator_b', is_train=placeholders.is_train,
                                                      norm='instance', activation='leaky')
 
-        self.discriminator_temporal = Discriminator('discriminator_temp', is_train=placeholders.is_train,
-                                                    norm='instance', activation='leaky')
+        #self.discriminator_temporal = Discriminator('discriminator_temp', is_train=placeholders.is_train,
+       #                                             norm='instance', activation='leaky')
 

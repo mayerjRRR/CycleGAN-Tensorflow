@@ -198,8 +198,8 @@ class CycleGan(object):
         summary_writer.flush()
         losses = fetched['losses']
         self.steps.set_description(
-            'Loss: D_a({:.3f}) D_b({:.3f}) D_temporal({:.3f}) G_ab({:.3f}) G_ba({:.3f}) cycle({:.3f}) identity({:.3f})'.format(
-                losses[0], losses[1], losses[5], losses[2], losses[3], losses[4], losses[6]))
+            'Loss: D_a({:.3f}) D_b({:.3f}) G_ab({:.3f}) G_ba({:.3f}) cycle({:.3f}) identity({:.3f})'.format(
+                losses[0], losses[1], losses[2], losses[3], losses[4], losses[5]))
 
 
     def get_fetches(self, step, video_training):
@@ -214,7 +214,7 @@ class CycleGan(object):
 
     def add_losses(self, fetches):
         fetches['losses'] = [self.losses.loss_D_a, self.losses.loss_D_b, self.losses.loss_G_spat_ab,
-                             self.losses.loss_G_spat_ba, self.losses.loss_cycle, self.losses.loss_D_temp, self.losses.loss_identity]
+                             self.losses.loss_G_spat_ba, self.losses.loss_cycle, self.losses.loss_identity]
         return fetches
 
 
@@ -225,8 +225,6 @@ class CycleGan(object):
 
     def add_discriminator_optimizer(self, fetches, video_training):
         fetches['discriminator_optimizer'] = [self.optimizers.optimizer_D_a, self.optimizers.optimizer_D_b]
-        if video_training:
-            fetches['discriminator_optimizer'] += [self.optimizers.optimizer_D_temp]
         return fetches
 
 

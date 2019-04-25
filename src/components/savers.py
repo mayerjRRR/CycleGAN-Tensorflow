@@ -64,10 +64,7 @@ class Savers:
                                                    save_path=self.get_save_path(networks.discriminator_spatial_b.name),
                                                    init_path=self.get_init_path(networks.discriminator_spatial_b.name),
                                                    name="Spacial Discriminator B")
-        self.discriminator_temporal_saver = Saver(networks.discriminator_temporal.var_list,
-                                                  save_path=self.get_save_path(networks.discriminator_temporal.name),
-                                                  init_path=self.get_init_path(networks.discriminator_temporal.name),
-                                                  name="Temporal Discriminator")
+
 
     def init_generator_savers(self, networks):
         self.generator_ab_saver = Saver(networks.generator_ab.var_list,
@@ -90,7 +87,7 @@ class Savers:
             saver.load(session)
 
     def get_all_savers(self):
-        return [self.fnet_saver, self.discriminator_temporal_saver, self.discriminator_spatial_b_saver,
+        return [self.fnet_saver, self.discriminator_spatial_b_saver,
                 self.discriminator_spatial_a_saver, self.generator_ab_saver, self.generator_ba_saver,
                 self.global_step_saver]
 

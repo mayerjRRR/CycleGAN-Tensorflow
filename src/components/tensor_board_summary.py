@@ -12,7 +12,7 @@ class TensorBoardSummary:
 
         self.add_losses(losses, train_videos)
         self.add_spacial_discriminator_outputs(losses, train_images, train_videos)
-        self.add_temporal_discriminator_outputs(losses, train_videos)
+        #self.add_temporal_discriminator_outputs(losses, train_videos)
         self.add_model_parameters(losses, placeholders, train_videos)
         self.add_images(images, train_images, train_videos)
         self.summary_op = tf.summary.merge_all()
@@ -20,8 +20,7 @@ class TensorBoardSummary:
     def add_losses(self, losses, train_videos):
         tf.summary.scalar('Losses/Spacial_Discriminator_A', losses.loss_D_a)
         tf.summary.scalar('Losses/Spacial_Discriminator_B', losses.loss_D_b)
-        if train_videos:
-            tf.summary.scalar('Losses/Temporal_Discriminator', losses.loss_D_temp)
+
         tf.summary.scalar('Losses/Generator_AB', losses.loss_G_spat_ab)
         tf.summary.scalar('Losses/Generator_BA', losses.loss_G_spat_ba)
         tf.summary.scalar('Losses/Cycle_Loss', losses.loss_cycle)
