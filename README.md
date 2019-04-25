@@ -83,9 +83,10 @@ Example on the domains "Horse" and "Zebra" trained without (middle) and with tem
 <img src = 'results/zebra_temp.gif' width = '99%'>
 </p>
 
-Low-Quality to High-Quality Render of Smoke Simulations, trained with temporal discriminator and recurrent generator.
+Low-Quality to High-Quality Render of Smoke Simulations, trained with images only (top) and temporal discriminator, recurrent generator and pingpong loss (bottom).
 
 <p align = 'center'>
+<img src = 'results/plume_images.gif' width = '99%'>
 <img src = 'results/plume_recurrent.gif' width = '99%'>
 </p>
 
