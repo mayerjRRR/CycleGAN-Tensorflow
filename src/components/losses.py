@@ -3,7 +3,7 @@ import tensorflow as tf
 from src.components.images import Images
 from src.components.networks import Networks
 from src.components.placeholders import Placeholders
-from src.utils.tensor_ops import layer_frames_in_channels
+from src.utils.tensor_ops import generate_temp_discriminator_input
 from src.utils.argument_parser import TrainingConfig
 from src.utils.warp_utils import compute_pingpong_difference
 
@@ -39,15 +39,15 @@ class Losses:
 
     def define_temporal_discriminator_output(self, images: Images, networks: Networks, placeholders: Placeholders):
 
-        self.D_temp_real_a = networks.discriminator_temporal(layer_frames_in_channels(images.warped_frames_a))
-        self.D_temp_fake_a = networks.discriminator_temporal(layer_frames_in_channels(images.warped_frames_ba))
+        self.D_temp_real_a = networks.discriminator_temporal(generate_temp_discriminator_input(images.warped_frames_a))
+        self.D_temp_fake_a = networks.discriminator_temporal(generate_temp_discriminator_input(images.warped_frames_ba))
         self.D_temp_history_fake_a = networks.discriminator_temporal(
-            layer_frames_in_channels(placeholders.history_fake_temp_frames_a))
+            generate_temp_discriminator_input(placeholders.history_fake_temp_frames_a))
 
-        self.D_temp_real_b = networks.discriminator_temporal(layer_frames_in_channels(images.warped_frames_b))
-        self.D_temp_fake_b = networks.discriminator_temporal(layer_frames_in_channels(images.warped_frames_ab))
+        self.D_temp_real_b = networks.discriminator_temporal(generate_temp_discriminator_input(images.warped_frames_b))
+        self.D_temp_fake_b = networks.discriminator_temporal(generate_temp_discriminator_input(images.warped_frames_ab))
         self.D_temp_history_fake_b = networks.discriminator_temporal(
-            layer_frames_in_channels(placeholders.history_fake_temp_frames_b))
+            generate_temp_discriminator_input(placeholders.history_fake_temp_frames_b))
 
     def define_losses(self, images: Images, placeholders: Placeholders, training_config, train_videos, train_images):
         self.define_discriminator_loss(train_videos, train_images)
