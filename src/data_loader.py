@@ -135,7 +135,7 @@ def get_video_frames(video_name):
 def get_video_frame_sequences(task_name, sequencial_frames):
     video_names = get_video_names(task_name)
     #TODO: make free of transpose
-    frame_sequences = [[] for _ in range(sequencial_frames)]
+    frame_sequences = np.array( [[] for _ in range(sequencial_frames)])
     for video_name in video_names:
         frames = get_video_frames(video_name)
         consecutive_frames = get_consecutive_frames(frames, sequencial_frames)

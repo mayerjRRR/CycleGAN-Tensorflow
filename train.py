@@ -58,7 +58,7 @@ def main():
                                              dataset_dir=training_config.dataset_directory, frame_sequence_length=training_config.frame_sequence_length, force_video=training_config.force_video_data)
     else:
         train_A, train_B = get_training_datasets(training_config.task_name, training_config.input_width, training_config.batch_size,
-                                                 dataset_dir=training_config.dataset_directory, frame_sequence_length=1)
+                                                 dataset_dir=training_config.dataset_directory, frame_sequence_length=1, force_video=training_config.force_video_data)
 
     train_videos = is_video_data(train_A)
 
@@ -71,7 +71,7 @@ def main():
     training_config.model_directory = os.path.join(log_dir, training_config.model_directory)
     logger.info(f"Checkpoints and Logs will be saved to {training_config.model_directory}")
 
-    # TODO: extend for hybrid data set
+    # TODO: extend for hybrid datasets set
 
     logger.info('Building cyclegan:')
     model = CycleGan(training_config=training_config, train_videos=train_videos, train_images=not train_videos)
