@@ -4,7 +4,7 @@ from src.components.savers import Saver
 from src.nets.generator import Generator
 import numpy as np
 
-from src.utils.warp_utils import pseudorecurrent_inference
+from src.utils.warp_utils import recurrent_inference
 
 
 class InferenceMachine:
@@ -36,8 +36,8 @@ class InferenceMachine:
                                       activation='relu', is_train=None)
 
     def define_generator_output(self):
-        self.image_ab = pseudorecurrent_inference(self.generator_ab, self.current_frame, self.last_frame, self.last_result)
-        self.image_ba = pseudorecurrent_inference(self.generator_ba, self.current_frame, self.last_frame, self.last_result)
+        self.image_ab = recurrent_inference(self.generator_ab, self.current_frame, self.last_frame, self.last_result)
+        self.image_ba = recurrent_inference(self.generator_ba, self.current_frame, self.last_frame, self.last_result)
 
 
     def create_savers(self, model_dir):

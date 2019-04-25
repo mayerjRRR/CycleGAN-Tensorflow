@@ -3,14 +3,15 @@ import tensorflow as tf
 from src.components.networks import Networks
 from src.components.placeholders import Placeholders
 from src.utils.tensor_ops import extract_frames_from_channels, layer_frames_in_channels
-from src.utils.warp_utils import get_flows_to_middle_frame, warp_to_middle_frame, apply_inference_on_multiframe, pingpongify, stack_triplets_in_batch, unpingpongify
+from src.utils.warp_utils import get_flows_to_middle_frame, warp_to_middle_frame, apply_inference_on_multiframe, \
+    pingpongify, unpingpongify, get_fake_generator_input
 
 
 class Images:
 
     def __init__(self, placeholders: Placeholders, networks: Networks, augment_shape):
         self.define_input(placeholders, augment_shape)
-        #self.define_fake_images(networks)
+        self.define_fake_images(networks)
         self.define_fake_frames(networks)
 
     def define_input(self, placeholders: Placeholders, augment_shape):
@@ -37,11 +38,11 @@ class Images:
                                 lambda: placeholders.frames_b)
 
     def define_fake_images(self, networks: Networks):
-        self.image_ab = networks.generator_ab(self.image_a)
-        self.image_ba = networks.generator_ba(self.image_b)
+        self.image_ab = networks.generator_ab(get_fake_generator_input(self.image_a))
+        self.image_ba = networks.generator_ba(get_fake_generator_input(self.image_b))
 
-        self.image_bab = networks.generator_ab(self.image_ba)
-        self.image_aba = networks.generator_ba(self.image_ab)
+        self.image_bab = networks.generator_ab(get_fake_generator_input(self.image_ba))
+        self.image_aba = networks.generator_ba(get_fake_generator_input(self.image_ab))
 
     def define_fake_frames(self, networks: Networks):
 
