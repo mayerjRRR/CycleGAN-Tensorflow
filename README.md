@@ -75,7 +75,7 @@ More command line options can be found with `--help`.
 
 ## Results
 
-Example on the domains "Horse" and "Zebra" trained without (middle) and with temporal discriminator (right).
+Example on the domains "Horse" and "Zebra" trained without (middle) and with temporal discriminator (bottom).
 
 <p align = 'center'>
 <img src = 'results/horse.gif' width = '99%'>
@@ -83,10 +83,11 @@ Example on the domains "Horse" and "Zebra" trained without (middle) and with tem
 <img src = 'results/zebra_temp.gif' width = '99%'>
 </p>
 
-Low-Quality to High-Quality Render of Smoke Simulations, trained with images only (top) and temporal discriminator, recurrent generator and pingpong loss (bottom).
+Low-Quality to High-Quality Render of Smoke Simulations, trained with spatical discriminators only (top), a temporal discriminator, recurrent generator and pingpong loss (middle) and with spatiotemporal discriminators (bottom).
 
 <p align = 'center'>
 <img src = 'results/plume_images.gif' width = '99%'>
 <img src = 'results/plume_recurrent.gif' width = '99%'>
+<img src = 'results/plume_spatiotemporal.gif' width = '99%'>
 </p>
 
