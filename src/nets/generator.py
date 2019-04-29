@@ -11,10 +11,10 @@ class Generator(object):
         self._is_train = is_train
         self._norm = norm
         self._activation = activation
-        self._num_res_block = 9
+        self._num_res_block = 8
         self._reuse = False
 
-    def __call__(self, input):
+    def __call__(self, input, return_code_layer=False):
         with tf.variable_scope(self.name, reuse=self._reuse):
             G = ops.conv_block(input, 32, 'c7s1-32', 7, 1, self._is_train,
                                self._reuse, self._norm, self._activation, pad='REFLECT')
@@ -23,8 +23,11 @@ class Generator(object):
             G = ops.conv_block(G, 128, 'd128', 3, 2, self._is_train,
                                self._reuse, self._norm, self._activation)
             for i in range(self._num_res_block):
+                if i == self._num_res_block // 2 and return_code_layer:
+                    return G
                 G = ops.residual(G, 128, 'R128_{}'.format(i), self._is_train,
                                  self._reuse, self._norm)
+
             G = ops.deconv_block(G, 64, 'u64', 3, 2, self._is_train,
                                  self._reuse, self._norm, self._activation)
             G = ops.deconv_block(G, 32, 'u32', 3, 2, self._is_train,
@@ -35,3 +38,5 @@ class Generator(object):
             self._reuse = True
             self.var_list = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, self.name)
             return G
+
+

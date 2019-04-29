@@ -41,8 +41,8 @@ class Images:
         self.image_ab = networks.generator_ab(get_fake_generator_input(self.image_a))
         self.image_ba = networks.generator_ba(get_fake_generator_input(self.image_b))
 
-        self.image_bab = networks.generator_ab(get_fake_generator_input(self.image_ba))
-        self.image_aba = networks.generator_ba(get_fake_generator_input(self.image_ab))
+        self.image_bab  = networks.generator_ab(get_fake_generator_input(self.image_ba))
+        self.image_aba  = networks.generator_ba(get_fake_generator_input(self.image_ab))
 
     def define_fake_frames(self, networks: Networks):
 
@@ -52,14 +52,20 @@ class Images:
         self.warped_frames_a = warp_to_middle_frame(self.frames_a, self.flows_a)
         self.warped_frames_b = warp_to_middle_frame(self.frames_b, self.flows_b)
 
-        self.pingpong_frames_ab = apply_inference_on_multiframe(pingpongify(self.frames_a),networks.generator_ab)
-        self.pingpong_frames_ba = apply_inference_on_multiframe(pingpongify(self.frames_b),networks.generator_ba)
+        self.pingpong_frames_ab = apply_inference_on_multiframe(pingpongify(self.frames_a), networks.generator_ab)
+        self.pingpong_frames_ba = apply_inference_on_multiframe(pingpongify(self.frames_b), networks.generator_ba)
 
         self.frames_ab = unpingpongify(self.pingpong_frames_ab)[0]
         self.frames_ba = unpingpongify(self.pingpong_frames_ba)[0]
+
+        self.code_frames_ab = networks.generator_ab(get_fake_generator_input(self.frames_a[:,0]), return_code_layer=True)
+        self.code_frames_ba = networks.generator_ba(get_fake_generator_input(self.frames_b[:,0]), return_code_layer=True)
 
         self.warped_frames_ab = warp_to_middle_frame(self.frames_ab, self.flows_a)
         self.warped_frames_ba = warp_to_middle_frame(self.frames_ba, self.flows_b)
 
         self.frames_aba = apply_inference_on_multiframe(self.frames_ab, networks.generator_ba)
         self.frames_bab = apply_inference_on_multiframe(self.frames_ba, networks.generator_ab)
+
+        self.code_frames_aba = networks.generator_ba(get_fake_generator_input(self.frames_ab[:,0]), return_code_layer=True)
+        self.code_frames_bab = networks.generator_ab(get_fake_generator_input(self.frames_ba[:,0]), return_code_layer=True)

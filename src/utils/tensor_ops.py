@@ -18,8 +18,8 @@ def extract_frames_from_channels(input_frame):
 
 def crop_away_borders(input_frame, border_width):
     shape = tf.shape(input_frame)
-    new_width = shape[0]-2*border_width
-    new_height = shape[1]-2*border_width
+    new_width = shape[1]-2*border_width
+    new_height = shape[2]-2*border_width
     cropped_image = tf.image.resize_image_with_crop_or_pad(
         input_frame,
         new_height,

@@ -4,7 +4,7 @@ import argparse
 def get_train_parser():
 
     parser = argparse.ArgumentParser(description="Training commands")
-    parser.add_argument('--task', type=str, default='vidzebra',
+    parser.add_argument('--task', type=str, default='smoke',
                         help='Task name')
     parser.add_argument('--dataset_directory', type=str, default='datasets', help='Location of the training data')
     parser.add_argument('--log_directory', type=str, default='./logs', help='Location that the logs will we stored')
@@ -15,6 +15,8 @@ def get_train_parser():
     parser.add_argument('--identity_loss_coeff', type=float, default=50,
                         help='Identity Loss coefficient')
     parser.add_argument('--pingpong_loss_coeff', type=float, default=1.0,
+                        help='Identity Loss coefficient')
+    parser.add_argument('--code_loss_coeff', type=float, default=1.0,
                         help='Identity Loss coefficient')
     parser.add_argument('--identity_loss_fadeout', type=bool, default=True,
                         help='Whether the identity loss should fade out.')
@@ -63,6 +65,7 @@ class TrainingConfig:
         self.temporal_loss_coefficient = args.temp_loss_coeff
         self.cycle_loss_coefficient = args.cycle_loss_coeff
         self.identity_loss_coefficient = args.identity_loss_coeff
+        self.code_loss_coefficient = args.code_loss_coeff
         self.pingpong_loss_coefficient = args.pingpong_loss_coeff
         self.fadeout_identity_loss = args.identity_loss_fadeout
         self.force_image_training = args.force_image
