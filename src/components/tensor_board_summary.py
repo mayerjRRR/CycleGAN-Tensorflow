@@ -26,6 +26,7 @@ class TensorBoardSummary:
         tf.summary.scalar('Losses/Generator_BA', losses.loss_G_spat_ba)
         tf.summary.scalar('Losses/Cycle_Loss', losses.loss_cycle)
         tf.summary.scalar('Losses/Identity_Loss', losses.loss_identity)
+        tf.summary.scalar('Losses/Code_Loss', losses.loss_code)
         tf.summary.scalar('Losses/PingPong_Loss_AB', losses.loss_pingpong_ab)
         tf.summary.scalar('Losses/PingPong_Loss_BA', losses.loss_pingpong_ab)
 
