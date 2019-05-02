@@ -9,33 +9,32 @@ from src.utils.warp_utils import get_flows_to_middle_frame, warp_to_middle_frame
 
 class Images:
 
-    def __init__(self, placeholders: Placeholders, networks: Networks, augment_shape):
-        self.define_input(placeholders, augment_shape)
+    def __init__(self, placeholders: Placeholders, networks: Networks, augment_shape, image_shape):
+        self.define_input(placeholders, augment_shape, image_shape)
         self.define_fake_images(networks)
         self.define_fake_frames(networks)
 
-    def define_input(self, placeholders: Placeholders, augment_shape):
+    def define_input(self, placeholders: Placeholders, augment_shape, image_shape):
         def augment_image(image):
-            upscaled_image = tf.image.resize_images(image, augment_shape)
-            cropped_image = tf.random_crop(upscaled_image, image.get_shape().as_list())
+            downscaled_image = tf.image.resize_image_with_crop_or_pad(image, augment_shape[0],augment_shape[1])
+            cropped_image = tf.random_crop(downscaled_image, [image.get_shape().as_list()[0]]+image_shape[0:2]+[image.get_shape().as_list()[-1]])
             flipped_image = tf.map_fn(tf.image.random_flip_left_right, cropped_image)
             return flipped_image
-
         self.image_a = tf.cond(placeholders.is_train,
                                lambda: augment_image(placeholders.image_a),
-                               lambda: placeholders.image_a)
+                               lambda: tf.image.resize_images(placeholders.image_a, image_shape[0:2]))
         self.image_b = tf.cond(placeholders.is_train,
                                lambda: augment_image(placeholders.image_b),
-                               lambda: placeholders.image_b)
+                               lambda: tf.image.resize_images(placeholders.image_b, image_shape[0:2]))
 
         self.frames_a = tf.cond(placeholders.is_train,
                                 lambda: extract_frames_from_channels(
                                     augment_image(layer_frames_in_channels(placeholders.frames_a))),
-                                lambda: placeholders.frames_a)
+                                lambda: extract_frames_from_channels(tf.image.resize_images(layer_frames_in_channels(placeholders.frames_a),image_shape[0:2])))
         self.frames_b = tf.cond(placeholders.is_train,
                                 lambda: extract_frames_from_channels(
                                     augment_image(layer_frames_in_channels(placeholders.frames_b))),
-                                lambda: placeholders.frames_b)
+                                lambda: extract_frames_from_channels(tf.image.resize_images(layer_frames_in_channels(placeholders.frames_b),image_shape[0:2])))
 
     def define_fake_images(self, networks: Networks):
         self.image_ab = networks.generator_ab(get_fake_generator_input(self.image_a))

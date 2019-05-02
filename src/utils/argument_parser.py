@@ -31,10 +31,10 @@ def get_train_parser():
                         help="Model save frequency")
     parser.add_argument('--batch_size', default=1, type=int,
                         help="Batch size")
-    parser.add_argument('--image_width', default=256, type=int,
-                        help="Image width")
-    parser.add_argument('--image_height', default=None, type=int,
-                        help="Image height")
+    parser.add_argument('--training_size', default=128, type=int,
+                        help="Resolution of the images for training")
+    parser.add_argument('--data_size', default=512, type=int,
+                        help="Resolution of the data")
     parser.add_argument('--load_model', default='',
                         help='Model path to load and save to (e.g., train_2017-07-07_01-23-45)')
     parser.add_argument('--init_model', default='',
@@ -56,11 +56,8 @@ class TrainingConfig:
         self.learning_rate = args.learning_rate
         self.frame_sequence_length = args.frame_seq_length
         self.batch_size = args.batch_size
-        self.input_width = args.image_width
-        if args.image_height is not None:
-            self.image_height = args.image_height
-        else:
-            self.input_height = args.image_width
+        self.training_size = args.training_size
+        self.data_size = args.data_size
         self.use_instance_normalization = args.instance_normalization
         self.temporal_loss_coefficient = args.temp_loss_coeff
         self.cycle_loss_coefficient = args.cycle_loss_coeff

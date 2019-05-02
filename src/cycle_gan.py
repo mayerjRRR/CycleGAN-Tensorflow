@@ -16,9 +16,9 @@ class CycleGan(object):
     def __init__(self, training_config: TrainingConfig, train_videos=True, train_images=False):
         self.init_parameters(training_config, train_videos, train_images)
 
-        self.placeholders = Placeholders(self.config.batch_size, self._image_shape, training_config.frame_sequence_length)
+        self.placeholders = Placeholders(self.config.batch_size, self.image_shape, self.input_shape, training_config.frame_sequence_length)
         self.networks = Networks(self.placeholders)
-        self.images = Images(self.placeholders, self.networks, self._augment_shape)
+        self.images = Images(self.placeholders, self.networks, self.augmentation_shape, self.image_shape)
         self.losses = Losses(self.networks, self.placeholders, self.images, self.config, self.train_videos, self.train_images)
         self.optimizers = Optimizers(self.networks, self.losses, self.placeholders, self.train_videos)
         self.tb_summary = TensorBoardSummary(self.images, self.losses, self.placeholders, self.train_videos,
@@ -37,9 +37,10 @@ class CycleGan(object):
 
 
     def init_image_dimensions(self):
-        self._augment_shape = [self.config.input_height + int(self.config.input_height / 8),
-                               self.config.input_width + int(self.config.input_width / 8)]
-        self._image_shape = [self.config.input_height, self.config.input_width, 3]
+        self.input_shape = [self.config.data_size, self.config.data_size, 3]
+        self.augmentation_shape = [self.config.training_size + int(self.config.training_size / 8),
+                                   self.config.training_size + int(self.config.training_size / 8)]
+        self.image_shape = [self.config.training_size, self.config.training_size, 3]
 
 
     def train_on_videos(self, sess, summary_writer, frame_data_a, frame_data_b, learning_rate):

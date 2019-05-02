@@ -93,8 +93,8 @@ class Losses:
         with tf.name_scope("temporal_loss"):
             self.temp_loss_fade_in_weigth = fade_in_weight(placeholders.global_step, 2000, 4000, "temp_loss_weigth")
             if train_videos:
-                self.loss_G_temp_ab =  temp_loss_coeff * tf.reduce_mean(tf.squared_difference(self.D_temp_fake_b, 0.9))
-                self.loss_G_temp_ba =  temp_loss_coeff * tf.reduce_mean(tf.squared_difference(self.D_temp_fake_a, 0.9))
+                self.loss_G_temp_ab = temp_loss_coeff * tf.reduce_mean(tf.squared_difference(self.D_temp_fake_b, 0.9))
+                self.loss_G_temp_ba = temp_loss_coeff * tf.reduce_mean(tf.squared_difference(self.D_temp_fake_a, 0.9))
             else:
                 self.loss_G_temp_ab = self.loss_G_temp_ba = tf.constant(0.0, dtype=tf.float32)
 
@@ -118,14 +118,17 @@ class Losses:
                 self.loss_id_ab = tf.reduce_mean(tf.abs(images.frames_a - images.frames_ab))
                 self.loss_id_ba = tf.reduce_mean(tf.abs(images.frames_b - images.frames_ba))
 
-            self.identity_fade_out_weight = fade_out_weight(placeholders.global_step, 1000, 1500, "identity_fade_out_weight")
-            self.loss_identity = identity_loss_coeff * (self.loss_rec_aba + self.loss_rec_bab)
+            self.identity_fade_out_weight = fade_out_weight(placeholders.global_step, 1000, 1500,
+                                                            "identity_fade_out_weight")
+            self.loss_identity = identity_loss_coeff * (self.loss_id_ab + self.loss_id_ba)
 
     def define_pingpong_loss(self, images: Images, pingpong_loss_coeff, train_videos):
         with tf.name_scope("ping_pong_loss"):
             if train_videos:
-                self.loss_pingpong_ab = pingpong_loss_coeff*tf.reduce_mean(compute_pingpong_difference(images.pingpong_frames_ab))
-                self.loss_pingpong_ba = pingpong_loss_coeff*tf.reduce_mean(compute_pingpong_difference(images.pingpong_frames_ba))
+                self.loss_pingpong_ab = pingpong_loss_coeff * tf.reduce_mean(
+                    compute_pingpong_difference(images.pingpong_frames_ab))
+                self.loss_pingpong_ba = pingpong_loss_coeff * tf.reduce_mean(
+                    compute_pingpong_difference(images.pingpong_frames_ba))
             else:
                 self.loss_pingpong_ab = self.loss_pingpong_ba = tf.constant(0.0, dtype=tf.float32)
 
@@ -136,12 +139,14 @@ class Losses:
             else:
                 self.loss_code_aba = tf.reduce_mean(tf.abs(images.code_frames_ab - images.code_frames_aba))
                 self.loss_code_bab = tf.reduce_mean(tf.abs(images.code_frames_ba - images.code_frames_bab))
-            self.loss_code = code_loss_coeff*(self.loss_code_aba + self.loss_code_bab)
+            self.loss_code = code_loss_coeff * (self.loss_code_aba + self.loss_code_bab)
 
     def define_total_generator_loss(self):
         with tf.name_scope("generator_loss"):
-            self.loss_G_ab_final = self.loss_G_spat_ab + self.temp_loss_fade_in_weigth * (self.loss_G_temp_ab + self.loss_pingpong_ab) + self.loss_cycle + self.identity_fade_out_weight * self.loss_identity + self.loss_code
-            self.loss_G_ba_final = self.loss_G_spat_ba + self.temp_loss_fade_in_weigth * (self.loss_G_temp_ba + self.loss_pingpong_ba) + self.loss_cycle + self.identity_fade_out_weight * self.loss_identity + self.loss_code
+            self.loss_G_ab_final = self.loss_G_spat_ab + self.temp_loss_fade_in_weigth * (
+                        self.loss_G_temp_ab + self.loss_pingpong_ab) + self.loss_cycle + self.identity_fade_out_weight * self.loss_identity + self.loss_code
+            self.loss_G_ba_final = self.loss_G_spat_ba + self.temp_loss_fade_in_weigth * (
+                        self.loss_G_temp_ba + self.loss_pingpong_ba) + self.loss_cycle + self.identity_fade_out_weight * self.loss_identity + self.loss_code
 
 
 def fade_in_weight(step, start, duration, name):
