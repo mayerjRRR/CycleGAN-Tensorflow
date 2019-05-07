@@ -11,7 +11,7 @@ class Generator(object):
         self._is_train = is_train
         self._norm = norm
         self._activation = activation
-        self._num_res_block = 8
+        self._num_res_block = 10
         self._reuse = False
 
     def __call__(self, input, return_code_layer=False):
