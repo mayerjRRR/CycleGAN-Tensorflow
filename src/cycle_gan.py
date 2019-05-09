@@ -38,8 +38,8 @@ class CycleGan(object):
 
     def init_image_dimensions(self):
         self.input_shape = [self.config.data_size, self.config.data_size, 3]
-        self.augmentation_shape = [self.config.training_size + int(self.config.training_size / 8),
-                                   self.config.training_size + int(self.config.training_size / 8)]
+        self.augmentation_shape = [self.config.training_size + int(self.config.training_size // 8),
+                                   self.config.training_size + int(self.config.training_size // 8)]
         self.image_shape = [self.config.training_size, self.config.training_size, 3]
 
 
@@ -148,8 +148,8 @@ class CycleGan(object):
 
     def init_training_parameters(self, sess, learning_rate):
         epoch_length = 500
-        num_initial_iter = 150
-        num_decay_iter = 50
+        num_initial_iter = 45
+        num_decay_iter = 5
         lr_initial = learning_rate
         lr_decay = lr_initial / num_decay_iter
         initial_step = sess.run(self.placeholders.global_step)

@@ -4,7 +4,6 @@ from fnet.fnet import fnet
 
 
 def get_flow(first, second):
-
     with tf.name_scope("get_flow"):
         input = tf.concat([first, second], axis=-1)
         with tf.variable_scope('fnet', reuse=tf.AUTO_REUSE):
@@ -71,7 +70,6 @@ def recurrent_inference(generator, current_frame, last_frame, last_result):
 
 
 def apply_inference_on_multiframe(frames, generator):
-
     with tf.name_scope("apply_inference_on_multiframe"):
         frame_list = tf.unstack(frames, axis=1)
 
@@ -106,3 +104,13 @@ def unpingpongify(pingpong_frames):
         ping = pingpong_frames[:, :result_length]
         pong = tf.reverse(pingpong_frames[:, -result_length:], axis=[1])
     return ping, pong
+
+
+def get_gram_matrix(input_tensor):
+    # shape = batch_size, hight, width, channels
+    batch_size, height, width, channels = input_tensor.shape.as_list()
+    size = height * width * channels
+    feature_vector = tf.reshape(input_tensor, (-1, height * width, channels))
+    feature_vector_transposed = tf.transpose(feature_vector, perm=[0, 2, 1])
+    gram_matrix = tf.matmul(feature_vector_transposed, feature_vector) / size
+    return gram_matrix

@@ -12,11 +12,13 @@ def get_train_parser():
                         help='Temporal Discriminator Loss coefficient')
     parser.add_argument('--cycle_loss_coeff', type=float, default=10,
                         help='Cycle Consistency Loss coefficient')
-    parser.add_argument('--identity_loss_coeff', type=float, default=50,
+    parser.add_argument('--identity_loss_coeff', type=float, default=10,
                         help='Identity Loss coefficient')
     parser.add_argument('--pingpong_loss_coeff', type=float, default=1.0,
                         help='Identity Loss coefficient')
     parser.add_argument('--code_loss_coeff', type=float, default=1.0,
+                        help='Identity Loss coefficient')
+    parser.add_argument('--style_loss_coeff', type=float, default=1.0,
                         help='Identity Loss coefficient')
     parser.add_argument('--identity_loss_fadeout', type=bool, default=True,
                         help='Whether the identity loss should fade out.')
@@ -33,7 +35,7 @@ def get_train_parser():
                         help="Batch size")
     parser.add_argument('--training_size', default=128, type=int,
                         help="Resolution of the images for training")
-    parser.add_argument('--data_size', default=512, type=int,
+    parser.add_argument('--data_size', default=144, type=int,
                         help="Resolution of the data")
     parser.add_argument('--load_model', default='',
                         help='Model path to load and save to (e.g., train_2017-07-07_01-23-45)')
@@ -63,6 +65,7 @@ class TrainingConfig:
         self.cycle_loss_coefficient = args.cycle_loss_coeff
         self.identity_loss_coefficient = args.identity_loss_coeff
         self.code_loss_coefficient = args.code_loss_coeff
+        self.style_loss_coefficient = args.style_loss_coeff
         self.pingpong_loss_coefficient = args.pingpong_loss_coeff
         self.fadeout_identity_loss = args.identity_loss_fadeout
         self.force_image_training = args.force_image

@@ -29,6 +29,7 @@ class TensorBoardSummary:
         tf.summary.scalar('Losses/Code_Loss', losses.loss_code)
         tf.summary.scalar('Losses/PingPong_Loss_AB', losses.loss_pingpong_ab)
         tf.summary.scalar('Losses/PingPong_Loss_BA', losses.loss_pingpong_ab)
+        tf.summary.scalar('Losses/Style_Loss', losses.loss_style)
 
     def add_spacial_discriminator_outputs(self, losses, train_images, train_videos):
         if train_videos:

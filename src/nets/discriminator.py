@@ -13,16 +13,23 @@ class Discriminator(object):
         self._activation = activation
         self._reuse = False
 
-    def __call__(self, input):
+    def __call__(self, input, return_layer_activations=False):
+        layer_activations = []
         with tf.variable_scope(self.name, reuse=self._reuse):
             D = ops.conv_block(input, 64, 'C64', 4, 2, self._is_train,
                                self._reuse, norm=None, activation=self._activation)
+            layer_activations.append(D)
             D = ops.conv_block(D, 128, 'C128', 4, 2, self._is_train,
                                self._reuse, self._norm, self._activation)
+            layer_activations.append(D)
             D = ops.conv_block(D, 256, 'C256', 4, 2, self._is_train,
                                self._reuse, self._norm, self._activation)
+            layer_activations.append(D)
             D = ops.conv_block(D, 512, 'C512', 4, 2, self._is_train,
                                self._reuse, self._norm, self._activation)
+            layer_activations.append(D)
+            if return_layer_activations:
+                return layer_activations
             D = ops.conv_block(D, 1, 'C1', 4, 1, self._is_train,
                                self._reuse, norm=None, activation=None, bias=True)
             D = tf.reduce_mean(D, axis=[1,2,3])
