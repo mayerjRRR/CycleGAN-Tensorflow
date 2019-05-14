@@ -33,9 +33,9 @@ def get_train_parser():
                         help="Model save frequency")
     parser.add_argument('--batch_size', default=1, type=int,
                         help="Batch size")
-    parser.add_argument('--training_size', default=128, type=int,
+    parser.add_argument('--training_size', default=256, type=int,
                         help="Resolution of the images for training")
-    parser.add_argument('--data_size', default=144, type=int,
+    parser.add_argument('--data_size', default=288, type=int,
                         help="Resolution of the data")
     parser.add_argument('--load_model', default='',
                         help='Model path to load and save to (e.g., train_2017-07-07_01-23-45)')
