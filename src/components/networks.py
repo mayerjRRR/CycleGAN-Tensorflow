@@ -15,11 +15,9 @@ class Networks:
                                       activation='relu')
 
     def init_discriminators(self, placeholders: Placeholders):
-        self.discriminator_spatial_a = Discriminator('discriminator_a', is_train=placeholders.is_train,
+        self.discriminator = Discriminator('discriminator', is_train=placeholders.is_train,
                                                      norm='instance', activation='leaky')
-        self.discriminator_spatial_b = Discriminator('discriminator_b', is_train=placeholders.is_train,
-                                                     norm='instance', activation='leaky')
-
-        self.discriminator_temporal = Discriminator('discriminator_temp', is_train=placeholders.is_train,
-                                                    norm='instance', activation='leaky')
+        '''
+        outputs a vector of 4 probabilies for realA, fakeA, realB, fakeB respectively
+        '''
 
