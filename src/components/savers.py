@@ -58,7 +58,7 @@ class Savers:
 
     def init_vgg_saver(self):
         vgg_variable_list = tf.get_collection(tf.GraphKeys.MODEL_VARIABLES, scope="vgg_19")
-        self.vgg_saver = Saver(vgg_variable_list, save_path="./vgg19")
+        self.vgg_saver = Saver(vgg_variable_list,save_path=self.get_save_path("vgg19"),init_path="./vgg19")
 
     def init_discriminator_savers(self, networks):
         self.discriminator_spatial_a_saver = Saver(networks.discriminator_spatial_a.var_list,

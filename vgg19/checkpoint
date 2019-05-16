@@ -1,0 +1,2 @@
+model_checkpoint_path: "vgg_19.ckpt"
+all_model_checkpoint_paths: "vgg_19.ckpt"
