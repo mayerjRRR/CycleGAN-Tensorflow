@@ -6,6 +6,7 @@ from src.components.placeholders import Placeholders
 from src.utils.tensor_ops import layer_frames_in_channels
 from src.utils.argument_parser import TrainingConfig
 from src.utils.warp_utils import compute_pingpong_difference, get_gram_matrix
+from vgg19.vgg_19 import get_vgg_activations
 
 
 class Losses:
@@ -71,6 +72,7 @@ class Losses:
         self.define_code_layer_loss(images, training_config.code_loss_coefficient, train_images)
         self.define_pingpong_loss(images, training_config.pingpong_loss_coefficient, train_videos)
         self.define_discriminator_style_loss(training_config.style_loss_coefficient, train_images)
+        self.define_vgg_style_loss( training_config.vgg_loss_coefficient, train_images, images)
         self.define_total_generator_loss()
 
     def define_discriminator_loss(self, train_videos, train_images):
@@ -172,12 +174,31 @@ class Losses:
                 self.style_loss_b = compute_style_loss(self.D_real_activation_b, self.D_fake_activation_b)
             self.loss_style = style_loss_coeff * (self.style_loss_a + self.style_loss_b)
 
+    def define_vgg_style_loss(self, vgg_loss_coeff, train_images, images: Images):
+
+        def compute_style_loss(real_activations, fake_activations):
+            style_loss = 0
+            for real_activation, fake_activation in zip(real_activations, fake_activations):
+                style_loss += tf.reduce_mean(
+                    tf.squared_difference(get_gram_matrix(real_activation), get_gram_matrix(fake_activation)))
+            return style_loss
+
+        with tf.name_scope("vgg_style_loss"):
+            if train_images:
+                self.vgg_loss_a = self.vgg_loss_b = tf.constant(0.0, dtype=tf.float32)
+            else:
+                self.vgg_loss_a = compute_style_loss(get_vgg_activations(images.frames_a[:, 1]),
+                                                     get_vgg_activations(images.frames_ba[:, 1]))
+                self.vgg_loss_b = compute_style_loss(get_vgg_activations(images.frames_b[:, 1]),
+                                                     get_vgg_activations(images.frames_ab[:, 1]))
+            self.loss_vgg = vgg_loss_coeff * (self.vgg_loss_a + self.vgg_loss_b)
+
     def define_total_generator_loss(self):
         with tf.name_scope("generator_loss"):
             self.loss_G_ab_final = self.loss_G_spat_ab + self.temp_loss_fade_in_weigth * (
-                    self.loss_G_temp_ab + self.loss_pingpong_ab) + self.loss_cycle + self.identity_fade_out_weight * self.loss_identity + self.loss_code + self.loss_style
+                    self.loss_G_temp_ab + self.loss_pingpong_ab) + self.loss_cycle + self.identity_fade_out_weight * self.loss_identity + self.loss_code + self.loss_style + self.loss_vgg
             self.loss_G_ba_final = self.loss_G_spat_ba + self.temp_loss_fade_in_weigth * (
-                    self.loss_G_temp_ba + self.loss_pingpong_ba) + self.loss_cycle + self.identity_fade_out_weight * self.loss_identity + self.loss_code + self.loss_style
+                    self.loss_G_temp_ba + self.loss_pingpong_ba) + self.loss_cycle + self.identity_fade_out_weight * self.loss_identity + self.loss_code + self.loss_style + self.loss_vgg
 
 
 def fade_in_weight(step, start, duration, name):

@@ -19,7 +19,9 @@ def get_train_parser():
     parser.add_argument('--code_loss_coeff', type=float, default=1.0,
                         help='Identity Loss coefficient')
     parser.add_argument('--style_loss_coeff', type=float, default=1.0,
-                        help='Identity Loss coefficient')
+                        help='Style Loss coefficient')
+    parser.add_argument('--vgg_loss_coeff', type=float, default=1.0,
+                        help='vgg feature loss coefficient')
     parser.add_argument('--identity_loss_fadeout', type=bool, default=True,
                         help='Whether the identity loss should fade out.')
     parser.add_argument('--learning_rate', type=float, default=0.0001,
@@ -66,6 +68,7 @@ class TrainingConfig:
         self.identity_loss_coefficient = args.identity_loss_coeff
         self.code_loss_coefficient = args.code_loss_coeff
         self.style_loss_coefficient = args.style_loss_coeff
+        self.vgg_loss_coefficient = args.vgg_loss_coeff
         self.pingpong_loss_coefficient = args.pingpong_loss_coeff
         self.fadeout_identity_loss = args.identity_loss_fadeout
         self.force_image_training = args.force_image

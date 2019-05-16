@@ -2,7 +2,6 @@ from src.components.placeholders import Placeholders
 from src.nets.discriminator import Discriminator
 from src.nets.generator import Generator
 
-
 class Networks:
     def __init__(self, placeholders: Placeholders):
         self.init_generators(placeholders)

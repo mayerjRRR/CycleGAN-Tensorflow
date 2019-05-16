@@ -22,7 +22,7 @@ class Saver:
         try:
             self.saver.restore(session, tf.train.latest_checkpoint(self.save_path))
             logger.info(f"Successfully restored {self.name} from {tf.train.latest_checkpoint(self.save_path)}!")
-        except:
+        except Exception as e:
             logger.warning(f"Could not restore {self.name} from {self.save_path}. Maybe it doesn't exist!")
             self.attempt_restoring_from_initialization_checkpoint(session)
 
@@ -48,12 +48,17 @@ class Savers:
         self.init_generator_savers(networks)
         self.init_discriminator_savers(networks)
         self.init_fnet_saver()
+        self.init_vgg_saver()
         self.init_global_step_saver(placeholders)
 
     def init_fnet_saver(self):
         fnet_variable_list = tf.get_collection(tf.GraphKeys.MODEL_VARIABLES, scope='fnet')
         self.fnet_saver = Saver(fnet_variable_list, save_path=self.get_save_path("fnet"), init_path='./fnet',
                                 name="FNet")
+
+    def init_vgg_saver(self):
+        vgg_variable_list = tf.get_collection(tf.GraphKeys.MODEL_VARIABLES, scope="vgg_19")
+        self.vgg_saver = Saver(vgg_variable_list, save_path="./vgg19")
 
     def init_discriminator_savers(self, networks):
         self.discriminator_spatial_a_saver = Saver(networks.discriminator_spatial_a.var_list,
@@ -92,7 +97,7 @@ class Savers:
     def get_all_savers(self):
         return [self.fnet_saver, self.discriminator_temporal_saver, self.discriminator_spatial_b_saver,
                 self.discriminator_spatial_a_saver, self.generator_ab_saver, self.generator_ba_saver,
-                self.global_step_saver]
+                self.global_step_saver, self.vgg_saver]
 
     def get_init_path(self, name):
         if name is None or self.init_dir is None:
