@@ -61,22 +61,20 @@ def main():
                                                  dataset_dir=training_config.dataset_directory, frame_sequence_length=1, force_video=training_config.force_video_data)
 
     train_videos = is_video_data(train_A)
+    for i in range(training_config.training_runs):
+        if training_config.model_directory == '':
+            date = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+            training_config.model_directory = f"{training_config.task_name}_{date}_{i}-{training_config.training_runs}"
+        log_dir = training_config.logging_directory
+        makedirs(log_dir)
+        training_config.initialization_model = os.path.join(log_dir, training_config.initialization_model)
+        training_config.model_directory = os.path.join(log_dir, training_config.model_directory)
+        logger.info(f"Checkpoints and Logs will be saved to {training_config.model_directory}")
 
-    if training_config.model_directory == '':
-        date = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        training_config.model_directory = f"{training_config.task_name}_{date}"
-    log_dir = training_config.logging_directory
-    makedirs(log_dir)
-    training_config.initialization_model = os.path.join(log_dir, training_config.initialization_model)
-    training_config.model_directory = os.path.join(log_dir, training_config.model_directory)
-    logger.info(f"Checkpoints and Logs will be saved to {training_config.model_directory}")
+        logger.info('Building cyclegan:')
+        model = CycleGan(training_config=training_config, train_videos=train_videos, train_images=not train_videos)
 
-    # TODO: extend for hybrid datasets set
-
-    logger.info('Building cyclegan:')
-    model = CycleGan(training_config=training_config, train_videos=train_videos, train_images=not train_videos)
-
-    train(model, train_A, train_B, training_config.model_directory, training_config.learning_rate)
+        train(model, train_A, train_B, training_config.model_directory, training_config.learning_rate)
 
 if __name__ == "__main__":
     main()

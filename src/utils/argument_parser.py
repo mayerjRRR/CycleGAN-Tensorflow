@@ -1,4 +1,5 @@
 import argparse
+import os
 
 
 def get_train_parser():
@@ -45,10 +46,12 @@ def get_train_parser():
                         help='Model path to initialize model from (e.g., train_2017-07-07_01-23-45)')
     parser.add_argument('--force_image', default=False, type=bool,
                         help='Force image training even with video data')
-    parser.add_argument('--force_video', default=False, type=bool,
+    parser.add_argument('--force_video', default=True, type=bool,
                         help='Force video training even if videos files not present, frames directory must exist')
     parser.add_argument('--frame_seq_length', default=4, type=int,
                         help="Length of the frame sequence for training.")
+    parser.add_argument('--training_runs', default=1, type=int,
+                        help="Number of training runs to run in sequence. Use to loop training with identical settings for comparison reasons.")
     return parser
 
 class TrainingConfig:
@@ -79,6 +82,16 @@ class TrainingConfig:
 
         self.model_directory = args.load_model
         self.initialization_model = args.init_model
+
+        self.training_runs = args.training_runs
+
+    def __str__(self):
+        dictionary = self.__dict__
+        result = ""
+        for key in dictionary:
+            result += key + ": "+str(dictionary[key])+"  "+os.linesep
+        return result
+
 
 def get_training_config():
     args, _ = get_train_parser().parse_known_args()

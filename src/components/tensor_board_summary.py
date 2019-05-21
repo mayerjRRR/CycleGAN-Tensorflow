@@ -3,6 +3,9 @@ import tensorflow as tf
 from src.components.images import Images
 from src.components.losses import Losses
 from src.components.placeholders import Placeholders
+from src.utils.argument_parser import TrainingConfig
+from src.utils.git_utlis import get_repo_status_string
+import os
 
 
 class TensorBoardSummary:
@@ -146,3 +149,12 @@ class TensorBoardSummary:
         tf.summary.image('A/A', images.image_a[0:1])
         tf.summary.image('A/A-B', images.image_ab[0:1])
         tf.summary.image('A/A-B-A', images.image_aba[0:1])
+
+    @staticmethod
+    def get_run_description(training_config:TrainingConfig):
+        description = ""
+        description += get_repo_status_string()
+        description += os.linesep
+        description += str(training_config)
+
+        return tf.summary.text('Run Description', tf.convert_to_tensor(description))

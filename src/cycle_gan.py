@@ -195,7 +195,8 @@ class CycleGan(object):
 
 
     def write_summary(self, fetched, step, summary_writer):
-        summary_writer.add_summary(fetched['summary'], step)
+        for summary in fetched['summary']:
+            summary_writer.add_summary(summary, step)
         summary_writer.flush()
         losses = fetched['losses']
         self.steps.set_description(
@@ -233,7 +234,9 @@ class CycleGan(object):
 
     def add_summary(self, fetches, step):
         if self.should_write_summary(step):
-            fetches['summary'] = self.tb_summary.summary_op
+            fetches['summary'] = [self.tb_summary.summary_op]
+            if step == 0:
+                fetches['summary'].append(self.tb_summary.get_run_description(self.config))
         return fetches
 
 

@@ -108,7 +108,7 @@ def process_and_store_frame(frame, inference_machine, video_writer, forwards, he
     resized_result = cv2.resize(result, (width, height))
     uint8_result = float_to_unit8(resized_result)
     if with_old:
-        uint8_result = np.concatenate([float_to_unit8(frame), uint8_result], axis=1)
+        uint8_result = np.concatenate([cv2.resize(float_to_unit8(frame), (height, width)), uint8_result], axis=1)
     bgr_result = cv2.cvtColor(uint8_result, cv2.COLOR_RGB2BGR)
     video_writer.write(bgr_result)
 

@@ -5,3 +5,4 @@ tqdm
 opencv-python
 keras
 tensorboard
+gitpython

@@ -74,6 +74,8 @@ class InferenceMachine:
         result = self.sess.run(graph, feed_dict={self.current_frame: [input_image],
                                                  self.last_frame: [self.last_frame_array],
                                                  self.last_result: [self.last_result_array]})[0]
+        self.last_frame_array=input_image
+        self.last_result_array=result
         return result
 
     def _get_inference_graph(self, forwards):
