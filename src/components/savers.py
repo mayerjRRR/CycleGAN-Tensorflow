@@ -11,33 +11,39 @@ logger = get_logger("savers")
 
 class Saver:
     def __init__(self, variable_list, save_path, init_path=None, name="Unnamed Graph"):
-        self.saver = tf.train.Saver(variable_list)
-        self.save_path = save_path
-        if not os.path.isdir(self.save_path):
-            os.makedirs(self.save_path)
-        self.init_path = init_path
-        self.name = name
+        try:
+            self.saver = tf.train.Saver(variable_list)
+            self.save_path = save_path
+            if not os.path.isdir(self.save_path):
+                os.makedirs(self.save_path)
+            self.init_path = init_path
+            self.name = name
+        except Exception as e:
+            logger.warning(f"Could not create Saver for {name}!")
 
     def load(self, session):
-        try:
-            self.saver.restore(session, tf.train.latest_checkpoint(self.save_path))
-            logger.info(f"Successfully restored {self.name} from {tf.train.latest_checkpoint(self.save_path)}!")
-        except Exception as e:
-            logger.warning(f"Could not restore {self.name} from {self.save_path}. Maybe it doesn't exist!")
-            self.attempt_restoring_from_initialization_checkpoint(session)
+        if self.saver:
+            try:
+                self.saver.restore(session, tf.train.latest_checkpoint(self.save_path))
+                logger.info(f"Successfully restored {self.name} from {tf.train.latest_checkpoint(self.save_path)}!")
+            except Exception as e:
+                logger.warning(f"Could not restore {self.name} from {self.save_path}. Maybe it doesn't exist!")
+                self.attempt_restoring_from_initialization_checkpoint(session)
 
     def attempt_restoring_from_initialization_checkpoint(self, session):
-        if self.init_path:
-            logger.info(f"Trying to initialize {self.name} from {self.init_path}.")
-            try:
-                self.saver.restore(session, tf.train.latest_checkpoint(self.init_path))
-                logger.info(f"Successfully initialized {self.name} from {tf.train.latest_checkpoint(self.init_path)}!")
-            except:
-                logger.warning(f"Could not initialize {self.name} from {self.init_path}. Maybe it doesn't exist!")
+        if self.saver:
+            if self.init_path:
+                logger.info(f"Trying to initialize {self.name} from {self.init_path}.")
+                try:
+                    self.saver.restore(session, tf.train.latest_checkpoint(self.init_path))
+                    logger.info(f"Successfully initialized {self.name} from {tf.train.latest_checkpoint(self.init_path)}!")
+                except:
+                    logger.warning(f"Could not initialize {self.name} from {self.init_path}. Maybe it doesn't exist!")
 
     def save(self, session, global_step):
-        self.saver.save(session, os.path.join(self.save_path, "model.ckpt"), global_step=global_step,
-                        write_meta_graph=False)
+        if self.saver:
+            self.saver.save(session, os.path.join(self.save_path, "model.ckpt"), global_step=global_step,
+                            write_meta_graph=False)
 
 
 class Savers:
