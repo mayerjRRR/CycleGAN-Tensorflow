@@ -140,7 +140,7 @@ class Losses:
 
     def define_pingpong_loss(self, images: Images, pingpong_loss_coeff, train_videos):
         with tf.name_scope("ping_pong_loss"):
-            if train_videos:
+            if train_videos or pingpong_loss_coeff > 0:
                 self.loss_pingpong_ab = pingpong_loss_coeff * tf.reduce_mean(
                     compute_pingpong_difference(images.pingpong_frames_ab))
                 self.loss_pingpong_ba = pingpong_loss_coeff * tf.reduce_mean(
@@ -150,7 +150,7 @@ class Losses:
 
     def define_code_layer_loss(self, images: Images, code_loss_coeff, train_images):
         with tf.name_scope("code_layer_loss"):
-            if train_images:
+            if train_images or code_loss_coeff <= 0:
                 self.loss_code_aba = self.loss_code_bab = tf.constant(0.0, dtype=tf.float32)
             else:
                 self.loss_code_aba = tf.reduce_mean(tf.abs(images.code_frames_ab - images.code_frames_aba))
@@ -167,7 +167,7 @@ class Losses:
             return style_loss
 
         with tf.name_scope("discriminator_style_loss"):
-            if train_images:
+            if train_images or style_loss_coeff <= 0:
                 self.style_loss_a = self.style_loss_b = tf.constant(0.0, dtype=tf.float32)
             else:
                 self.style_loss_a = compute_style_loss(self.D_real_activation_a, self.D_fake_activation_a)
@@ -184,7 +184,7 @@ class Losses:
             return style_loss
 
         with tf.name_scope("vgg_style_loss"):
-            if train_images:
+            if train_images or vgg_loss_coeff <= 0:
                 self.vgg_loss_a = self.vgg_loss_b = tf.constant(0.0, dtype=tf.float32)
             else:
                 self.vgg_loss_a = compute_style_loss(get_vgg_activations(images.frames_a[:, 1]),

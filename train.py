@@ -62,7 +62,7 @@ def main():
 
     train_videos = is_video_data(train_A)
     for i in range(training_config.training_runs):
-        if training_config.model_directory == '':
+        if training_config.model_directory == '' or training_config.training_runs > 1:
             date = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
             training_config.model_directory = f"{training_config.task_name}_{date}_{i}-{training_config.training_runs}"
         log_dir = training_config.logging_directory
