@@ -76,5 +76,7 @@ def main():
 
         train(model, train_A, train_B, training_config.model_directory, training_config.learning_rate)
 
+        tf.reset_default_graph()
+
 if __name__ == "__main__":
     main()
