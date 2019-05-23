@@ -3,6 +3,7 @@ import tensorflow as tf
 from src.components.images import Images
 from src.components.losses import Losses
 from src.components.placeholders import Placeholders
+from src.components.training_balancer import TrainingBalancer
 from src.utils.argument_parser import TrainingConfig
 from src.utils.git_utlis import get_repo_status_string
 import os
@@ -11,12 +12,12 @@ import os
 class TensorBoardSummary:
 
     def __init__(self, images: Images, losses: Losses,
-                 placeholders: Placeholders, train_videos, train_images):
+                 placeholders: Placeholders, training_balancer:TrainingBalancer, train_videos, train_images):
 
         self.add_losses(losses, train_videos)
         self.add_spacial_discriminator_outputs(losses, train_images, train_videos)
         self.add_temporal_discriminator_outputs(losses, train_videos)
-        self.add_model_parameters(losses, placeholders, train_videos)
+        self.add_model_parameters(losses, placeholders, training_balancer, train_videos)
         self.add_images(images, train_images, train_videos)
         self.summary_op = tf.summary.merge_all()
 
@@ -71,11 +72,15 @@ class TensorBoardSummary:
             tf.summary.scalar('Temporal_Discriminator_Output/Fake_Frames_from_History_B',
                               tf.reduce_mean(losses.D_temp_history_fake_b))
 
-    def add_model_parameters(self, losses: Losses, placeholders:Placeholders, train_videos):
+    def add_model_parameters(self, losses: Losses, placeholders:Placeholders, training_balancer:TrainingBalancer, train_videos):
         if train_videos:
             tf.summary.scalar('Model_Parameters/Temporal_Loss_Weight', losses.temp_loss_fade_in_weigth)
         tf.summary.scalar('Model_Parameters/Identity_Loss_Weight', losses.identity_fade_out_weight)
         tf.summary.scalar('Model_Parameters/Learning_Rate', placeholders.lr)
+
+        tf.summary.scalar('Model_Parameters/Spatial_Balance_A', training_balancer.spatial_a_balance)
+        tf.summary.scalar('Model_Parameters/Spatial_Balance_B', training_balancer.spatial_b_balance)
+        tf.summary.scalar('Model_Parameters/Temporal_Balance', training_balancer.temporal_balance)
 
     def add_images(self, images, train_images, train_videos):
         if train_videos:

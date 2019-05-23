@@ -5,6 +5,7 @@ from src.components.losses import Losses
 from src.components.networks import Networks
 from src.components.optimizers import Optimizers
 from src.components.placeholders import Placeholders
+from src.components.training_balancer import TrainingBalancer
 from src.components.savers import Savers
 from src.components.tensor_board_summary import TensorBoardSummary
 from src.utils.history_queue import HistoryQueue
@@ -21,7 +22,8 @@ class CycleGan(object):
         self.images = Images(self.placeholders, self.networks, self.augmentation_shape, self.image_shape)
         self.losses = Losses(self.networks, self.placeholders, self.images, self.config, self.train_videos, self.train_images)
         self.optimizers = Optimizers(self.networks, self.losses, self.placeholders, self.train_videos)
-        self.tb_summary = TensorBoardSummary(self.images, self.losses, self.placeholders, self.train_videos,
+        self.training_balancer = TrainingBalancer(self.losses)
+        self.tb_summary = TensorBoardSummary(self.images, self.losses, self.placeholders, self.training_balancer, self.train_videos,
                                              self.train_images)
         self.savers = Savers(self.networks, self.placeholders, self.config.model_directory, self.config.initialization_model)
 
@@ -67,6 +69,8 @@ class CycleGan(object):
                 self.write_summary(fetched, step, summary_writer)
             if self.should_save_model(step):
                 self.savers.save_all(sess, global_step=step)
+
+            print(fetched["balancer"])
 
 
     def init_fake_frame_history(self, frame_data_a, frame_data_b, sess):
@@ -210,6 +214,7 @@ class CycleGan(object):
         fetches = self.add_generator_optimizer(fetches)
         fetches = self.add_discriminator_optimizer(fetches, video_training)
         fetches = self.add_fakes(fetches, video_training)
+        fetches = self.add_balances(fetches,video_training)
         fetches = self.add_summary(fetches, step)
         return fetches
 
@@ -245,4 +250,9 @@ class CycleGan(object):
             fetches['fakes'] = [self.images.warped_frames_ba, self.images.warped_frames_ab]
         else:
             fetches['fakes'] = [self.images.image_ba, self.images.image_ab]
+        return fetches
+
+    def add_balances(self, fetches, video_training):
+        if video_training:
+            fetches['balancer'] = [self.training_balancer.spatial_a_balance, self.training_balancer.spatial_b_balance, self.training_balancer.temporal_balance]
         return fetches
