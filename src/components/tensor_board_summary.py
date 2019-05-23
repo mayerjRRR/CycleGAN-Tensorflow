@@ -32,8 +32,10 @@ class TensorBoardSummary:
         tf.summary.scalar('Losses/Code_Loss', losses.loss_code)
         tf.summary.scalar('Losses/PingPong_Loss_AB', losses.loss_pingpong_ab)
         tf.summary.scalar('Losses/PingPong_Loss_BA', losses.loss_pingpong_ab)
-        tf.summary.scalar('Losses/Style_Loss_AB', losses.style_loss_b)
-        tf.summary.scalar('Losses/Style_Loss_BA', losses.style_loss_a)
+        tf.summary.scalar('Losses/Spatial_Style_Loss_AB', losses.spatial_style_loss_b)
+        tf.summary.scalar('Losses/Spatial_Style_Loss_BA', losses.spatial_style_loss_a)
+        tf.summary.scalar('Losses/Temporal_Style_Loss_AB', losses.temporal_style_loss_b)
+        tf.summary.scalar('Losses/Temporal_Style_Loss_BA', losses.temporal_style_loss_a)
         tf.summary.scalar('Losses/VGG_Loss_AB', losses.vgg_loss_b)
         tf.summary.scalar('Losses/VGG_Loss_BA', losses.vgg_loss_a)
 
