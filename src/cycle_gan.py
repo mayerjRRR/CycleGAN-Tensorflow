@@ -70,7 +70,7 @@ class CycleGan(object):
             if self.should_save_model(step):
                 self.savers.save_all(sess, global_step=step)
 
-            print(fetched["balancer"])
+           # print(fetched["balancer"])
 
 
     def init_fake_frame_history(self, frame_data_a, frame_data_b, sess):
