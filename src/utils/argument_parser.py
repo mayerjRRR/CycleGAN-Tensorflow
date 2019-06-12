@@ -19,7 +19,7 @@ def get_train_parser():
                         help='Identity Loss coefficient')
     parser.add_argument('--code_loss_coeff', type=float, default=1.0,
                         help='Identity Loss coefficient')
-    parser.add_argument('--style_loss_coeff', type=float, default=1.0,
+    parser.add_argument('--style_loss_coeff', type=float, default=100000.0,
                         help='Style Loss coefficient')
     parser.add_argument('--vgg_loss_coeff', type=float, default=1.0,
                         help='vgg feature loss coefficient')
@@ -52,6 +52,8 @@ def get_train_parser():
                         help="Length of the frame sequence for training.")
     parser.add_argument('--training_runs', default=1, type=int,
                         help="Number of training runs to run in sequence. Use to loop training with identical settings for comparison reasons.")
+    parser.add_argument('--tb_threshold', type=float, default=0.4,
+                        help='Threshold of the average training balancer value to turn off discriminator training')
     return parser
 
 class TrainingConfig:
@@ -84,6 +86,7 @@ class TrainingConfig:
         self.initialization_model = args.init_model
 
         self.training_runs = args.training_runs
+        self.training_balancer_threshold = args.tb_threshold
 
     def __str__(self):
         dictionary = self.__dict__

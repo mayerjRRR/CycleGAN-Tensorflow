@@ -5,7 +5,7 @@ from src.components.losses import Losses
 from src.components.networks import Networks
 from src.components.optimizers import Optimizers
 from src.components.placeholders import Placeholders
-from src.components.training_balancer import TrainingBalancer
+from src.components.training_balancer import TrainingBalancer, ExponentialMovingAverage
 from src.components.savers import Savers
 from src.components.tensor_board_summary import TensorBoardSummary
 from src.utils.history_queue import HistoryQueue
@@ -70,7 +70,7 @@ class CycleGan(object):
             if self.should_save_model(step):
                 self.savers.save_all(sess, global_step=step)
 
-           # print(fetched["balancer"])
+            self.update_tb_averages(fetched["balancer"])
 
 
     def init_fake_frame_history(self, frame_data_a, frame_data_b, sess):
@@ -119,6 +119,8 @@ class CycleGan(object):
             if self.should_save_model(step):
                 self.savers.save_all(sess)
 
+            self.update_tb_averages(fetched["balancer"])
+
 
     def init_fake_image_history(self, image_data_a, image_data_b, sess):
         image_a, image_b = self.get_real_images(image_data_a, image_data_b, sess)
@@ -139,6 +141,11 @@ class CycleGan(object):
             self.init_training_parameters(sess, learning_rate)
         self.history_queue_a = HistoryQueue(size=50)
         self.history_queue_b = HistoryQueue(size=50)
+
+        self.tb_averager_spatial_a = ExponentialMovingAverage()
+        self.tb_averager_spatial_b = ExponentialMovingAverage()
+        self.tb_averager_temporal = ExponentialMovingAverage()
+
         self.steps = trange(initial_step, num_global_step, total=num_global_step, initial=initial_step)
 
 
@@ -149,6 +156,10 @@ class CycleGan(object):
     def should_save_model(self, step):
         return step % self.config.saving_frequency == 0
 
+    def update_tb_averages(self, balancer_fetches):
+        self.tb_averager_spatial_a.update(balancer_fetches[0])
+        self.tb_averager_spatial_b.update(balancer_fetches[1])
+        self.tb_averager_temporal.update(balancer_fetches[2])
 
     def init_training_parameters(self, sess, learning_rate):
         epoch_length = 500
@@ -231,8 +242,12 @@ class CycleGan(object):
 
 
     def add_discriminator_optimizer(self, fetches, video_training):
-        fetches['discriminator_optimizer'] = [self.optimizers.optimizer_D_a, self.optimizers.optimizer_D_b]
-        if video_training:
+        fetches['discriminator_optimizer'] = []
+        if self.tb_averager_spatial_a.evaluate() < self.config.training_balancer_threshold:
+            fetches['discriminator_optimizer'] += [self.optimizers.optimizer_D_a]
+        if self.tb_averager_spatial_b.evaluate() < self.config.training_balancer_threshold:
+            fetches['discriminator_optimizer'] += [self.optimizers.optimizer_D_b]
+        if video_training and self.tb_averager_temporal.evaluate() < self.config.training_balancer_threshold:
             fetches['discriminator_optimizer'] += [self.optimizers.optimizer_D_temp]
         return fetches
 
