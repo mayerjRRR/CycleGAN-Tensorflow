@@ -33,7 +33,6 @@ class ExponentialMovingAverage:
 
     def update(self, new_value):
         self._ema = (1 - self._decay) * new_value + self._decay * self._ema
-        print(self._ema)
 
     def evaluate(self):
         return self._ema

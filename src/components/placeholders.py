@@ -8,6 +8,7 @@ class Placeholders:
         self.init_training_placeholders()
         self.init_real_placeholders(batch_size, input_shape)
         self.init_fake_history_placeholders(batch_size, training_shape)
+        self.init_tb_placeholders()
 
     def init_training_placeholders(self):
         self.is_train = tf.placeholder(tf.bool, name='is_train')
@@ -29,6 +30,10 @@ class Placeholders:
         self.history_fake_temp_frames_a = tf.placeholder(tf.float32, [batch_size, 3 ] + image_shape, name='history_fake_a')
         self.history_fake_temp_frames_b = tf.placeholder(tf.float32, [batch_size, 3 ] + image_shape, name='history_fake_b')
 
+    def init_tb_placeholders(self):
+        self.tb_spatial_a = tf.placeholder(tf.float32, name='spatial_tb_a')
+        self.tb_spatial_b = tf.placeholder(tf.float32, name='spatial_tb_b')
+        self.tb_temporal = tf.placeholder(tf.float32, name='temporal_tb')
 
 
 

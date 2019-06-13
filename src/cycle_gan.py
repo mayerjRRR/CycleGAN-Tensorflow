@@ -21,7 +21,7 @@ class CycleGan(object):
         self.networks = Networks(self.placeholders)
         self.images = Images(self.placeholders, self.networks, self.augmentation_shape, self.image_shape)
         self.losses = Losses(self.networks, self.placeholders, self.images, self.config, self.train_videos, self.train_images)
-        self.optimizers = Optimizers(self.networks, self.losses, self.placeholders, self.train_videos)
+        self.optimizers = Optimizers(self.networks, self.losses, self.placeholders, self.train_videos, self.config.training_balancer_threshold)
         self.training_balancer = TrainingBalancer(self.losses)
         self.tb_summary = TensorBoardSummary(self.images, self.losses, self.placeholders, self.training_balancer, self.train_videos,
                                              self.train_images)
@@ -62,7 +62,10 @@ class CycleGan(object):
                                                    self.placeholders.is_train: True,
                                                    self.placeholders.lr: lr,
                                                    self.placeholders.history_fake_temp_frames_a: fake_a_history,
-                                                   self.placeholders.history_fake_temp_frames_b: fake_b_history})
+                                                   self.placeholders.history_fake_temp_frames_b: fake_b_history,
+                                                   self.placeholders.tb_spatial_a: self.tb_averager_spatial_a.evaluate(),
+                                                   self.placeholders.tb_spatial_b: self.tb_averager_spatial_b.evaluate(),
+                                                   self.placeholders.tb_temporal: self.tb_averager_temporal.evaluate()})
             fake_a_history, fake_b_history = self.update_fake_frame_history(fetched)
 
             if self.should_write_summary(step):
@@ -243,11 +246,9 @@ class CycleGan(object):
 
     def add_discriminator_optimizer(self, fetches, video_training):
         fetches['discriminator_optimizer'] = []
-        if self.tb_averager_spatial_a.evaluate() < self.config.training_balancer_threshold:
-            fetches['discriminator_optimizer'] += [self.optimizers.optimizer_D_a]
-        if self.tb_averager_spatial_b.evaluate() < self.config.training_balancer_threshold:
-            fetches['discriminator_optimizer'] += [self.optimizers.optimizer_D_b]
-        if video_training and self.tb_averager_temporal.evaluate() < self.config.training_balancer_threshold:
+        fetches['discriminator_optimizer'] += [self.optimizers.optimizer_D_a]
+        fetches['discriminator_optimizer'] += [self.optimizers.optimizer_D_b]
+        if video_training:
             fetches['discriminator_optimizer'] += [self.optimizers.optimizer_D_temp]
         return fetches
 

@@ -82,6 +82,10 @@ class TensorBoardSummary:
         tf.summary.scalar('Model_Parameters/Spatial_Balance_B', training_balancer.spatial_b_balance)
         tf.summary.scalar('Model_Parameters/Temporal_Balance', training_balancer.temporal_balance)
 
+        tf.summary.scalar('Model_Parameters/Average_Spatial_Balance_A', placeholders.tb_spatial_a)
+        tf.summary.scalar('Model_Parameters/Average_Spatial_Balance_B', placeholders.tb_spatial_b)
+        tf.summary.scalar('Model_Parameters/Average_Temporal_Balance', placeholders.tb_temporal)
+
     def add_images(self, images, train_images, train_videos):
         if train_videos:
             self.add_a_frames(images)
