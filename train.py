@@ -65,6 +65,8 @@ def main():
         if training_config.model_directory == '' or training_config.training_runs > 1:
             date = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
             training_config.model_directory = f"{training_config.task_name}_{date}_{i}-{training_config.training_runs}"
+            if not training_config.run_name is None:
+                training_config.model_directory = training_config.run_name+"_"+training_config.model_directory
         log_dir = training_config.logging_directory
         makedirs(log_dir)
         training_config.initialization_model = os.path.join(log_dir, training_config.initialization_model)

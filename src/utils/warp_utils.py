@@ -94,7 +94,8 @@ def pingpongify(frames):
 
 def compute_pingpong_difference(pingpong_frames):
     ping, pong = unpingpongify(pingpong_frames)
-    return tf.abs(ping - pong)
+    #remove first frame since inference incomplete
+    return tf.abs(ping[:,1:] - pong[:,1:])
 
 
 def unpingpongify(pingpong_frames):

@@ -1,21 +1,35 @@
 import glob
 import cv2
 import numpy as np
+import os
 
 from src.inference_machine import InferenceMachine
 from src.utils import argument_parser
 from src.utils.image_utils import load_float_image, save_float_image, is_image, is_video, \
     iterate_all_video_float_frames, float_to_unit8, is_directory, uint8_to_float
-from src.utils.utils import get_latest_model
-
+from src.utils.utils import get_latest_model, get_subdirs
+import tensorflow as tf
 
 def main():
     args, unparsed = argument_parser.get_inference_parser().parse_known_args()
-    forwards, input, model_dir, output = parse_arguments(args)
+    forwards, input, model_dir, output, model_super_dir = parse_arguments(args)
 
-    if model_dir is None:
+    if model_dir is None and model_super_dir is None:
         model_dir = get_latest_model()
+    if not model_super_dir is None:
+        model_directories = get_subdirs(model_super_dir)
+        for model in model_directories:
+            _, model_name = os.path.split(model)
+            output_head, output_tail = os.path.split(output)
+            current_output = os.path.join(output_head, model_name+"_"+output_tail)
+            print(current_output)
+            process_input(args, forwards, input, model, current_output)
+            tf.reset_default_graph()
 
+    process_input(args, forwards, input, model_dir, output)
+
+
+def process_input(args, forwards, input, model_dir, output):
     if is_video(input):
         process_video(input, output, forwards, model_dir, args.with_old)
     elif is_image(input):
@@ -31,7 +45,8 @@ def parse_arguments(args):
     output = args.output
     forwards = args.forwards
     model_dir = args.model_dir
-    return forwards, input, model_dir, output
+    model_super_dir = args.model_super_dir
+    return forwards, input, model_dir, output, model_super_dir
 
 
 def process_image_directory(input, output, forwards, model_dir, with_old):

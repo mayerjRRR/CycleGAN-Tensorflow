@@ -5,6 +5,8 @@ import os
 def get_train_parser():
 
     parser = argparse.ArgumentParser(description="Training commands")
+    parser.add_argument('-n','--run_name', type=str, default=None,
+                        help='Short decription of the run to be used in the savefiles name')
     parser.add_argument('--task', type=str, default='smoke',
                         help='Task name')
     parser.add_argument('--dataset_directory', type=str, default='datasets', help='Location of the training data')
@@ -58,6 +60,7 @@ def get_train_parser():
 
 class TrainingConfig:
     def __init__(self, args):
+        self.run_name = args.run_name
         self.task_name = args.task
         self.dataset_directory = args.dataset_directory
         self.logging_directory = args.log_directory
@@ -113,4 +116,6 @@ def get_inference_parser():
     parser.set_defaults(with_old=False)
     parser.add_argument('--model_dir', type=str,
                         help='Model path to load (e.g., train_2017-07-07_01-23-45)')
+    parser.add_argument('--model_super_dir', type=str,
+                        help='path to directrory containing lots of model directories (e.g., ./logs)')
     return parser
