@@ -17,7 +17,7 @@ def get_train_parser():
                         help='Cycle Consistency Loss coefficient')
     parser.add_argument('--identity_loss_coeff', type=float, default=10,
                         help='Identity Loss coefficient')
-    parser.add_argument('--pingpong_loss_coeff', type=float, default=1.0,
+    parser.add_argument('--pingpong_loss_coeff', type=float, default=100.0,
                         help='Identity Loss coefficient')
     parser.add_argument('--code_loss_coeff', type=float, default=1.0,
                         help='Identity Loss coefficient')

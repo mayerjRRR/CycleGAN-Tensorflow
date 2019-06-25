@@ -9,7 +9,8 @@ from src.video_preprocessor import preprocess_videos
 from src.utils.utils import contains_videos
 
 dataset_names = ['trainA', 'trainB']
-image_format_file_ending = 'jpg'
+preferred_image_format_file_ending = 'jpg'
+supported_image_format_file_ending = 'png'
 video_format_file_ending = 'mp4'
 video_index_padding = 1 + 6 + 1
 
@@ -40,7 +41,7 @@ def build_dataset(image_path, image_size, batch_size):
 
     def load_image(filename):
         image_string = tf.read_file(filename)
-        image_decoded = tf.image.decode_jpeg(image_string, channels=3)
+        image_decoded = tf.image.decode_image(image_string, channels=3)
         image_normalized = tf.image.convert_image_dtype(image_decoded, dtype=tf.float32)
         image_normalized = (image_normalized * 2) - 1
 
@@ -97,8 +98,11 @@ def get_image_frame_sequences(data_dir):
 
 
 def get_path_list(data_dir):
-    image_path_pattern = os.path.join(data_dir, f"*{image_format_file_ending}")
+    image_path_pattern = os.path.join(data_dir, f"*{preferred_image_format_file_ending}")
     task_image_paths = get_all_paths(image_path_pattern)
+    if len(task_image_paths) == 0:
+        image_path_pattern = os.path.join(data_dir, f"*{supported_image_format_file_ending}")
+        task_image_paths = get_all_paths(image_path_pattern)
     task_image_paths.sort(key=str.lower)
     return task_image_paths
 
@@ -122,12 +126,12 @@ def get_video_names(task_name):
     image_paths = get_path_list(os.path.join(task_name, 'frames'))
     videos = set([])
     for path in image_paths:
-        videos.add(path[:-(video_index_padding + len(image_format_file_ending))])
+        videos.add(path[:-(video_index_padding + len(preferred_image_format_file_ending))])
     return list(videos)
 
 
 def get_video_frames(video_name):
-    all_frames = get_all_paths(video_name + "_*." + image_format_file_ending)
+    all_frames = get_all_paths(video_name + "_*." + preferred_image_format_file_ending)
     all_frames.sort(key=str.lower)
     return all_frames
 
