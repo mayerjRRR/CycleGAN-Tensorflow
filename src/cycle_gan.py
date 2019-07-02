@@ -18,7 +18,7 @@ class CycleGan(object):
         self.init_parameters(training_config, train_videos, train_images)
 
         self.placeholders = Placeholders(self.config.batch_size, self.image_shape, self.input_shape, training_config.frame_sequence_length)
-        self.networks = Networks(self.placeholders)
+        self.networks = Networks(self.placeholders, training_config.use_unet)
         self.images = Images(self.placeholders, self.networks, self.augmentation_shape, self.image_shape)
         self.losses = Losses(self.networks, self.placeholders, self.images, self.config, self.train_videos, self.train_images)
         self.optimizers = Optimizers(self.networks, self.losses, self.placeholders, self.train_videos, self.config.training_balancer_threshold)

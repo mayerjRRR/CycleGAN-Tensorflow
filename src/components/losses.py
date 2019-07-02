@@ -52,15 +52,19 @@ class Losses:
                                                                          return_layer_activations=True)
 
     def define_temporal_discriminator_activations(self, images: Images, networks: Networks):
-        self.D_real_temp_activation_a = networks.discriminator_temporal(layer_frames_in_channels(images.warped_frames_a),
-                                                                    return_layer_activations=True)
-        self.D_real_temp_activation_b = networks.discriminator_temporal(layer_frames_in_channels(images.warped_frames_b),
-                                                                    return_layer_activations=True)
+        self.D_real_temp_activation_a = networks.discriminator_temporal(
+            layer_frames_in_channels(images.warped_frames_a),
+            return_layer_activations=True)
+        self.D_real_temp_activation_b = networks.discriminator_temporal(
+            layer_frames_in_channels(images.warped_frames_b),
+            return_layer_activations=True)
 
-        self.D_fake_temp_activation_a = networks.discriminator_temporal(layer_frames_in_channels(images.warped_frames_ba),
-                                                                    return_layer_activations=True)
-        self.D_fake_temp_activation_b = networks.discriminator_temporal(layer_frames_in_channels(images.warped_frames_ab),
-                                                                    return_layer_activations=True)
+        self.D_fake_temp_activation_a = networks.discriminator_temporal(
+            layer_frames_in_channels(images.warped_frames_ba),
+            return_layer_activations=True)
+        self.D_fake_temp_activation_b = networks.discriminator_temporal(
+            layer_frames_in_channels(images.warped_frames_ab),
+            return_layer_activations=True)
 
     def define_temporal_discriminator_output(self, images: Images, networks: Networks, placeholders: Placeholders):
 
@@ -76,6 +80,7 @@ class Losses:
 
     def define_losses(self, images: Images, placeholders: Placeholders, training_config: TrainingConfig, train_videos,
                       train_images):
+        self.define_gan_loss(training_config)
         self.define_discriminator_loss(train_videos, train_images)
         self.define_spatial_generator_loss(train_images)
         self.define_temporal_generator_loss(placeholders, train_videos, training_config.temporal_loss_coefficient)
@@ -85,45 +90,55 @@ class Losses:
         self.define_pingpong_loss(images, training_config.pingpong_loss_coefficient, train_videos)
         self.define_spatial_discriminator_style_loss(training_config.style_loss_coefficient, train_images)
         self.define_temporal_discriminator_style_loss(training_config.style_loss_coefficient, train_images)
-        self.define_vgg_style_loss( training_config.vgg_loss_coefficient, train_images, images)
+        self.define_vgg_style_loss(training_config.vgg_loss_coefficient, train_images, images)
         self.define_total_generator_loss()
+
+    def define_gan_loss(self, training_config: TrainingConfig):
+        if training_config.use_crossentropy_loss:
+            self.gan_loss = self.log_binary_cross_entropy
+        else:
+            self.gan_loss = self.mse
+
+    @staticmethod
+    def mse(y_pred, y_true):
+        return tf.reduce_mean(tf.squared_difference(y_pred, y_true))
+
+    @staticmethod
+    def log_binary_cross_entropy(y_pred, y_true):
+        return tf.reduce_mean(tf.abs(tf.round(y_true) - tf.log(tf.sigmoid(y_pred))))
 
     def define_discriminator_loss(self, train_videos, train_images):
         with tf.name_scope("discriminator_loss"):
             if train_images:
-                self.loss_D_a = (tf.reduce_mean(tf.squared_difference(self.D_real_image_a, 0.9)) +
-                                 tf.reduce_mean(tf.square(self.D_history_fake_image_a))) * 0.5
-                self.loss_D_b = (tf.reduce_mean(tf.squared_difference(self.D_real_image_b, 0.9)) +
-                                 tf.reduce_mean(tf.square(self.D_history_fake_image_b))) * 0.5
+                self.loss_D_a = (self.gan_loss(self.D_real_image_a, 0.9) + self.gan_loss(self.D_history_fake_image_a,0.0)) * 0.5
+                self.loss_D_b = (self.gan_loss(self.D_real_image_b, 0.9) + self.gan_loss(self.D_history_fake_image_b,0.0)) * 0.5
             else:
-                self.loss_D_a = (tf.reduce_mean(tf.squared_difference(self.D_real_frame_a, 0.9)) +
-                                 tf.reduce_mean(tf.square(self.D_history_fake_frame_a))) * 0.5
-                self.loss_D_b = (tf.reduce_mean(tf.squared_difference(self.D_real_frame_b, 0.9)) + tf.reduce_mean(
-                    tf.square(self.D_history_fake_frame_b))) * 0.5
+                self.loss_D_a = (self.gan_loss(self.D_real_frame_a, 0.9) + self.gan_loss(self.D_history_fake_frame_a,0.0)) * 0.5
+                self.loss_D_b = (self.gan_loss(self.D_real_frame_b, 0.9) + self.gan_loss(self.D_history_fake_frame_b,0.0)) * 0.5
 
             if train_videos:
-                self.loss_D_temp = (tf.reduce_mean(tf.squared_difference(self.D_temp_real_a, 0.9)) +
-                                    (tf.reduce_mean(tf.square(self.D_temp_history_fake_a))) +
-                                    tf.reduce_mean(tf.squared_difference(self.D_temp_real_b, 0.9)) +
-                                    (tf.reduce_mean(tf.square(self.D_temp_history_fake_b)))) * 0.25
+                self.loss_D_temp = (self.gan_loss(self.D_temp_real_a, 0.9) +
+                                    self.gan_loss(self.D_temp_history_fake_a,0.0) +
+                                    self.gan_loss(self.D_temp_real_b, 0.9) +
+                                    self.gan_loss(self.D_temp_history_fake_b,0.0)) * 0.25
             else:
                 self.loss_D_temp = tf.constant(0.0, dtype=tf.float32)
 
     def define_spatial_generator_loss(self, train_images):
         with tf.name_scope("spatial_loss"):
             if train_images:
-                self.loss_G_spat_ab = tf.reduce_mean(tf.squared_difference(self.D_fake_image_b, 0.9))
-                self.loss_G_spat_ba = tf.reduce_mean(tf.squared_difference(self.D_fake_image_a, 0.9))
+                self.loss_G_spat_ab = self.gan_loss(self.D_fake_image_b, 0.9)
+                self.loss_G_spat_ba = self.gan_loss(self.D_fake_image_a, 0.9)
             else:
-                self.loss_G_spat_ab = tf.reduce_mean(tf.squared_difference(self.D_fake_frame_b, 0.9))
-                self.loss_G_spat_ba = tf.reduce_mean(tf.squared_difference(self.D_fake_frame_a, 0.9))
+                self.loss_G_spat_ab = self.gan_loss(self.D_fake_frame_b, 0.9)
+                self.loss_G_spat_ba = self.gan_loss(self.D_fake_frame_a, 0.9)
 
     def define_temporal_generator_loss(self, placeholders: Placeholders, train_videos, temp_loss_coeff):
         with tf.name_scope("temporal_loss"):
             self.temp_loss_fade_in_weigth = fade_in_weight(placeholders.global_step, 2000, 4000, "temp_loss_weigth")
             if train_videos:
-                self.loss_G_temp_ab = temp_loss_coeff * tf.reduce_mean(tf.squared_difference(self.D_temp_fake_b, 0.9))
-                self.loss_G_temp_ba = temp_loss_coeff * tf.reduce_mean(tf.squared_difference(self.D_temp_fake_a, 0.9))
+                self.loss_G_temp_ab = temp_loss_coeff * self.gan_loss(self.D_temp_fake_b, 0.9)
+                self.loss_G_temp_ba = temp_loss_coeff * self.gan_loss(self.D_temp_fake_a, 0.9)
             else:
                 self.loss_G_temp_ab = self.loss_G_temp_ba = tf.constant(0.0, dtype=tf.float32)
 
@@ -176,8 +191,10 @@ class Losses:
             if train_images or style_loss_coeff <= 0:
                 self.spatial_style_loss_a = self.spatial_style_loss_b = tf.constant(0.0, dtype=tf.float32)
             else:
-                self.spatial_style_loss_a = compute_style_loss(self.D_real_spat_activation_a, self.D_fake_spat_activation_a)
-                self.spatial_style_loss_b = compute_style_loss(self.D_real_spat_activation_b, self.D_fake_spat_activation_b)
+                self.spatial_style_loss_a = compute_style_loss(self.D_real_spat_activation_a,
+                                                               self.D_fake_spat_activation_a)
+                self.spatial_style_loss_b = compute_style_loss(self.D_real_spat_activation_b,
+                                                               self.D_fake_spat_activation_b)
             self.loss_spatial_style = style_loss_coeff * (self.spatial_style_loss_a + self.spatial_style_loss_b)
 
     def define_temporal_discriminator_style_loss(self, style_loss_coeff, train_images):
@@ -186,10 +203,11 @@ class Losses:
             if train_images or style_loss_coeff <= 0:
                 self.temporal_style_loss_a = self.temporal_style_loss_b = tf.constant(0.0, dtype=tf.float32)
             else:
-                self.temporal_style_loss_a = compute_style_loss(self.D_real_temp_activation_a, self.D_fake_temp_activation_a)
-                self.temporal_style_loss_b = compute_style_loss(self.D_real_temp_activation_b, self.D_fake_temp_activation_b)
+                self.temporal_style_loss_a = compute_style_loss(self.D_real_temp_activation_a,
+                                                                self.D_fake_temp_activation_a)
+                self.temporal_style_loss_b = compute_style_loss(self.D_real_temp_activation_b,
+                                                                self.D_fake_temp_activation_b)
             self.loss_temporal_style = style_loss_coeff * (self.temporal_style_loss_a + self.temporal_style_loss_b)
-
 
     def define_vgg_style_loss(self, vgg_loss_coeff, train_images, images: Images):
 

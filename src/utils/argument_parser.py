@@ -10,6 +10,8 @@ def get_train_parser():
     parser.add_argument('--task', type=str, default='smoke',
                         help='Task name')
     parser.add_argument('--dataset_directory', type=str, default='datasets', help='Location of the training data')
+    parser.add_argument('--cross_entropy_gan_loss', type=bool, default=False, help='Use crossentropy, if false, use MSE')
+    parser.add_argument('--unet', type=bool, default=False, help='Use Unet architecture instead of Johnson')
     parser.add_argument('--log_directory', type=str, default='./logs', help='Location that the logs will we stored')
     parser.add_argument('--temp_loss_coeff', type=float, default=0.5,
                         help='Temporal Discriminator Loss coefficient')
@@ -71,6 +73,8 @@ class TrainingConfig:
         self.training_size = args.training_size
         self.data_size = args.data_size
         self.use_instance_normalization = args.instance_normalization
+        self.use_crossentropy_loss = args.cross_entropy_gan_loss
+        self.use_unet = args.unet
         self.temporal_loss_coefficient = args.temp_loss_coeff
         self.cycle_loss_coefficient = args.cycle_loss_coeff
         self.identity_loss_coefficient = args.identity_loss_coeff

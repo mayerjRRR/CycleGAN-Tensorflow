@@ -101,8 +101,11 @@ def get_path_list(data_dir):
     image_path_pattern = os.path.join(data_dir, f"*{preferred_image_format_file_ending}")
     task_image_paths = get_all_paths(image_path_pattern)
     if len(task_image_paths) == 0:
+        print(f"No {preferred_image_format_file_ending}s found, looking for {supported_image_format_file_ending}s.")
         image_path_pattern = os.path.join(data_dir, f"*{supported_image_format_file_ending}")
         task_image_paths = get_all_paths(image_path_pattern)
+    if len(task_image_paths) == 0:
+        raise Exception(f"Training data not found in {data_dir}!")
     task_image_paths.sort(key=str.lower)
     return task_image_paths
 
