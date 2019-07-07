@@ -10,6 +10,10 @@ def get_train_parser():
     parser.add_argument('--task', type=str, default='smoke',
                         help='Task name')
     parser.add_argument('--dataset_directory', type=str, default='datasets', help='Location of the training data')
+    parser.add_argument('--training_iter', default=100, type=int,
+                        help="total number of training iterations")
+    parser.add_argument('--decay_iter', default=20, type=int,
+                        help="Number of last iterations with learning rate decay")
     parser.add_argument('--cross_entropy_gan_loss', type=bool, default=False, help='Use crossentropy, if false, use MSE')
     parser.add_argument('--unet', type=bool, default=False, help='Use Unet architecture instead of Johnson')
     parser.add_argument('--log_directory', type=str, default='./logs', help='Location that the logs will we stored')
@@ -66,6 +70,8 @@ class TrainingConfig:
         self.task_name = args.task
         self.dataset_directory = args.dataset_directory
         self.logging_directory = args.log_directory
+        self.training_iterations = args.training_iter
+        self.decay_iterations = args.decay_iter
 
         self.learning_rate = args.learning_rate
         self.frame_sequence_length = args.frame_seq_length

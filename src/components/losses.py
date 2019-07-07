@@ -105,7 +105,7 @@ class Losses:
 
     @staticmethod
     def log_binary_cross_entropy(y_pred, y_true):
-        return tf.reduce_mean(tf.abs(tf.round(y_true) - tf.log(tf.sigmoid(y_pred))))
+        return tf.reduce_mean(tf.log(tf.abs(tf.round(1-y_true) - tf.sigmoid(y_pred))))
 
     def define_discriminator_loss(self, train_videos, train_images):
         with tf.name_scope("discriminator_loss"):

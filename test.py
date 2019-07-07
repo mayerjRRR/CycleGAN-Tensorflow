@@ -52,6 +52,8 @@ def parse_arguments(args):
 def process_image_directory(input, output, forwards, model_dir, with_old):
     print("Opening input directory...")
     all_frames = glob.glob(input + "*.jpg")
+    if len(all_frames) == 0:
+        all_frames = glob.glob(input + "*.png")
     all_frames.sort(key=str.lower)
 
     frame_rate = 30

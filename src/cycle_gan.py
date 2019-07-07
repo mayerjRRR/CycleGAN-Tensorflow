@@ -166,8 +166,8 @@ class CycleGan(object):
 
     def init_training_parameters(self, sess, learning_rate):
         epoch_length = 500
-        num_initial_iter = 80
-        num_decay_iter = 20
+        num_initial_iter = self.config.training_iterations - self.config.decay_iterations
+        num_decay_iter = self.config.decay_iterations
         lr_initial = learning_rate
         lr_decay = lr_initial / num_decay_iter
         initial_step = sess.run(self.placeholders.global_step)
