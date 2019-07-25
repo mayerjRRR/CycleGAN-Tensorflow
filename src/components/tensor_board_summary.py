@@ -13,11 +13,12 @@ class TensorBoardSummary:
 
     def __init__(self, images: Images, losses: Losses,
                  placeholders: Placeholders, training_balancer:TrainingBalancer, train_videos, train_images):
+        if not train_images:
+            self.add_losses(losses, train_videos)
+            self.add_temporal_discriminator_outputs(losses, train_videos)
+            self.add_model_parameters(losses, placeholders, training_balancer, train_videos)
 
-        self.add_losses(losses, train_videos)
         self.add_spacial_discriminator_outputs(losses, train_images, train_videos)
-        self.add_temporal_discriminator_outputs(losses, train_videos)
-        self.add_model_parameters(losses, placeholders, training_balancer, train_videos)
         self.add_images(images, train_images, train_videos)
         self.summary_op = tf.summary.merge_all()
 
@@ -42,15 +43,6 @@ class TensorBoardSummary:
 
 
     def add_spacial_discriminator_outputs(self, losses, train_images, train_videos):
-        if train_videos:
-            tf.summary.scalar('Spacial_Discriminator_Output/Real_Frame_A', tf.reduce_mean(losses.D_real_frame_a))
-            tf.summary.scalar('Spacial_Discriminator_Output/Fake_Frame_A', tf.reduce_mean(losses.D_fake_frame_a))
-            tf.summary.scalar('Spacial_Discriminator_Output/Fake_History_Frame_A',
-                              tf.reduce_mean(losses.D_history_fake_frame_a))
-            tf.summary.scalar('Spacial_Discriminator_Output/Real_Frame_B', tf.reduce_mean(losses.D_real_frame_b))
-            tf.summary.scalar('Spacial_Discriminator_Output/Fake_Frame_B', tf.reduce_mean(losses.D_fake_frame_b))
-            tf.summary.scalar('Spacial_Discriminator_Output/Fake_History_Frame_B',
-                              tf.reduce_mean(losses.D_history_fake_frame_b))
         if train_images:
             tf.summary.scalar('Spacial_Discriminator_Output/Real_Image_A', tf.reduce_mean(losses.D_real_image_a))
             tf.summary.scalar('Spacial_Discriminator_Output/Fake_Image_A', tf.reduce_mean(losses.D_fake_image_a))
@@ -60,6 +52,15 @@ class TensorBoardSummary:
             tf.summary.scalar('Spacial_Discriminator_Output/Fake_Image_B', tf.reduce_mean(losses.D_fake_image_b))
             tf.summary.scalar('Spacial_Discriminator_Output/Fake_History_Image_B',
                               tf.reduce_mean(losses.D_history_fake_image_b))
+        else:
+            tf.summary.scalar('Spacial_Discriminator_Output/Real_Frame_A', tf.reduce_mean(losses.D_real_frame_a))
+            tf.summary.scalar('Spacial_Discriminator_Output/Fake_Frame_A', tf.reduce_mean(losses.D_fake_frame_a))
+            tf.summary.scalar('Spacial_Discriminator_Output/Fake_History_Frame_A',
+                              tf.reduce_mean(losses.D_history_fake_frame_a))
+            tf.summary.scalar('Spacial_Discriminator_Output/Real_Frame_B', tf.reduce_mean(losses.D_real_frame_b))
+            tf.summary.scalar('Spacial_Discriminator_Output/Fake_Frame_B', tf.reduce_mean(losses.D_fake_frame_b))
+            tf.summary.scalar('Spacial_Discriminator_Output/Fake_History_Frame_B',
+                              tf.reduce_mean(losses.D_history_fake_frame_b))
 
     def add_temporal_discriminator_outputs(self, losses, train_videos):
         if train_videos:
@@ -87,13 +88,12 @@ class TensorBoardSummary:
         tf.summary.scalar('Model_Parameters/Average_Temporal_Balance', placeholders.tb_temporal)
 
     def add_images(self, images, train_images, train_videos):
-        if train_videos:
-            self.add_a_frames(images)
-            self.add_b_frames(images)
-
         if train_images:
             self.add_a_images(images)
             self.add_b_images(images)
+        else:
+            self.add_a_frames(images)
+            self.add_b_frames(images)
 
     def add_a_frames(self, images):
         self.add_input_frames(images)
