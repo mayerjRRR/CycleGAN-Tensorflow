@@ -125,7 +125,6 @@ class CycleGan(object):
             if self.should_save_model(step):
                 self.savers.save_all(sess)
 
-            self.update_tb_averages(fetched["balancer"])
 
 
     def init_fake_image_history(self, image_data_a, image_data_b, sess):
