@@ -87,7 +87,7 @@ class Losses:
         self.define_cycle_loss(images, training_config.cycle_loss_coefficient, train_images)
         self.define_identity_loss(images, placeholders, training_config.identity_loss_coefficient, train_images)
         self.define_code_layer_loss(images, training_config.code_loss_coefficient, train_images)
-        self.define_pingpong_loss(images, training_config.pingpong_loss_coefficient, train_videos)
+        self.define_pingpong_loss(images, training_config.pingpong_loss_coefficient, train_images)
         self.define_spatial_discriminator_style_loss(training_config.style_loss_coefficient, train_images)
         self.define_temporal_discriminator_style_loss(training_config.style_loss_coefficient, train_images)
         self.define_vgg_style_loss(training_config.vgg_loss_coefficient, train_images, images)
@@ -166,15 +166,15 @@ class Losses:
                                                             "identity_fade_out_weight")
             self.loss_identity = identity_loss_coeff * (self.loss_id_ab + self.loss_id_ba)
 
-    def define_pingpong_loss(self, images: Images, pingpong_loss_coeff, train_videos):
+    def define_pingpong_loss(self, images: Images, pingpong_loss_coeff, train_images):
         with tf.name_scope("ping_pong_loss"):
-            if train_videos or pingpong_loss_coeff > 0:
+            if train_images or pingpong_loss_coeff <= 0:
+                self.loss_pingpong_ab = self.loss_pingpong_ba = tf.constant(0.0, dtype=tf.float32)
+            else:
                 self.loss_pingpong_ab = pingpong_loss_coeff * tf.reduce_mean(
                     compute_pingpong_difference(images.pingpong_frames_ab))
                 self.loss_pingpong_ba = pingpong_loss_coeff * tf.reduce_mean(
                     compute_pingpong_difference(images.pingpong_frames_ba))
-            else:
-                self.loss_pingpong_ab = self.loss_pingpong_ba = tf.constant(0.0, dtype=tf.float32)
 
     def define_code_layer_loss(self, images: Images, code_loss_coeff, train_images):
         with tf.name_scope("code_layer_loss"):
