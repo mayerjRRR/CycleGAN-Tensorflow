@@ -240,6 +240,6 @@ def fade_out_weight(step, start, duration, name):
 def compute_style_loss(real_activations, fake_activations):
     style_loss = 0
     for real_activation, fake_activation in zip(real_activations, fake_activations):
-        style_loss += tf.reduce_mean(
+        style_loss += tf.reduce_sum(
             tf.squared_difference(get_gram_matrix(real_activation), get_gram_matrix(fake_activation)))
     return style_loss
