@@ -115,7 +115,10 @@ class CycleGan(object):
                                                    self.placeholders.is_train: True,
                                                    self.placeholders.lr: lr,
                                                    self.placeholders.history_fake_a: fake_a_history,
-                                                   self.placeholders.history_fake_b: fake_b_history})
+                                                   self.placeholders.history_fake_b: fake_b_history,
+                                                   self.placeholders.tb_spatial_a: 0.0,
+                                                   self.placeholders.tb_spatial_b: 0.0,
+                                                   self.placeholders.tb_temporal: 0.0})
             fake_a_history, fake_b_history = self.update_fake_image_history(fetched)
             if self.should_write_summary(step):
                 self.write_summary(fetched, step, summary_writer)
