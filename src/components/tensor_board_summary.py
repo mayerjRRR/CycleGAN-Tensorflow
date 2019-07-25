@@ -14,32 +14,33 @@ class TensorBoardSummary:
     def __init__(self, images: Images, losses: Losses,
                  placeholders: Placeholders, training_balancer:TrainingBalancer, train_videos, train_images):
         if not train_images:
-            self.add_losses(losses, train_videos)
+            self.add_losses(losses, train_images)
             self.add_temporal_discriminator_outputs(losses, train_videos)
-            self.add_model_parameters(losses, placeholders, training_balancer, train_videos)
+        self.add_model_parameters(losses, placeholders, training_balancer, train_images)
 
         self.add_spacial_discriminator_outputs(losses, train_images, train_videos)
         self.add_images(images, train_images, train_videos)
         self.summary_op = tf.summary.merge_all()
 
-    def add_losses(self, losses, train_videos):
+    def add_losses(self, losses, train_images):
         tf.summary.scalar('Losses/Spacial_Discriminator_A', losses.loss_D_a)
         tf.summary.scalar('Losses/Spacial_Discriminator_B', losses.loss_D_b)
-        if train_videos:
+        if not train_images:
             tf.summary.scalar('Losses/Temporal_Discriminator', losses.loss_D_temp)
         tf.summary.scalar('Losses/Generator_AB', losses.loss_G_spat_ab)
         tf.summary.scalar('Losses/Generator_BA', losses.loss_G_spat_ba)
         tf.summary.scalar('Losses/Cycle_Loss', losses.loss_cycle)
         tf.summary.scalar('Losses/Identity_Loss', losses.loss_identity)
-        tf.summary.scalar('Losses/Code_Loss', losses.loss_code)
-        tf.summary.scalar('Losses/PingPong_Loss_AB', losses.loss_pingpong_ab)
-        tf.summary.scalar('Losses/PingPong_Loss_BA', losses.loss_pingpong_ab)
-        tf.summary.scalar('Losses/Spatial_Style_Loss_AB', losses.spatial_style_loss_b)
-        tf.summary.scalar('Losses/Spatial_Style_Loss_BA', losses.spatial_style_loss_a)
-        tf.summary.scalar('Losses/Temporal_Style_Loss_AB', losses.temporal_style_loss_b)
-        tf.summary.scalar('Losses/Temporal_Style_Loss_BA', losses.temporal_style_loss_a)
-        tf.summary.scalar('Losses/VGG_Loss_AB', losses.vgg_loss_b)
-        tf.summary.scalar('Losses/VGG_Loss_BA', losses.vgg_loss_a)
+        if not train_images:
+            tf.summary.scalar('Losses/Code_Loss', losses.loss_code)
+            tf.summary.scalar('Losses/PingPong_Loss_AB', losses.loss_pingpong_ab)
+            tf.summary.scalar('Losses/PingPong_Loss_BA', losses.loss_pingpong_ab)
+            tf.summary.scalar('Losses/Spatial_Style_Loss_AB', losses.spatial_style_loss_b)
+            tf.summary.scalar('Losses/Spatial_Style_Loss_BA', losses.spatial_style_loss_a)
+            tf.summary.scalar('Losses/Temporal_Style_Loss_AB', losses.temporal_style_loss_b)
+            tf.summary.scalar('Losses/Temporal_Style_Loss_BA', losses.temporal_style_loss_a)
+            tf.summary.scalar('Losses/VGG_Loss_AB', losses.vgg_loss_b)
+            tf.summary.scalar('Losses/VGG_Loss_BA', losses.vgg_loss_a)
 
 
     def add_spacial_discriminator_outputs(self, losses, train_images, train_videos):
@@ -73,19 +74,20 @@ class TensorBoardSummary:
             tf.summary.scalar('Temporal_Discriminator_Output/Fake_Frames_from_History_B',
                               tf.reduce_mean(losses.D_temp_history_fake_b))
 
-    def add_model_parameters(self, losses: Losses, placeholders:Placeholders, training_balancer:TrainingBalancer, train_videos):
-        if train_videos:
+    def add_model_parameters(self, losses: Losses, placeholders:Placeholders, training_balancer:TrainingBalancer, train_images):
+        if not train_images:
             tf.summary.scalar('Model_Parameters/Temporal_Loss_Weight', losses.temp_loss_fade_in_weigth)
         tf.summary.scalar('Model_Parameters/Identity_Loss_Weight', losses.identity_fade_out_weight)
         tf.summary.scalar('Model_Parameters/Learning_Rate', placeholders.lr)
 
-        tf.summary.scalar('Model_Parameters/Spatial_Balance_A', training_balancer.spatial_a_balance)
-        tf.summary.scalar('Model_Parameters/Spatial_Balance_B', training_balancer.spatial_b_balance)
-        tf.summary.scalar('Model_Parameters/Temporal_Balance', training_balancer.temporal_balance)
+        if not train_images:
+            tf.summary.scalar('Model_Parameters/Spatial_Balance_A', training_balancer.spatial_a_balance)
+            tf.summary.scalar('Model_Parameters/Spatial_Balance_B', training_balancer.spatial_b_balance)
+            tf.summary.scalar('Model_Parameters/Temporal_Balance', training_balancer.temporal_balance)
 
-        tf.summary.scalar('Model_Parameters/Average_Spatial_Balance_A', placeholders.tb_spatial_a)
-        tf.summary.scalar('Model_Parameters/Average_Spatial_Balance_B', placeholders.tb_spatial_b)
-        tf.summary.scalar('Model_Parameters/Average_Temporal_Balance', placeholders.tb_temporal)
+            tf.summary.scalar('Model_Parameters/Average_Spatial_Balance_A', placeholders.tb_spatial_a)
+            tf.summary.scalar('Model_Parameters/Average_Spatial_Balance_B', placeholders.tb_spatial_b)
+            tf.summary.scalar('Model_Parameters/Average_Temporal_Balance', placeholders.tb_temporal)
 
     def add_images(self, images, train_images, train_videos):
         if train_images:
