@@ -8,19 +8,21 @@ from src.utils.warp_utils import recurrent_inference
 
 
 class InferenceMachine:
-    def __init__(self, height, width, model_dir):
+    def __init__(self, height, width, model_dir, unet, no_temp):
 
-        self.create_graph(model_dir, height, width)
+        self.create_graph(model_dir, height, width, unet)
         self.create_session()
         self.restore_generator_weights()
+
+        self.no_temp = no_temp
 
         self.last_frame_array = None
         self.last_result_array = None
 
-    def create_graph(self, model_dir, height, width):
+    def create_graph(self, model_dir, height, width, unet):
 
         self.create_placeholders(height, width)
-        self.create_generators()
+        self.create_generators(unet)
         self.define_generator_output()
         self.create_savers(model_dir)
 
@@ -29,11 +31,11 @@ class InferenceMachine:
         self.last_frame = tf.placeholder(tf.float32, [1, height, width, 3], name='last')
         self.last_result = tf.placeholder(tf.float32, [1, height, width, 3], name='last_result')
 
-    def create_generators(self):
+    def create_generators(self, unet):
         self.generator_ab = Generator('generator_ab', norm='instance',
-                                      activation='relu', is_train=None)
+                                      activation='relu', is_train=None, unet=unet)
         self.generator_ba = Generator('generator_ba', norm='instance',
-                                      activation='relu', is_train=None)
+                                      activation='relu', is_train=None, unet=unet)
 
     def define_generator_output(self):
         self.image_ab = recurrent_inference(self.generator_ab, self.current_frame, self.last_frame, self.last_result)
@@ -71,9 +73,15 @@ class InferenceMachine:
 
         graph = self._get_inference_graph(forwards)
 
-        result = self.sess.run(graph, feed_dict={self.current_frame: [input_image],
-                                                 self.last_frame: [self.last_frame_array],
-                                                 self.last_result: [self.last_result_array]})[0]
+        if not self.no_temp:
+            result = self.sess.run(graph, feed_dict={self.current_frame: [input_image],
+                                                     self.last_frame: [self.last_frame_array],
+                                                     self.last_result: [self.last_result_array]})[0]
+        else:
+            result = self.sess.run(graph, feed_dict={self.current_frame: [input_image],
+                                                     self.last_frame: [input_image],
+                                                     self.last_result: [input_image]})[0]
+
         self.last_frame_array=input_image
         self.last_result_array=result
         return result

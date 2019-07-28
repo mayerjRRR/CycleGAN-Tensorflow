@@ -128,4 +128,12 @@ def get_inference_parser():
                         help='Model path to load (e.g., train_2017-07-07_01-23-45)')
     parser.add_argument('--model_super_dir', type=str,
                         help='path to directrory containing lots of model directories (e.g., ./logs)')
+    parser.add_argument('--width', default=None, type=int,
+                        help="Width of output.")
+    parser.add_argument('--height', default=None, type=int,
+                        help="Height of output.")
+    parser.add_argument('--unet', type=bool, default=False, help='Use Unet architecture instead of Johnson')
+    parser.add_argument('--no_temp', type=bool, default=False, help='No temporal discriminator')
+
+
     return parser
