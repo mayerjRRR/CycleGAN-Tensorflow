@@ -22,6 +22,9 @@ def get_creation_date(path):
 def get_subdirs(path):
     return [f.path for f in os.scandir(path) if f.is_dir()]
 
+def get_subdir_names(path):
+    return [os.path.basename(path) for path in get_subdirs(path)]
+
 
 def get_latest_model():
     checkpoint_dirs = get_subdirs(checkpoint_directory)
