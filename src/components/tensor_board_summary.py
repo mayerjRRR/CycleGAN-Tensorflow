@@ -79,6 +79,7 @@ class TensorBoardSummary:
             tf.summary.scalar('Model_Parameters/Temporal_Loss_Weight', losses.temp_loss_fade_in_weigth)
         tf.summary.scalar('Model_Parameters/Identity_Loss_Weight', losses.identity_fade_out_weight)
         tf.summary.scalar('Model_Parameters/Learning_Rate', placeholders.lr)
+        tf.summary.scalar('Model_Parameters/Style_Loss_Fade', losses.style_loss_fade_in_weight*losses.style_loss_fade_out_weight)
 
         if not train_images:
             tf.summary.scalar('Model_Parameters/Spatial_Balance_A', training_balancer.spatial_a_balance)
