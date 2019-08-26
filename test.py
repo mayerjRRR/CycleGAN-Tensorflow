@@ -5,6 +5,7 @@ import os
 
 from src.inference_machine import InferenceMachine
 from src.utils import argument_parser
+from src.utils.frame_video_writer import FrameVideoWriter
 from src.utils.image_utils import load_float_image, save_float_image, is_image, is_video, \
     iterate_all_video_float_frames, float_to_unit8, is_directory, uint8_to_float
 from src.utils.utils import get_latest_model, get_subdirs
@@ -95,6 +96,7 @@ def process_video(input, output, forwards, model_dir, with_old, width, height, u
 
     for frame in iterate_all_video_float_frames(input):
         cv2.imshow("raw",frame)
+        frame = uint8_to_float(frame)
         process_and_store_frame(frame, inference_machine, video_writer, forwards, height, width,
                                 inference_height, inference_width, with_old)
     print("Done.")
@@ -104,9 +106,13 @@ def process_video(input, output, forwards, model_dir, with_old, width, height, u
 
 
 def create_video_writer(frame_rate, height, output, width):
-    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-    video_writer = cv2.VideoWriter(output, fourcc, frame_rate, (width, height))
-    return video_writer
+    _, output_format = os.path.splitext(output)
+    if output_format == ".mp4":
+        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+        video_writer = cv2.VideoWriter(output, fourcc, frame_rate, (width, height))
+        return video_writer
+    else:
+        return FrameVideoWriter(output)
 
 
 def compute_video_parameters(video_capture, width, height):

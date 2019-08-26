@@ -228,9 +228,9 @@ class Losses:
     def define_total_generator_loss(self):
         with tf.name_scope("generator_loss"):
             self.loss_G_ab_final = self.loss_G_spat_ab + self.temp_loss_fade_in_weigth * (
-                    self.loss_G_temp_ab + self.loss_pingpong_ab + self.identity_fade_out_weight*self.loss_temporal_style) + self.loss_cycle + self.identity_fade_out_weight * self.loss_identity + self.loss_code + self.identity_fade_out_weight*self.style_loss_fade_in_weight*(self.loss_spatial_style + self.loss_vgg)
+                    self.loss_G_temp_ab + self.loss_pingpong_ab + self.style_loss_fade_in_weight*self.style_loss_fade_out_weight*self.loss_temporal_style) + self.loss_cycle + self.identity_fade_out_weight * self.loss_identity + self.loss_code + self.style_loss_fade_out_weight*self.style_loss_fade_in_weight*(self.loss_spatial_style + self.loss_vgg)
             self.loss_G_ba_final = self.loss_G_spat_ba + self.temp_loss_fade_in_weigth * (
-                    self.loss_G_temp_ba + self.loss_pingpong_ba + self.identity_fade_out_weight*self.loss_temporal_style) + self.loss_cycle + self.identity_fade_out_weight * self.loss_identity + self.loss_code + self.identity_fade_out_weight*self.style_loss_fade_in_weight*(self.loss_spatial_style + self.loss_vgg)
+                    self.loss_G_temp_ba + self.loss_pingpong_ba + self.style_loss_fade_in_weight*self.style_loss_fade_out_weight*self.loss_temporal_style) + self.loss_cycle + self.identity_fade_out_weight * self.loss_identity + self.loss_code + self.style_loss_fade_out_weight*self.style_loss_fade_in_weight*(self.loss_spatial_style + self.loss_vgg)
 
 
 def fade_in_weight(step, start, duration, name):
