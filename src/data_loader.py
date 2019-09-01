@@ -17,10 +17,11 @@ video_index_padding = 1 + 6 + 1
 logger = get_logger("data_loader")
 
 
-def get_training_datasets(task_name, image_size, batch_size, dataset_dir="datasets",frame_sequence_length = 3, force_video = False) -> [tf.data.Dataset]:
+def get_training_datasets(task_name, image_size, batch_size, dataset_dir="datasets", frame_sequence_length=3,
+                          force_video=False) -> [tf.data.Dataset]:
     with tf.device('/cpu:0'):
         verify_directory_structure(task_name, dataset_dir)
-        image_path_tensors = get_image_paths(task_name, dataset_dir,frame_sequence_length, force_video)
+        image_path_tensors = get_image_paths(task_name, dataset_dir, frame_sequence_length, force_video)
         datasets = build_datasets(image_path_tensors, image_size, batch_size)
         return datasets
 
@@ -46,7 +47,7 @@ def build_dataset(image_path, image_size, batch_size):
         image_normalized = (image_normalized * 2) - 1
 
         shape = tf.shape(image_normalized)
-        min_resolution = tf.minimum(shape[0],shape[1])
+        min_resolution = tf.minimum(shape[0], shape[1])
         image_cropped = tf.image.resize_image_with_crop_or_pad(
             image_normalized,
             min_resolution,
@@ -63,8 +64,8 @@ def build_dataset(image_path, image_size, batch_size):
     return dataset
 
 
-def get_image_paths(task_name, dataset_dir,frame_sequence_length, force_video):
-    image_path_lists = get_path_lists(task_name, dataset_dir,frame_sequence_length, force_video)
+def get_image_paths(task_name, dataset_dir, frame_sequence_length, force_video):
+    image_path_lists = get_path_lists(task_name, dataset_dir, frame_sequence_length, force_video)
     image_path_tensors = get_path_tensors(image_path_lists)
 
     return image_path_tensors
@@ -91,6 +92,7 @@ def get_path_lists(task_name, dataset_dir, frame_sequence_length, force_video):
             task_image_paths = get_image_frame_sequences(data_dir)
         image_path_lists.append(task_image_paths)
     return image_path_lists
+
 
 def get_image_frame_sequences(data_dir):
     task_image_paths = np.array([get_path_list(data_dir)]).transpose()
@@ -141,8 +143,8 @@ def get_video_frames(video_name):
 
 def get_video_frame_sequences(task_name, sequencial_frames):
     video_names = get_video_names(task_name)
-    #TODO: make free of transpose
-    frame_sequences = np.array( [[] for _ in range(sequencial_frames)])
+    # TODO: make free of transpose
+    frame_sequences = np.array([[] for _ in range(sequencial_frames)])
     for video_name in video_names:
         frames = get_video_frames(video_name)
         consecutive_frames = get_consecutive_frames(frames, sequencial_frames)
@@ -161,5 +163,3 @@ def get_consecutive_frames(frames, num_frames):
     for frame_id in range(num_frames):
         result.append(frames[frame_id:len(frames) - num_frames + frame_id + 1])
     return result
-
-

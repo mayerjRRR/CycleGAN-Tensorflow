@@ -4,6 +4,7 @@ from src.nets import ops
 
 logger = get_logger("generator")
 
+
 class Generator(object):
     def __init__(self, name, is_train, norm='instance', activation='relu', unet=False):
         logger.info(f"Initializing Generator {name}", )
@@ -18,11 +19,11 @@ class Generator(object):
     def __call__(self, input, return_code_layer=False):
         with tf.variable_scope(self.name, reuse=self._reuse):
             C1 = ops.conv_block(input, 32, 'c7s1-32', 7, 1, self._is_train,
-                               self._reuse, self._norm, self._activation, pad='REFLECT')
+                                self._reuse, self._norm, self._activation, pad='REFLECT')
             C2 = ops.conv_block(C1, 64, 'd64', 3, 2, self._is_train,
-                               self._reuse, self._norm, self._activation)
+                                self._reuse, self._norm, self._activation)
             C3 = ops.conv_block(C2, 128, 'd128', 3, 2, self._is_train,
-                               self._reuse, self._norm, self._activation)
+                                self._reuse, self._norm, self._activation)
 
             G = C3
             for i in range(self._num_res_block):
@@ -48,5 +49,3 @@ class Generator(object):
             self._reuse = True
             self.var_list = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, self.name)
             return G
-
-

@@ -14,9 +14,7 @@ class TrainingBalancer:
 
 
 def get_averaged_tb(real_output, fake_output):
-    #averager = tf.train.ExponentialMovingAverage(decay=0.99)
     tb_current = get_real_fake_difference(real_output, fake_output)
-    #averager.apply([tb_current])
     return tb_current
 
 def get_real_fake_ratio(real_output, fake_output):
@@ -29,7 +27,7 @@ def get_real_fake_difference(real_output, fake_output):
 class ExponentialMovingAverage:
     def __init__(self, decay=0.99, init_value=0.3):
         self._ema = init_value
-        self._decay = 0.99
+        self._decay = decay
 
     def update(self, new_value):
         self._ema = (1 - self._decay) * new_value + self._decay * self._ema

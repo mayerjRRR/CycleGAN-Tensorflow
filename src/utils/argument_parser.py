@@ -3,66 +3,67 @@ import os
 
 
 def get_train_parser():
-
     parser = argparse.ArgumentParser(description="Training commands")
-    parser.add_argument('-n','--run_name', type=str, default=None,
-                        help='Short decription of the run to be used in the savefiles name')
+    parser.add_argument('-n', '--run_name', type=str, default=None,
+                        help='Short decription of the run to be used in the save files name.')
     parser.add_argument('--task', type=str, default='smoke',
-                        help='Task name')
-    parser.add_argument('--dataset_directory', type=str, default='datasets', help='Location of the training data')
+                        help='Name of the task, also name of the directory wherer the training dataset is stored.')
+    parser.add_argument('--dataset_directory', type=str, default='datasets', help='Location of the training data main directory.')
     parser.add_argument('--training_iter', default=100, type=int,
-                        help="total number of training iterations")
+                        help="Total number of training iterations.")
     parser.add_argument('--decay_iter', default=20, type=int,
-                        help="Number of last iterations with learning rate decay")
-    parser.add_argument('--cross_entropy_gan_loss', type=bool, default=False, help='Use crossentropy, if false, use MSE')
-    parser.add_argument('--unet', type=bool, default=False, help='Use Unet architecture instead of Johnson')
-    parser.add_argument('--log_directory', type=str, default='./logs', help='Location that the logs will we stored')
+                        help="Number of  iterations with learning rate decay.")
+    parser.add_argument('--cross_entropy_gan_loss', type=bool, default=False,
+                        help='Use crossentropy, if false, use MSE. Crossentropy broken atm.')
+    parser.add_argument('--unet', type=bool, default=False, help='Use Unet architecture instead of Johnson.')
+    parser.add_argument('--log_directory', type=str, default='./logs', help='Location that all logs will be stored to.')
     parser.add_argument('--temp_loss_coeff', type=float, default=0.5,
-                        help='Temporal Discriminator Loss coefficient')
+                        help='Temporal discriminator loss coefficient.')
     parser.add_argument('--cycle_loss_coeff', type=float, default=10,
-                        help='Cycle Consistency Loss coefficient')
+                        help='Cycle consistency loss coefficient.')
     parser.add_argument('--identity_loss_coeff', type=float, default=10,
-                        help='Identity Loss coefficient')
+                        help='Identity loss coefficient.')
     parser.add_argument('--pingpong_loss_coeff', type=float, default=100.0,
-                        help='Identity Loss coefficient')
+                        help='Ping-Pong loss coefficient.')
     parser.add_argument('--code_loss_coeff', type=float, default=1.0,
-                        help='Identity Loss coefficient')
+                        help='Latent space consistency loss coefficient.')
     parser.add_argument('--style_loss_coeff', type=float, default=100000.0,
-                        help='Style Loss coefficient')
+                        help='Discriminator style loss coefficient.')
     parser.add_argument('--vgg_loss_coeff', type=float, default=1.0,
-                        help='vgg feature loss coefficient')
+                        help='VGG-19 style loss coefficient.')
     parser.add_argument('--identity_loss_fadeout', type=bool, default=True,
                         help='Whether the identity loss should fade out.')
     parser.add_argument('--learning_rate', type=float, default=0.0001,
-                        help='Initial Learning Rate')
-    #TODO: Remove, Batch norm sucks
+                        help='Initial learning rate.')
+    # TODO: Remove, Batch norm sucks
     parser.add_argument('--instance_normalization', default=True, type=bool,
-                        help="Use instance norm instead of batch norm")
+                        help="Use instance norm instead of batch norm.")
     parser.add_argument('--log_step', default=100, type=int,
-                        help="Tensorboard log frequency")
+                        help="TensorBoard logging frequency in training iteration.")
     parser.add_argument('--save_step', default=500, type=int,
-                        help="Model save frequency")
+                        help="Model saving frequency in training iteration.")
     parser.add_argument('--batch_size', default=1, type=int,
-                        help="Batch size")
+                        help="Batch size, leave at 1 unless you have some kind of future alien GPU.")
     parser.add_argument('--training_size', default=256, type=int,
-                        help="Resolution of the images for training")
+                        help="Resolution of the frames for training. The training images are randomly cropped from the raw frames with resolution <data_size>.")
     parser.add_argument('--data_size', default=288, type=int,
-                        help="Resolution of the data")
+                        help="Resolution of the frames as provided by the data_loader. The frames are later cropped down to <training_size>")
     parser.add_argument('--load_model', default='',
                         help='Model path to load and save to (e.g., train_2017-07-07_01-23-45)')
     parser.add_argument('--init_model', default='',
-                        help='Model path to initialize model from (e.g., train_2017-07-07_01-23-45)')
+                        help='Model path to initialize model from (e.g., train_2017-07-07_01-23-45). The model is not saved to this location and does not load the global training step.')
     parser.add_argument('--force_image', default=False, type=bool,
-                        help='Force image training even with video data')
+                        help='Force image training even with video data present.')
     parser.add_argument('--force_video', default=True, type=bool,
-                        help='Force video training even if videos files not present, frames directory must exist')
+                        help='Force video training even if videos files not present, but frames directory must exist!')
     parser.add_argument('--frame_seq_length', default=4, type=int,
-                        help="Length of the frame sequence for training.")
+                        help="Length of the frame sequence for training, used for Ping-Pong loss.")
     parser.add_argument('--training_runs', default=1, type=int,
                         help="Number of training runs to run in sequence. Use to loop training with identical settings for comparison reasons.")
     parser.add_argument('--tb_threshold', type=float, default=0.4,
-                        help='Threshold of the average training balancer value to turn off discriminator training')
+                        help='Threshold of the average training balancer value to turn off discriminator training.')
     return parser
+
 
 class TrainingConfig:
     def __init__(self, args):
@@ -105,7 +106,7 @@ class TrainingConfig:
         dictionary = self.__dict__
         result = ""
         for key in dictionary:
-            result += key + ": "+str(dictionary[key])+"  "+os.linesep
+            result += key + ": " + str(dictionary[key]) + "  " + os.linesep
         return result
 
 
@@ -114,26 +115,26 @@ def get_training_config():
     training_config = TrainingConfig(args)
     return training_config
 
+
 def get_inference_parser():
     parser = argparse.ArgumentParser(description="Inference commands")
 
-    parser.add_argument('--input', type=str, help='Location of the input',default='results/test_image.jpeg')
-    parser.add_argument('--output', type=str, help='Location of the desired output',default='results/test_output.jpeg')
+    parser.add_argument('--input', type=str, help='Location of the input', default='results/smoke_input.jpg')
+    parser.add_argument('--output', type=str, help='Location of the desired output', default='results/smoke_output.jpg')
     parser.add_argument('--forwards', dest='forwards', action='store_true')
     parser.add_argument('--backwards', dest='forwards', action='store_false')
     parser.set_defaults(forwards=True)
     parser.add_argument('--side_by_side', dest='with_old', action='store_true')
     parser.set_defaults(with_old=False)
     parser.add_argument('--model_dir', type=str,
-                        help='Model path to load (e.g., train_2017-07-07_01-23-45)')
+                        help='Model path to load (e.g., train_2017-07-07_01-23-45).')
     parser.add_argument('--model_super_dir', type=str,
-                        help='path to directrory containing lots of model directories (e.g., ./logs)')
+                        help='Path to directrory containing lots of model directories (e.g., ./logs). Use this if you want to test lots of models at once.')
     parser.add_argument('--width', default=None, type=int,
                         help="Width of output.")
     parser.add_argument('--height', default=None, type=int,
                         help="Height of output.")
-    parser.add_argument('--unet', type=bool, default=False, help='Use Unet architecture instead of Johnson')
-    parser.add_argument('--no_temp', type=bool, default=False, help='No temporal discriminator')
-
+    parser.add_argument('--unet', type=bool, default=False, help='Use Unet architecture instead of Johnson.')
+    parser.add_argument('--no_temp', type=bool, default=False, help='No frame-recurrent generator aka standard cycleGAN generator.')
 
     return parser

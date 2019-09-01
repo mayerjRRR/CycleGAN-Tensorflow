@@ -144,7 +144,7 @@ def process_and_store_frame(frame, inference_machine, video_writer, forwards, he
         uint8_result = np.concatenate([cv2.resize(float_to_unit8(frame), (width, height)), uint8_result], axis=1)
     bgr_result = cv2.cvtColor(uint8_result, cv2.COLOR_RGB2BGR)
 
-    cv2.imshow("processed", bgr_result)
+    cv2.imshow("Output Frames", bgr_result)
     cv2.waitKey(1)
     video_writer.write(bgr_result)
 

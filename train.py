@@ -15,8 +15,7 @@ def is_video_data(train_A):
     return len(train_A.output_shapes) is 5 and (train_A.output_shapes[1] > 1)
 
 
-def train(model, train_A, train_B, logdir, learning_rate):
-    # TODO: extract into class or method
+def  train(model, train_A, train_B, logdir, learning_rate):
     next_a = train_A.make_one_shot_iterator().get_next()
     next_b = train_B.make_one_shot_iterator().get_next()
     variables_to_save = tf.global_variables()
@@ -28,37 +27,41 @@ def train(model, train_A, train_B, logdir, learning_rate):
 
     summary_writer = tf.summary.FileWriter(logdir)
 
-    def init_fn(sess):
+    def initialize_session(sess):
         logger.info('Initializing all parameters.')
         sess.run(init_all_op)
         fnet_loader.restore(sess, './fnet/fnet-0')
-
 
     config = tf.ConfigProto()
     config.gpu_options.allow_growth = True
 
     with tf.Session(config=config) as sess:
         sess.run(init_op)
-        init_fn(sess)
+        initialize_session(sess)
         summary_writer.add_graph(sess.graph)
         model.savers.load_all(sess)
 
         logger.info(f"Starting {'video' if model.train_videos else 'image'} training.")
-        if (model.train_videos):
-            model.train_on_videos(sess, summary_writer, next_a, next_b,learning_rate)
+        if model.train_videos:
+            model.train_on_videos(sess, summary_writer, next_a, next_b, learning_rate)
         else:
-            model.train_on_images(sess, summary_writer, next_a, next_b,learning_rate)
+            model.train_on_images(sess, summary_writer, next_a, next_b, learning_rate)
 
 
 def main():
     training_config = argument_parser.get_training_config()
     logger.info('Building datasets...')
     if not training_config.force_image_training:
-        train_A, train_B = get_training_datasets(training_config.task_name, training_config.data_size, training_config.batch_size,
-                                             dataset_dir=training_config.dataset_directory, frame_sequence_length=training_config.frame_sequence_length, force_video=training_config.force_video_data)
+        train_A, train_B = get_training_datasets(training_config.task_name, training_config.data_size,
+                                                 training_config.batch_size,
+                                                 dataset_dir=training_config.dataset_directory,
+                                                 frame_sequence_length=training_config.frame_sequence_length,
+                                                 force_video=training_config.force_video_data)
     else:
-        train_A, train_B = get_training_datasets(training_config.task_name, training_config.data_size, training_config.batch_size,
-                                                 dataset_dir=training_config.dataset_directory, frame_sequence_length=1, force_video=training_config.force_video_data)
+        train_A, train_B = get_training_datasets(training_config.task_name, training_config.data_size,
+                                                 training_config.batch_size,
+                                                 dataset_dir=training_config.dataset_directory, frame_sequence_length=1,
+                                                 force_video=training_config.force_video_data)
 
     train_videos = is_video_data(train_A)
     for i in range(training_config.training_runs):
@@ -66,7 +69,7 @@ def main():
             date = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
             training_config.model_directory = f"{training_config.task_name}_{date}_{i}-{training_config.training_runs}"
             if not training_config.run_name is None:
-                training_config.model_directory = training_config.run_name+"_"+training_config.model_directory
+                training_config.model_directory = training_config.run_name + "_" + training_config.model_directory
         log_dir = training_config.logging_directory
         makedirs(log_dir)
         training_config.initialization_model = os.path.join(log_dir, training_config.initialization_model)
@@ -79,6 +82,7 @@ def main():
         train(model, train_A, train_B, training_config.model_directory, training_config.learning_rate)
 
         tf.reset_default_graph()
+
 
 if __name__ == "__main__":
     main()

@@ -81,10 +81,10 @@ class Losses:
     def define_losses(self, images: Images, placeholders: Placeholders, training_config: TrainingConfig, train_videos,
                       train_images):
         self.define_gan_loss(training_config)
-        self.define_fade_in_weights(placeholders,training_config)
+        self.define_fade_in_weights(placeholders, training_config)
         self.define_discriminator_loss(train_videos, train_images)
         self.define_spatial_generator_loss(train_images)
-        self.define_temporal_generator_loss(placeholders, train_videos, training_config.temporal_loss_coefficient)
+        self.define_temporal_generator_loss(train_videos, training_config.temporal_loss_coefficient)
         self.define_cycle_loss(images, training_config.cycle_loss_coefficient, train_images)
         self.define_identity_loss(images, placeholders, training_config.identity_loss_coefficient, train_images)
         self.define_code_layer_loss(images, training_config.code_loss_coefficient, train_images)
@@ -106,28 +106,36 @@ class Losses:
 
     @staticmethod
     def log_binary_cross_entropy(y_pred, y_true):
-        return tf.reduce_mean(tf.log(tf.abs(tf.round(1-y_true) - tf.sigmoid(y_pred))))
+        return tf.reduce_mean(tf.log(tf.abs(tf.round(1 - y_true) - tf.sigmoid(y_pred))))
 
-    def define_fade_in_weights(self, placeholders:Placeholders,training_config:TrainingConfig):
+    def define_fade_in_weights(self, placeholders: Placeholders, training_config: TrainingConfig):
         self.temp_loss_fade_in_weigth = fade_in_weight(placeholders.global_step, 2000, 4000, "temp_loss_weigth")
-        self.identity_fade_out_weight = fade_out_weight(placeholders.global_step, 1000, 1500, "identity_fade_out_weight")
+        self.identity_fade_out_weight = fade_out_weight(placeholders.global_step, 1000, 1500,
+                                                        "identity_fade_out_weight")
         self.style_loss_fade_in_weight = fade_in_weight(placeholders.global_step, 1500, 1500, "style_loss_weigth_in")
-        self.style_loss_fade_out_weight = fade_out_weight(placeholders.global_step, training_config.training_iterations*250, training_config.training_iterations*40, "style_loss_weigth_out")
+        self.style_loss_fade_out_weight = fade_out_weight(placeholders.global_step,
+                                                          training_config.training_iterations * 250,
+                                                          training_config.training_iterations * 40,
+                                                          "style_loss_weigth_out")
 
     def define_discriminator_loss(self, train_videos, train_images):
         with tf.name_scope("discriminator_loss"):
             if train_images:
-                self.loss_D_a = (self.gan_loss(self.D_real_image_a, 0.9) + self.gan_loss(self.D_history_fake_image_a,0.0)) * 0.5
-                self.loss_D_b = (self.gan_loss(self.D_real_image_b, 0.9) + self.gan_loss(self.D_history_fake_image_b,0.0)) * 0.5
+                self.loss_D_a = (self.gan_loss(self.D_real_image_a, 0.9) + self.gan_loss(self.D_history_fake_image_a,
+                                                                                         0.0)) * 0.5
+                self.loss_D_b = (self.gan_loss(self.D_real_image_b, 0.9) + self.gan_loss(self.D_history_fake_image_b,
+                                                                                         0.0)) * 0.5
             else:
-                self.loss_D_a = (self.gan_loss(self.D_real_frame_a, 0.9) + self.gan_loss(self.D_history_fake_frame_a,0.0)) * 0.5
-                self.loss_D_b = (self.gan_loss(self.D_real_frame_b, 0.9) + self.gan_loss(self.D_history_fake_frame_b,0.0)) * 0.5
+                self.loss_D_a = (self.gan_loss(self.D_real_frame_a, 0.9) + self.gan_loss(self.D_history_fake_frame_a,
+                                                                                         0.0)) * 0.5
+                self.loss_D_b = (self.gan_loss(self.D_real_frame_b, 0.9) + self.gan_loss(self.D_history_fake_frame_b,
+                                                                                         0.0)) * 0.5
 
             if train_videos:
                 self.loss_D_temp = (self.gan_loss(self.D_temp_real_a, 0.9) +
-                                    self.gan_loss(self.D_temp_history_fake_a,0.0) +
+                                    self.gan_loss(self.D_temp_history_fake_a, 0.0) +
                                     self.gan_loss(self.D_temp_real_b, 0.9) +
-                                    self.gan_loss(self.D_temp_history_fake_b,0.0)) * 0.25
+                                    self.gan_loss(self.D_temp_history_fake_b, 0.0)) * 0.25
             else:
                 self.loss_D_temp = tf.constant(0.0, dtype=tf.float32)
 
@@ -140,7 +148,7 @@ class Losses:
                 self.loss_G_spat_ab = self.gan_loss(self.D_fake_frame_b, 0.9)
                 self.loss_G_spat_ba = self.gan_loss(self.D_fake_frame_a, 0.9)
 
-    def define_temporal_generator_loss(self, placeholders: Placeholders, train_videos, temp_loss_coeff):
+    def define_temporal_generator_loss(self, train_videos, temp_loss_coeff):
         with tf.name_scope("temporal_loss"):
             if train_videos:
                 self.loss_G_temp_ab = temp_loss_coeff * self.gan_loss(self.D_temp_fake_b, 0.9)
@@ -228,9 +236,11 @@ class Losses:
     def define_total_generator_loss(self):
         with tf.name_scope("generator_loss"):
             self.loss_G_ab_final = self.loss_G_spat_ab + self.temp_loss_fade_in_weigth * (
-                    self.loss_G_temp_ab + self.loss_pingpong_ab + self.style_loss_fade_in_weight*self.style_loss_fade_out_weight*self.loss_temporal_style) + self.loss_cycle + self.identity_fade_out_weight * self.loss_identity + self.loss_code + self.style_loss_fade_out_weight*self.style_loss_fade_in_weight*(self.loss_spatial_style + self.loss_vgg)
+                    self.loss_G_temp_ab + self.loss_pingpong_ab + self.style_loss_fade_in_weight * self.style_loss_fade_out_weight * self.loss_temporal_style) + self.loss_cycle + self.identity_fade_out_weight * self.loss_identity + self.loss_code + self.style_loss_fade_out_weight * self.style_loss_fade_in_weight * (
+                                           self.loss_spatial_style + self.loss_vgg)
             self.loss_G_ba_final = self.loss_G_spat_ba + self.temp_loss_fade_in_weigth * (
-                    self.loss_G_temp_ba + self.loss_pingpong_ba + self.style_loss_fade_in_weight*self.style_loss_fade_out_weight*self.loss_temporal_style) + self.loss_cycle + self.identity_fade_out_weight * self.loss_identity + self.loss_code + self.style_loss_fade_out_weight*self.style_loss_fade_in_weight*(self.loss_spatial_style + self.loss_vgg)
+                    self.loss_G_temp_ba + self.loss_pingpong_ba + self.style_loss_fade_in_weight * self.style_loss_fade_out_weight * self.loss_temporal_style) + self.loss_cycle + self.identity_fade_out_weight * self.loss_identity + self.loss_code + self.style_loss_fade_out_weight * self.style_loss_fade_in_weight * (
+                                           self.loss_spatial_style + self.loss_vgg)
 
 
 def fade_in_weight(step, start, duration, name):

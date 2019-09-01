@@ -28,12 +28,12 @@ class Optimizers:
         else:
             self.optimizer_D_temp = tf.constant(0, dtype=tf.float32)
             self.optimizer_D_a = tf.train.AdamOptimizer(learning_rate=placeholders.lr, beta1=0.5) \
-            .minimize(losses.loss_D_a,var_list=networks.discriminator_spatial_a.var_list,global_step=placeholders.global_step)
+            .minimize(losses.loss_D_a,var_list=networks.discriminator_spatial_a.var_list)
             self.optimizer_D_b = tf.train.AdamOptimizer(learning_rate=placeholders.lr, beta1=0.5) \
             .minimize(losses.loss_D_b, var_list=networks.discriminator_spatial_b.var_list)
 
 
         self.optimizer_G_ab = tf.train.AdamOptimizer(learning_rate=placeholders.lr, beta1=0.5) \
-            .minimize(losses.loss_G_ab_final, var_list=networks.generator_ab.var_list)
+            .minimize(losses.loss_G_ab_final, var_list=networks.generator_ab.var_list,global_step=placeholders.global_step)
         self.optimizer_G_ba = tf.train.AdamOptimizer(learning_rate=placeholders.lr, beta1=0.5) \
             .minimize(losses.loss_G_ba_final, var_list=networks.generator_ba.var_list)

@@ -4,6 +4,7 @@ from src.nets import ops
 
 logger = get_logger("discriminator")
 
+
 class Discriminator(object):
     def __init__(self, name, is_train, norm='instance', activation='leaky'):
         logger.info(f"Initializing Discriminator {name}...")
@@ -32,7 +33,7 @@ class Discriminator(object):
                 return layer_activations
             D = ops.conv_block(D, 1, 'C1', 4, 1, self._is_train,
                                self._reuse, norm=None, activation=None, bias=True)
-            D = tf.reduce_mean(D, axis=[1,2,3])
+            D = tf.reduce_mean(D, axis=[1, 2, 3])
 
             self._reuse = True
             self.var_list = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, self.name)

@@ -41,7 +41,6 @@ class InferenceMachine:
         self.image_ab = recurrent_inference(self.generator_ab, self.current_frame, self.last_frame, self.last_result)
         self.image_ba = recurrent_inference(self.generator_ba, self.current_frame, self.last_frame, self.last_result)
 
-
     def create_savers(self, model_dir):
         self.generator_ab_saver = Saver(self.generator_ab.var_list,
                                         save_path=os.path.join(model_dir, self.generator_ab.name), name="Generator AB")
@@ -82,8 +81,8 @@ class InferenceMachine:
                                                      self.last_frame: [input_image],
                                                      self.last_result: [input_image]})[0]
 
-        self.last_frame_array=input_image
-        self.last_result_array=result
+        self.last_frame_array = input_image
+        self.last_result_array = result
         return result
 
     def _get_inference_graph(self, forwards):

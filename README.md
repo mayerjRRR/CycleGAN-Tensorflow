@@ -1,11 +1,11 @@
-# Temporally Coherent CycleGAN
-
-The goal is to create a temporally coherent CylceGAN. 
+# TricycleGAN: A Temporally Consistent CycleGAN for Unpaired Video-to-Video Translation
 
 <p align = 'center'>
-<img src = 'results/horse.gif' width = '49%'>
-<img src = 'results/zebra_temp.gif' width = '49%'>
+<img src = 'results/smoke_512_tricycle.gif' width = '100%'>
 </p>
+
+This code in this repository was created as part of my (Jonas Mayer's) master's thesis at TU Munich. The actual thesis and supplementary material can be found down below.
+Please steal responsibly. 
 
 The implementation is based on [Youngwoon Lee's implementation](https://github.com/gitlimlab/CycleGAN-Tensorflow) of a CycleGAN in Tensorflow.
 
@@ -13,8 +13,8 @@ The implementation is based on [Youngwoon Lee's implementation](https://github.c
 
 ### Prerequisites:
 
-- a working Python 3.6.x installation
-- a working CUDA installation for tensorflow 1.8.0 
+- a working Python 3.6 installation
+- a working CUDA installation for TensorFlow
 - optionally a virtual environment
 
 ### Installation:
@@ -29,65 +29,56 @@ The implementation is based on [Youngwoon Lee's implementation](https://github.c
 - Execute the following command to train a model:
 
 ```
-$ python train.py --task <taskname>
+$ python train.py -n <run name> --task <task name>
 ```
-
-The corresponding `./dataset/<taskname>` directory should contain `trainA` and `trainB` directories containing training
-data for domain A and domain B respectively. 
-
-The training data can be either images or videos for each domain. Handling of different data types is done automatically.
 
 Command line options:
 
+- `--n`: name of the training run, useful for finding your training results later on. 
 - `--task` : Name of the task, specifies the training data directory
-- `--image_size`: Resolution of the training data, default is 256
-- `--load_model`: Optional log/checkpoint directory of an existing model, use to continue training
 
 More command line options can be found with `--help`.
 
-Once training, check the status on Tensorboard:
+The corresponding `./dataset/<taskname>` directory should contain `trainA` and `trainB` directories, each containing training
+data for domain A and domain B respectively. 
+The training data can be either images (*.jpg xor *.png) or videos (*.mp4). 
+Depending on which type of data exists, we either train a cycleGAN or a tricycleGAN.
+However, if video data is available as images, make sure to place it in ``trainA/frames/`` and ``trainA/frames/`` and use `--force_video True` to force video training.
+For training a cycleGAN with video data, use ``--force_images True``.
+
+Once training, check TensorBoard for live losses, metrics, output images and training parameters:
 
 ```
 $ tensorboard --logdir=./logs
 ```
 
-
 ### Inference
 
-Applies a domain transfer using a trained model to an input. Works for images and videos in both A->A an B->A directions. 
+Applies a domain transfer using a trained model to an input. Works for single images, image directories and videos in both A->A an B->A directions. 
 
 Example:
 
 ``
-python test.py --input "test_image.jpeg" --output "test_output.jpeg"
+python test.py --input "beautiful_horsies.mp4" --output "beautiful_zebras.mp4"
 ``
 
 Command line options:
 
-- `--input` : Name of the input file, defaults to test_image.jpeg`.
-- `--output`: Name of the output file, media type should match input type. Note that sound is lost for video transfer. 
-Defaults to `test_output.jpeg`
+- `--input` : Name of the input file or directory, defaults to `smoke_input.jpg`.
+- `--output`: Name of the output file. Note that sound is lost for video transfer. 
+Defaults to `smoke_output.jpeg`
 - `--model_dir`: The pretrained model to use (name of the model directory). If none is given it will automatically use 
 the latest trained model.
-- `--backwards`: Optional flag to perform B->A inference instead of the default A->B.
+- `--no_temp`: Use for inference with a cycleGAN model.
 
 More command line options can be found with `--help`.
 
 ## Results
 
-Example on the domains "Horse" and "Zebra" trained without (middle) and with temporal discriminator (bottom).
+Check out the supplementary video on YouTube:
 
-<p align = 'center'>
-<img src = 'results/horse.gif' width = '99%'>
-<img src = 'results/zebra_non_temp.gif' width = '99%'>
-<img src = 'results/zebra_temp.gif' width = '99%'>
-</p>
+[![Click for youtube video](https://img.youtube.com/vi/L86PNqh_zLI/0.jpg)](https://www.youtube.com/watch?v=L86PNqh_zLI)
 
-Low-Quality to High-Quality Render of Smoke Simulations, trained with spatical discriminators only (top), a temporal discriminator, recurrent generator and pingpong loss (middle) and with spatiotemporal discriminators (bottom).
+## Thesis, Presentation and Supplementary Material
 
-<p align = 'center'>
-<img src = 'results/plume_images.gif' width = '99%'>
-<img src = 'results/plume_recurrent.gif' width = '99%'>
-<img src = 'results/plume_spatiotemporal.gif' width = '99%'>
-</p>
-
+https://drive.google.com/open?id=1fv_LD4Sva8Kcm9xwZABKzH-I2z0Ya2xO

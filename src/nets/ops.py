@@ -27,6 +27,7 @@ def _norm(input, is_train, reuse=True, norm=None):
 
     return out
 
+
 def _activation(input, activation=None):
     assert activation in ['relu', 'leaky', 'tanh', 'sigmoid', None]
     if activation == 'relu':
@@ -39,6 +40,7 @@ def _activation(input, activation=None):
         return tf.sigmoid(input)
     else:
         return input
+
 
 def conv2d(input, num_filters, filter_size, stride, reuse=False,
            padding='SAME', dtype=tf.float32, bias=False):
@@ -54,9 +56,10 @@ def conv2d(input, num_filters, filter_size, stride, reuse=False,
         conv = tf.nn.conv2d(input, weight_initializer, stride_shape, padding=padding)
 
     if bias:
-        b = tf.get_variable('b', [1,1,1,num_filters], initializer=tf.constant_initializer(0.0))
+        b = tf.get_variable('b', [1, 1, 1, num_filters], initializer=tf.constant_initializer(0.0))
         conv = conv + b
     return conv
+
 
 def _padding_size(tensor, filter_size, stride):
     in_height = int(tensor.get_shape()[1])
@@ -77,6 +80,7 @@ def _padding_size(tensor, filter_size, stride):
 
     return tf.constant([[0, 0], [pad_top, pad_bottom], [pad_left, pad_right], [0, 0]])
 
+
 def conv2d_transpose(input, num_filters, filter_size, stride, reuse,
                      pad='SAME', dtype=tf.float32):
     assert pad == 'SAME'
@@ -89,13 +93,15 @@ def conv2d_transpose(input, num_filters, filter_size, stride, reuse,
     deconv = tf.nn.conv2d_transpose(input, weight_initializer, output_shape, stride_shape, pad)
     return deconv
 
+
 def conv_block(input, num_filters, name, k_size, stride, is_train, reuse, norm,
-          activation, pad='SAME', bias=False):
+               activation, pad='SAME', bias=False):
     with tf.variable_scope(name, reuse=reuse):
         out = conv2d(input, num_filters, k_size, stride, reuse, pad, bias=bias)
         out = _norm(out, is_train, reuse, norm)
         out = _activation(out, activation)
         return out
+
 
 def residual(input, num_filters, name, is_train, reuse, norm, pad='REFLECT'):
     with tf.variable_scope(name, reuse=reuse):
@@ -109,6 +115,7 @@ def residual(input, num_filters, name, is_train, reuse, norm, pad='REFLECT'):
             out = _norm(out, is_train, reuse, norm)
 
         return tf.nn.relu(input + out)
+
 
 def deconv_block(input, num_filters, name, k_size, stride, is_train, reuse, norm, activation):
     with tf.variable_scope(name, reuse=reuse):

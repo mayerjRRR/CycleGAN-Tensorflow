@@ -8,6 +8,7 @@ logger = get_logger("video_preprocessor")
 
 frame_directory_name = 'frames'
 
+
 def preprocess_videos(path):
     frame_dir = os.path.join(path, frame_directory_name)
     video_paths = get_all_video_paths(path)
